@@ -1,0 +1,402 @@
+/* Impact.css - Green Impact Leaderboard Page */
+:root {
+  --primary: #2e7d32;
+  --primary-dark: #1b5e20;
+  --secondary: #f57c00;
+  --bg-color: #f0f2f5;
+  --white: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #606060;
+  --border: #e0e0e0;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 15px rgba(46, 125, 50, 0.12);
+  --shadow-lg: 0 8px 32px rgba(46, 125, 50, 0.15);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes subtleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.impact-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f9f5 0%, #e8f5e9 50%, #f1f8e9 100%);
+  padding: 2rem 1rem;
+  position: relative;
+}
+
+.impact-container::before {
+  content: '🌍';
+  position: fixed;
+  font-size: 150px;
+  opacity: 0.08;
+  top: 10%;
+  right: 5%;
+  z-index: 0;
+  pointer-events: none;
+  animation: subtleFloat 8s ease-in-out infinite;
+}
+
+/* Header */
+.impact-header {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.impact-header button {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--primary);
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.impact-header button:hover {
+  transform: translateX(-4px) scale(1.1);
+}
+
+.impact-header h1 {
+  font-size: 2.5rem;
+  color: var(--primary);
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.impact-header p {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+/* Wallet Card */
+.wallet-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(245, 249, 245, 0.95) 100%);
+  border: 2px solid var(--primary);
+  border-radius: 18px;
+  padding: 2.5rem;
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  z-index: 1;
+  animation: slideInUp 0.8s ease-out 0.1s both;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.wallet-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 48px rgba(46, 125, 50, 0.25);
+}
+
+.wallet-card > div:first-child {
+  flex: 1;
+}
+
+.wallet-label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.wallet-balance h2 {
+  font-size: 2.8rem;
+  color: var(--primary);
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.carbon-badge {
+  background: linear-gradient(135deg, var(--primary) 0%, #1b5e20 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(46, 125, 50, 0.2);
+}
+
+.carbon-badge > div:first-child {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 0.3rem;
+}
+
+.carbon-badge > div:last-child {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+/* Badges Grid */
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.badge-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(245, 249, 245, 0.95) 100%);
+  border: 2px solid var(--primary);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: scaleIn 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+.badge-card:nth-child(1) { animation-delay: 0.2s; }
+.badge-card:nth-child(2) { animation-delay: 0.3s; }
+.badge-card:nth-child(3) { animation-delay: 0.4s; }
+
+.badge-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(46, 125, 50, 0.2);
+  border-color: var(--secondary);
+}
+
+.badge-icon {
+  display: block;
+  font-size: 2.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.badge-card h3 {
+  font-size: 1.1rem;
+  color: var(--primary);
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+}
+
+.badge-card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Leaderboard Section */
+.leaderboard-section {
+  max-width: 800px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(245, 249, 245, 0.95) 100%);
+  border: 2px solid var(--primary);
+  border-radius: 18px;
+  padding: 2.5rem;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  z-index: 1;
+  animation: slideInUp 0.8s ease-out 0.2s both;
+}
+
+.lb-title {
+  font-size: 1.6rem;
+  color: var(--primary);
+  margin: 0 0 2rem;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: -0.3px;
+}
+
+.lb-row {
+  display: flex;
+  align-items: center;
+  padding: 1.2rem;
+  margin-bottom: 0.8rem;
+  background: rgba(245, 249, 245, 0.5);
+  border-radius: 12px;
+  border-left: 4px solid var(--border);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: slideInUp 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+.lb-row:nth-child(1) { animation-delay: 0.3s; }
+.lb-row:nth-child(2) { animation-delay: 0.4s; }
+.lb-row:nth-child(3) { animation-delay: 0.5s; }
+.lb-row:nth-child(4) { animation-delay: 0.6s; }
+.lb-row:nth-child(5) { animation-delay: 0.7s; }
+
+.lb-row:hover {
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.08) 0%, rgba(200, 230, 201, 0.15) 100%);
+  border-left-color: var(--primary);
+  transform: translateX(6px);
+}
+
+.lb-row.active-user {
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.12) 0%, rgba(200, 230, 201, 0.3) 100%);
+  border-left-color: var(--primary);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+}
+
+.lb-rank {
+  min-width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: white;
+  margin-right: 1rem;
+  font-size: 1.1rem;
+}
+
+.lb-rank.rank-1 {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #333;
+}
+
+.lb-rank.rank-2 {
+  background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+  color: #333;
+}
+
+.lb-rank.rank-3 {
+  background: linear-gradient(135deg, #cd7f32 0%, #e8a76b 100%);
+  color: #fff;
+}
+
+.lb-rank.rank-4,
+.lb-rank.rank-5 {
+  background: var(--primary);
+}
+
+.lb-user {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.lb-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary) 0%, #1b5e20 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.lb-points {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+  min-width: 100px;
+  text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .impact-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .wallet-card {
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .wallet-card > div:first-child {
+    width: 100%;
+  }
+
+  .wallet-balance h2 {
+    font-size: 2rem;
+  }
+
+  .badges-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .leaderboard-section {
+    padding: 1.5rem;
+  }
+
+  .lb-row {
+    flex-wrap: wrap;
+  }
+
+  .lb-points {
+    width: 100%;
+    text-align: left;
+    margin-top: 0.5rem;
+    padding-left: calc(40px + 1rem + 0.8rem);
+  }
+}
