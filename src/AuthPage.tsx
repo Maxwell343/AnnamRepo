@@ -6,11 +6,15 @@ interface FormData {
   email: string;
   password: string;
   name: string;
+  phone: string;
+  city: string;
   role: 'farmer' | 'ngo' | 'driver';
+  ngoName?: string;
+  vehicleType?: string;
 }
 
 interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: 'farmer' | 'ngo' | 'driver';
@@ -22,16 +26,18 @@ const AuthPage: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [emailError, setEmailError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [focusedField, setFocusedField] = useState<string>('');
-  
+
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
     name: '',
-    role: 'farmer'
+    phone: '',
+    city: '',
+    role: 'farmer',
+    ngoName: '',
+    vehicleType: ''
   });
 
-  // Email validation function
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -40,20 +46,12 @@ const AuthPage: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    
-    if (name === 'email') {
-      setEmailError('');
-    }
+
+    if (name === 'email') setEmailError('');
   };
 
   const handleRoleSelect = (role: 'farmer' | 'ngo' | 'driver') => {
     setFormData({ ...formData, role });
-  };
-
-  const handleEmailBlur = () => {
-    if (formData.email && !validateEmail(formData.email)) {
-      setEmailError('Please enter a valid email address');
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,20 +60,17 @@ const AuthPage: React.FC = () => {
     setEmailError('');
     setIsSubmitting(true);
 
-    // Validate email format before submission
     if (!validateEmail(formData.email)) {
       setEmailError('Please enter a valid email address');
       setIsSubmitting(false);
       return;
     }
 
-    // Select the correct API endpoint based on the mode
     const endpoint = isLogin 
       ? 'http://localhost:5000/api/login' 
       : 'http://localhost:5000/api/signup';
 
     try {
-      // Prepare request body - only send email/password for login
       const requestBody = isLogin 
         ? { 
             email: formData.email, 
@@ -85,7 +80,11 @@ const AuthPage: React.FC = () => {
             email: formData.email,
             password: formData.password,
             name: formData.name,
-            role: formData.role
+            phone: formData.phone,
+            city: formData.city,
+            role: formData.role,
+            ngoName: formData.role === 'ngo' ? formData.ngoName : undefined,
+            vehicleType: formData.role === 'driver' ? formData.vehicleType : undefined
           };
 
       const response = await fetch(endpoint, {
@@ -97,222 +96,153 @@ const AuthPage: React.FC = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
+        throw new Error(data.detail || data.message || 'Something went wrong');
       }
 
-      // SUCCESS
       if (isLogin) {
-        // Validate user data from response
-        if (!data.user || !data.user.id || !data.user.role) {
-          throw new Error('Invalid response from server');
-        }
-
-        // Normalize role - handle 'distributor' from backend
-        let userRole: 'farmer' | 'ngo' | 'driver' = data.user.role;
-        if (data.user.role === 'distributor') {
-          userRole = 'driver';
-        }
-
-        // Validate role is one of the expected values
-        if (!['farmer', 'ngo', 'driver'].includes(userRole)) {
-          throw new Error(`Unknown role: ${data.user.role}`);
-        }
-
-        // Create user object
         const user: User = {
           id: data.user.id,
-          name: data.user.name || 'User',
-          email: data.user.email || formData.email,
-          role: userRole
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role
         };
 
-        // Save to localStorage
         localStorage.setItem('user', JSON.stringify(user));
-        
-        console.log('✅ User logged in successfully:', user);
-        
-        // Navigate to home page
         navigate('/home');
       } else {
-        // Sign up successful
         alert('Account created successfully! Please login.');
         setIsLogin(true);
-        // Keep email, clear other fields
         setFormData({
           email: formData.email,
           password: '',
           name: '',
-          role: 'farmer'
+          phone: '',
+          city: '',
+          role: 'farmer',
+          ngoName: '',
+          vehicleType: ''
         });
       }
 
     } catch (err: any) {
-      console.error('Auth error:', err);
       setError(err.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Role configuration
   const roles = [
-    { 
-      id: 'farmer' as const, 
-      icon: '🌱', 
-      label: 'Farmer', 
-      description: 'Donate surplus produce' 
-    },
-    { 
-      id: 'ngo' as const, 
-      icon: '🏢', 
-      label: 'NGO', 
-      description: 'Receive & distribute' 
-    },
-    { 
-      id: 'driver' as const, 
-      icon: '🚚', 
-      label: 'Driver', 
-      description: 'Transport donations' 
-    }
+    { id: 'farmer' as const, icon: '🌱', label: 'Farmer', desc: 'Surplus producer' },
+    { id: 'ngo' as const, icon: '🏢', label: 'NGO', desc: 'Food distribution' },
+    { id: 'driver' as const, icon: '🚚', label: 'Driver', desc: 'Logistics partner' }
   ];
 
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <div className="form-wrapper" key={isLogin ? 'login' : 'signup'}>
+        <div className="form-wrapper">
+
           <h1 className="auth-title">Annam</h1>
-          
           <p className="auth-subtitle">
-            {isLogin 
-              ? 'Welcome back! Login to sustain the world.' 
-              : 'Join the movement to feed the hungry.'}
+            {isLogin ? 'Welcome back. Please login.' : 'Create your ANNAM account.'}
           </p>
 
           {error && <div className="error-msg">{error}</div>}
 
           <form onSubmit={handleSubmit}>
-          
-            {/* Show Name field only for Sign Up */}
+
             {!isLogin && (
-              <div className="form-group">
-                <label className={`form-label ${formData.name ? 'floating' : ''}`}>
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  className="form-input"
-                  placeholder="e.g. Rahul Kumar"
-                  value={formData.name}
-                  onChange={handleChange}
-                  onFocus={() => setFocusedField('name')}
-                  onBlur={() => setFocusedField('')}
-                  required={!isLogin}
-                />
-                <div className="input-underline"></div>
-              </div>
+              <>
+                <div className="form-group">
+                  <label className="form-label">Full Name</label>
+                  <input className="form-input" name="name" value={formData.name} onChange={handleChange} required />
+                  <div className="input-underline"></div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Phone Number</label>
+                  <input className="form-input" name="phone" value={formData.phone} onChange={handleChange} required />
+                  <div className="input-underline"></div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">City / District</label>
+                  <input className="form-input" name="city" value={formData.city} onChange={handleChange} required />
+                  <div className="input-underline"></div>
+                </div>
+              </>
             )}
 
             <div className="form-group">
-              <label className={`form-label ${formData.email ? 'floating' : ''}`}>
-                Email Address
-              </label>
-              <input
-                type="email"
-                name="email"
-                className={`form-input ${emailError ? 'input-error' : ''}`}
-                placeholder="user@example.com"
-                value={formData.email}
-                onChange={handleChange}
-                onFocus={() => setFocusedField('email')}
-                onBlur={() => {
-                  setFocusedField('');
-                  handleEmailBlur();
-                }}
-                required
-              />
+              <label className="form-label">Email Address</label>
+              <input className={`form-input ${emailError ? 'input-error' : ''}`} name="email" value={formData.email} onChange={handleChange} required />
               <div className="input-underline"></div>
               {emailError && <div className="error-text">{emailError}</div>}
             </div>
 
             <div className="form-group">
-              <label className={`form-label ${formData.password ? 'floating' : ''}`}>
-                Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                className="form-input"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleChange}
-                onFocus={() => setFocusedField('password')}
-                onBlur={() => setFocusedField('')}
-                required
-                minLength={6}
-              />
+              <label className="form-label">Password</label>
+              <input type="password" className="form-input" name="password" value={formData.password} onChange={handleChange} required />
               <div className="input-underline"></div>
             </div>
 
-            {/* Show Role field only for Sign Up */}
             {!isLogin && (
               <div className="form-group">
                 <label className="form-label">I am a...</label>
-                
-                {/* Role Cards */}
                 <div className="role-cards">
-                  {roles.map((role) => (
+                  {roles.map(r => (
                     <div
-                      key={role.id}
-                      className={`role-card ${formData.role === role.id ? 'active' : ''}`}
-                      onClick={() => handleRoleSelect(role.id)}
+                      key={r.id}
+                      className={`role-card ${formData.role === r.id ? 'active' : ''}`}
+                      onClick={() => handleRoleSelect(r.id)}
+                      data-role={r.id}
                     >
-                      <span className="role-icon">{role.icon}</span>
+                      <span className="role-icon">{r.icon}</span>
                       <div className="role-info">
-                        <span className="role-label">{role.label}</span>
-                        <span className="role-desc">{role.description}</span>
+                        <span className="role-label">{r.label}</span>
+                        <span className="role-desc">{r.desc}</span>
                       </div>
-                      {formData.role === role.id && (
-                        <span className="role-check">✓</span>
-                      )}
+                      {formData.role === r.id && <span className="role-check">✓</span>}
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
+            {!isLogin && formData.role === 'ngo' && (
+              <div className="form-group">
+                <label className="form-label">NGO Name</label>
+                <input className="form-input" name="ngoName" value={formData.ngoName} onChange={handleChange} required />
+                <div className="input-underline"></div>
+              </div>
+            )}
+
+            {!isLogin && formData.role === 'driver' && (
+              <div className="form-group">
+                <label className="form-label">Vehicle Type</label>
+                <select className="form-input" name="vehicleType" value={formData.vehicleType} onChange={handleChange} required>
+                  <option value="">Select Vehicle</option>
+                  <option value="bike">Bike</option>
+                  <option value="van">Van</option>
+                  <option value="truck">Truck</option>
+                </select>
+                <div className="input-underline"></div>
+              </div>
+            )}
+
             <button type="submit" className="auth-btn" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <span className="btn-spinner"></span>
-                  {isLogin ? 'Logging in...' : 'Creating account...'}
-                </>
-              ) : (
-                isLogin ? 'Login' : 'Create Account'
-              )}
+              {isLogin ? 'Login' : 'Create Account'}
             </button>
+
           </form>
 
           <p className="toggle-text">
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <span 
-              className="toggle-link" 
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError('');
-                setEmailError('');
-                // Reset form but keep email
-                setFormData({
-                  email: formData.email,
-                  password: '',
-                  name: '',
-                  role: 'farmer'
-                });
-              }}
-            >
-              {isLogin ? 'Sign Up' : 'Login'}
+            {isLogin ? "Don't have an account?" : "Already have an account?"}
+            <span className="toggle-link" onClick={() => setIsLogin(!isLogin)}>
+              {isLogin ? ' Sign Up' : ' Login'}
             </span>
           </p>
+
         </div>
       </div>
     </div>

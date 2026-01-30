@@ -531,6 +531,48 @@ body {
   background: linear-gradient(135deg, rgba(255, 152, 0, 0.08), rgba(255, 183, 77, 0.12));
 }
 
+/* ===== Compact Signup Layout (No Scroll) ===== */
+
+.signup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.signup-grid .form-group {
+  margin-bottom: 0;
+}
+
+.compact-group {
+  margin-bottom: 10px;
+}
+
+.role-cards.compact {
+  gap: 6px;
+}
+
+.role-cards.compact .role-card {
+  padding: 0.65rem 0.75rem;
+}
+
+.role-cards.compact .role-icon {
+  font-size: 1.2rem;
+}
+
+.role-cards.compact .role-label {
+  font-size: 0.85rem;
+}
+
+.role-cards.compact .role-desc {
+  font-size: 0.7rem;
+}
+
+.auth-card.compact {
+  padding: 2rem 2rem;
+  max-height: 90vh;
+}
+
+
 /* Responsive adjustments for role cards */
 @media (max-width: 480px) {
   .role-cards {
