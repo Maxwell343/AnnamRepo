@@ -199,38 +199,114 @@ const NGOSettings: React.FC = () => {
     setIsLoading(true);
     const savedUser = localStorage.getItem('user');
     
-    setTimeout(() => {
-      if (savedUser) {
-        const parsedUser = JSON.parse(savedUser);
-        if (parsedUser.role !== 'ngo') {
-          navigate('/home');
-          return;
-        }
-        setUser(parsedUser);
+    const fetchSettings = async (parsedUser: User & { id: number }) => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/settings/ngo/${parsedUser.id}`);
+        const data = await response.json();
         
+        if (response.ok && data && Object.keys(data).length > 1) {
+          const apiData: FormData = {
+            adminName: data.admin_name || parsedUser.name || '',
+            adminEmail: data.admin_email || parsedUser.email || '',
+            adminPhone: data.admin_phone || '',
+            adminRole: data.admin_role || 'Admin',
+            organizationName: data.organization_name || '',
+            organizationEmail: data.organization_email || '',
+            organizationPhone: data.organization_phone || '',
+            registrationNumber: data.registration_number || '',
+            registration80G: data.registration_80g || '',
+            registration12A: data.registration_12a || '',
+            fcraNumber: data.fcra_number || '',
+            panNumber: data.pan_number || '',
+            gstNumber: data.gst_number || '',
+            mission: data.mission || '',
+            vision: data.vision || '',
+            yearEstablished: data.year_established || '',
+            teamSize: data.team_size || '',
+            website: data.website || '',
+            address: data.address || '',
+            city: data.city || '',
+            state: data.state || '',
+            pincode: data.pincode || '',
+            country: data.country || 'India',
+            causeAreas: data.cause_areas || [],
+            geographicCoverage: data.geographic_coverage || 'state',
+            beneficiariesServed: data.beneficiaries_served || '',
+            facebook: data.facebook || '',
+            twitter: data.twitter || '',
+            instagram: data.instagram || '',
+            linkedin: data.linkedin || '',
+            youtube: data.youtube || '',
+            bankAccountName: data.bank_account_name || '',
+            bankAccountNumber: data.bank_account_number || '',
+            bankIFSC: data.bank_ifsc || '',
+            bankName: data.bank_name || '',
+            bankBranch: data.bank_branch || '',
+            upiId: data.upi_id || '',
+            paymentGateway: data.payment_gateway || '',
+            notificationsEmail: data.notifications_email ?? true,
+            notificationsSMS: data.notifications_sms ?? false,
+            notificationsWhatsApp: data.notifications_whatsapp ?? true,
+            notificationsPush: data.notifications_push ?? true,
+            donationAlerts: data.donation_alerts ?? true,
+            volunteerAlerts: data.volunteer_alerts ?? true,
+            reportReminders: data.report_reminders ?? true,
+            language: data.language || 'English',
+            theme: data.theme || 'system',
+            currency: data.currency || 'INR',
+            timezone: data.timezone || 'Asia/Kolkata',
+            fiscalYearStart: data.fiscal_year_start || 'april',
+            logo: data.logo || '',
+            coverImage: data.cover_image || '',
+            primaryColor: data.primary_color || '#10b981',
+          };
+          setFormData(apiData);
+          setOriginalData(apiData);
+        } else {
+          // Fallback to localStorage
+          const savedSettings = localStorage.getItem('ngoSettings');
+          if (savedSettings) {
+            const parsedSettings = JSON.parse(savedSettings);
+            setFormData(parsedSettings);
+            setOriginalData(parsedSettings);
+          } else {
+            const initialData = {
+              ...formData,
+              adminName: parsedUser.name || '',
+              adminEmail: parsedUser.email || '',
+              organizationName: localStorage.getItem('ngoName') || '',
+            };
+            setFormData(initialData);
+            setOriginalData(initialData);
+          }
+        }
+        
+        setVerificationStatus('verified');
+      } catch (err) {
+        console.error('Error fetching NGO settings:', err);
+        // Fallback to localStorage
         const savedSettings = localStorage.getItem('ngoSettings');
         if (savedSettings) {
           const parsedSettings = JSON.parse(savedSettings);
           setFormData(parsedSettings);
           setOriginalData(parsedSettings);
-        } else {
-          const initialData = {
-            ...formData,
-            adminName: parsedUser.name || '',
-            adminEmail: parsedUser.email || '',
-            organizationName: localStorage.getItem('ngoName') || '',
-          };
-          setFormData(initialData);
-          setOriginalData(initialData);
         }
-        
-        // Simulated verification status
-        setVerificationStatus('verified');
-      } else {
-        navigate('/');
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    }, 500);
+    };
+    
+    if (savedUser) {
+      const parsedUser = JSON.parse(savedUser);
+      if (parsedUser.role !== 'ngo') {
+        navigate('/home');
+        return;
+      }
+      setUser(parsedUser);
+      fetchSettings(parsedUser);
+    } else {
+      navigate('/');
+    }
   }, [navigate]);
 
   useEffect(() => {
@@ -330,8 +406,83 @@ const NGOSettings: React.FC = () => {
     }
 
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
 
+    // Save to API
+    try {
+      const savedUser = localStorage.getItem('user');
+      const parsedUser = savedUser ? JSON.parse(savedUser) : null;
+      
+      if (parsedUser?.id) {
+        const response = await fetch(`http://localhost:5000/api/settings/ngo/${parsedUser.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ngo_id: parsedUser.id,
+            admin_name: formData.adminName,
+            admin_email: formData.adminEmail,
+            admin_phone: formData.adminPhone,
+            admin_role: formData.adminRole,
+            organization_name: formData.organizationName,
+            organization_email: formData.organizationEmail,
+            organization_phone: formData.organizationPhone,
+            registration_number: formData.registrationNumber,
+            registration_80g: formData.registration80G,
+            registration_12a: formData.registration12A,
+            fcra_number: formData.fcraNumber,
+            pan_number: formData.panNumber,
+            gst_number: formData.gstNumber,
+            mission: formData.mission,
+            vision: formData.vision,
+            year_established: formData.yearEstablished,
+            team_size: formData.teamSize,
+            website: formData.website,
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            pincode: formData.pincode,
+            country: formData.country,
+            cause_areas: formData.causeAreas,
+            geographic_coverage: formData.geographicCoverage,
+            beneficiaries_served: formData.beneficiariesServed,
+            facebook: formData.facebook,
+            twitter: formData.twitter,
+            instagram: formData.instagram,
+            linkedin: formData.linkedin,
+            youtube: formData.youtube,
+            bank_account_name: formData.bankAccountName,
+            bank_account_number: formData.bankAccountNumber,
+            bank_ifsc: formData.bankIFSC,
+            bank_name: formData.bankName,
+            bank_branch: formData.bankBranch,
+            upi_id: formData.upiId,
+            payment_gateway: formData.paymentGateway,
+            notifications_email: formData.notificationsEmail,
+            notifications_sms: formData.notificationsSMS,
+            notifications_whatsapp: formData.notificationsWhatsApp,
+            notifications_push: formData.notificationsPush,
+            donation_alerts: formData.donationAlerts,
+            volunteer_alerts: formData.volunteerAlerts,
+            report_reminders: formData.reportReminders,
+            language: formData.language,
+            theme: formData.theme,
+            currency: formData.currency,
+            timezone: formData.timezone,
+            fiscal_year_start: formData.fiscalYearStart,
+            logo: formData.logo,
+            cover_image: formData.coverImage,
+            primary_color: formData.primaryColor
+          })
+        });
+        
+        if (!response.ok) {
+          console.error('Error saving to API');
+        }
+      }
+    } catch (err) {
+      console.error('Error saving NGO settings:', err);
+    }
+
+    // Also save to localStorage as backup
     localStorage.setItem('ngoSettings', JSON.stringify(formData));
     localStorage.setItem('ngoName', formData.organizationName);
     

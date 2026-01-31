@@ -1,0 +1,65 @@
+from pydantic import BaseModel, Field
+from typing import Optional, List
+from datetime import datetime
+from enum import Enum
+
+class ListingType(str, Enum):
+    VEGETABLE = "Vegetable"
+    FRUIT = "Fruit"
+    GRAIN = "Grain"
+    DAIRY = "Dairy"
+    OTHER = "Other"
+
+class ListingStatus(str, Enum):
+    AVAILABLE = "available"
+    CLAIMED = "claimed"
+    ASSIGNED = "assigned"
+    PICKED_UP = "picked_up"
+    IN_TRANSIT = "in_transit"
+    DELIVERED = "delivered"
+    EXPIRED = "expired"
+    CANCELLED = "cancelled"
+
+class ListingCreate(BaseModel):
+    title: str
+    description: Optional[str] = ""
+    quantity: str
+    type: ListingType = ListingType.OTHER
+    expiry_date: Optional[str] = None
+    pickup_address: str
+    pickup_time: Optional[str] = None
+    farmer_id: str
+    farmer_name: str
+    farmer_phone: Optional[str] = None
+    image: Optional[str] = None
+    notes: Optional[str] = None
+
+class ListingUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    quantity: Optional[str] = None
+    type: Optional[ListingType] = None
+    expiry_date: Optional[str] = None
+    pickup_address: Optional[str] = None
+    pickup_time: Optional[str] = None
+    image: Optional[str] = None
+    notes: Optional[str] = None
+    status: Optional[ListingStatus] = None
+
+class ClaimRequest(BaseModel):
+    ngo_id: str
+    ngo_name: str
+    ngo_phone: Optional[str] = None
+    ngo_address: Optional[str] = None
+    claim_quantity: Optional[str] = None
+
+class AssignDriverRequest(BaseModel):
+    driver_id: str
+    driver_name: str
+    driver_phone: Optional[str] = None
+    vehicle_number: Optional[str] = None
+
+class DeliveryStatusUpdate(BaseModel):
+    status: str
+    notes: Optional[str] = None
+    location: Optional[str] = None

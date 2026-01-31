@@ -53,47 +53,97 @@ const Analytics: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('month');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Mock data - Replace with API calls
-  const [stats] = useState<DonationStats>({
-    total: 156,
-    claimed: 124,
-    delivered: 118,
-    expired: 12,
-    active: 20
+  // State for API data
+  const [stats, setStats] = useState<DonationStats>({
+    total: 0,
+    claimed: 0,
+    delivered: 0,
+    expired: 0,
+    active: 0
   });
 
-  const [monthlyData] = useState<MonthlyData[]>([
-    { month: 'Jan', donations: 12, claimed: 10 },
-    { month: 'Feb', donations: 15, claimed: 14 },
-    { month: 'Mar', donations: 18, claimed: 16 },
-    { month: 'Apr', donations: 22, claimed: 20 },
-    { month: 'May', donations: 25, claimed: 23 },
-    { month: 'Jun', donations: 20, claimed: 18 },
-    { month: 'Jul', donations: 28, claimed: 25 },
-    { month: 'Aug', donations: 16, claimed: 15 },
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([
+    { month: 'Jan', donations: 0, claimed: 0 },
+    { month: 'Feb', donations: 0, claimed: 0 },
+    { month: 'Mar', donations: 0, claimed: 0 },
+    { month: 'Apr', donations: 0, claimed: 0 },
+    { month: 'May', donations: 0, claimed: 0 },
+    { month: 'Jun', donations: 0, claimed: 0 },
+    { month: 'Jul', donations: 0, claimed: 0 },
+    { month: 'Aug', donations: 0, claimed: 0 },
   ]);
 
-  const [foodTypeData] = useState<FoodTypeData[]>([
-    { type: 'Vegetables', count: 65, percentage: 42, color: '#4caf50' },
-    { type: 'Fruits', count: 45, percentage: 29, color: '#ff9800' },
-    { type: 'Grains', count: 32, percentage: 21, color: '#8d6e63' },
-    { type: 'Other', count: 14, percentage: 8, color: '#9e9e9e' },
+  const [foodTypeData, setFoodTypeData] = useState<FoodTypeData[]>([
+    { type: 'Vegetables', count: 0, percentage: 0, color: '#4caf50' },
+    { type: 'Fruits', count: 0, percentage: 0, color: '#ff9800' },
+    { type: 'Grains', count: 0, percentage: 0, color: '#8d6e63' },
+    { type: 'Other', count: 0, percentage: 0, color: '#9e9e9e' },
   ]);
 
-  const [recentActivity] = useState<RecentActivity[]>([
-    { id: 1, action: 'Donation Claimed', item: 'Fresh Tomatoes (10kg)', time: '2 hours ago', icon: '🤝' },
-    { id: 2, action: 'Delivery Completed', item: 'Organic Apples (15kg)', time: '5 hours ago', icon: '✅' },
-    { id: 3, action: 'New Listing Created', item: 'Rice Bags (25kg)', time: '1 day ago', icon: '📦' },
-    { id: 4, action: 'Donation Claimed', item: 'Carrots (8kg)', time: '1 day ago', icon: '🤝' },
-    { id: 5, action: 'Listing Expired', item: 'Spinach (5kg)', time: '2 days ago', icon: '⏰' },
-  ]);
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
 
-  const [impactMetrics] = useState<ImpactMetrics>({
-    foodSaved: 1250,
-    peopleFed: 3200,
-    co2Saved: 850,
-    waterSaved: 125000
+  const [impactMetrics, setImpactMetrics] = useState<ImpactMetrics>({
+    foodSaved: 0,
+    peopleFed: 0,
+    co2Saved: 0,
+    waterSaved: 0
   });
+
+  // Fetch analytics data from API
+  const fetchAnalyticsData = async (farmerId: number) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/analytics/farmer/${farmerId}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Update stats
+        setStats({
+          total: data.total_donations || 0,
+          claimed: data.claimed_listings || 0,
+          delivered: data.delivered_listings || 0,
+          expired: 0,
+          active: data.active_listings || 0
+        });
+        
+        // Update impact metrics
+        setImpactMetrics({
+          foodSaved: data.total_quantity_kg || 0,
+          peopleFed: data.meals_provided_estimate || 0,
+          co2Saved: data.carbon_saved_kg || 0,
+          waterSaved: Math.round((data.total_quantity_kg || 0) * 100)
+        });
+
+        // Calculate food type distribution from listings
+        if (data.listings && data.listings.length > 0) {
+          const typeCounts: { [key: string]: number } = { Vegetable: 0, Fruit: 0, Grain: 0, Other: 0 };
+          data.listings.forEach((listing: any) => {
+            const type = listing.type || 'Other';
+            typeCounts[type] = (typeCounts[type] || 0) + 1;
+          });
+          
+          const total = data.listings.length;
+          setFoodTypeData([
+            { type: 'Vegetables', count: typeCounts['Vegetable'], percentage: Math.round((typeCounts['Vegetable'] / total) * 100), color: '#4caf50' },
+            { type: 'Fruits', count: typeCounts['Fruit'], percentage: Math.round((typeCounts['Fruit'] / total) * 100), color: '#ff9800' },
+            { type: 'Grains', count: typeCounts['Grain'], percentage: Math.round((typeCounts['Grain'] / total) * 100), color: '#8d6e63' },
+            { type: 'Other', count: typeCounts['Other'], percentage: Math.round((typeCounts['Other'] / total) * 100), color: '#9e9e9e' },
+          ]);
+
+          // Create recent activity from listings
+          const activities = data.listings.slice(0, 5).map((listing: any, index: number) => ({
+            id: index + 1,
+            action: listing.status === 'delivered' ? 'Delivery Completed' : listing.status === 'claimed' ? 'Donation Claimed' : 'New Listing Created',
+            item: `${listing.title} (${listing.quantity})`,
+            time: listing.created_at ? new Date(listing.created_at).toLocaleDateString() : 'Recently',
+            icon: listing.status === 'delivered' ? '✅' : listing.status === 'claimed' ? '🤝' : '📦'
+          }));
+          setRecentActivity(activities);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching analytics:', err);
+    }
+  };
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -104,13 +154,15 @@ const Analytics: React.FC = () => {
         return;
       }
       setUser(parsedUser);
+      
+      // Fetch analytics data
+      fetchAnalyticsData(parsedUser.id);
     } else {
       navigate('/');
       return;
     }
     
-    // Simulate API loading
-    setTimeout(() => setLoading(false), 800);
+    setLoading(false);
   }, [navigate]);
 
   const handleLogout = () => {

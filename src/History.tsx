@@ -2,40 +2,116 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './History.css';
 
+interface HistoryItem {
+  id: number;
+  item: string;
+  date: string;
+  org?: string;
+  from?: string;
+  to?: string;
+  status: string;
+  type: string;
+}
+
 const HistoryPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'completed' | 'pending'>('completed');
   const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set());
+  const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
+  const [pendingData, setPendingData] = useState<HistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const itemRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
 
   // Get user from localStorage
   const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null;
   const isDriver = user?.role === 'driver';
 
-  // Mock Data for Farmer History
-  const farmerHistoryData = [
-    { id: 101, item: 'Fresh Spinach (20kg)', date: '24 Oct, 2023', org: 'Seva Kitchen', status: 'Completed', type: 'Veg' },
-    { id: 102, item: 'Rice Bags (100kg)', date: '18 Oct, 2023', org: 'Hope NGO', status: 'Completed', type: 'Grain' },
-    { id: 103, item: 'Bananas (50 Dozen)', date: '12 Oct, 2023', org: 'Kids Foundation', status: 'Completed', type: 'Fruit' },
-  ];
-
-  const farmerPendingData = [
-    { id: 201, item: 'Tomatoes (50kg)', date: 'Today, 10:30 AM', org: 'Waiting for Pickup', status: 'Pending', type: 'Veg' },
-  ];
-
-  // Mock Data for Driver History
-  const driverHistoryData = [
-    { id: 301, item: 'Fresh Spinach (20kg)', date: '24 Oct, 2023', from: 'Ramesh Farms', to: 'Seva Kitchen', status: 'Delivered', type: 'Veg' },
-    { id: 302, item: 'Rice Bags (100kg)', date: '18 Oct, 2023', from: 'Green Valley', to: 'Hope NGO', status: 'Delivered', type: 'Grain' },
-    { id: 303, item: 'Bananas (50 Dozen)', date: '12 Oct, 2023', from: 'Kisan Unit', to: 'Kids Foundation', status: 'Delivered', type: 'Fruit' },
-  ];
-
-  const driverPendingData = [
-    { id: 401, item: 'Tomatoes (50kg)', date: 'Today, 10:30 AM', from: 'Local Farm', to: 'Waiting for Delivery', status: 'In Transit', type: 'Veg' },
-  ];
-
-  const historyData = isDriver ? driverHistoryData : farmerHistoryData;
-  const pendingData = isDriver ? driverPendingData : farmerPendingData;
+  // Fetch history data from API
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (!user) return;
+      
+      try {
+        if (isDriver) {
+          // Fetch driver's delivery tasks
+          const response = await fetch(`http://localhost:5000/api/drivers/${user.id}/tasks`);
+          const data = await response.json();
+          
+          if (response.ok) {
+            const tasks = data.tasks || [];
+            
+            // Separate completed and pending
+            const completed = tasks
+              .filter((t: any) => t.status === 'delivered')
+              .map((t: any, index: number) => ({
+                id: index + 300,
+                item: `${t.listing_title || t.title} (${t.quantity || 'N/A'})`,
+                date: t.delivered_at || t.created_at || 'Recently',
+                from: t.pickup_location || 'Pickup',
+                to: t.delivery_location || 'Delivery',
+                status: 'Delivered',
+                type: t.type || 'Other'
+              }));
+            
+            const pending = tasks
+              .filter((t: any) => t.status !== 'delivered')
+              .map((t: any, index: number) => ({
+                id: index + 400,
+                item: `${t.listing_title || t.title} (${t.quantity || 'N/A'})`,
+                date: t.created_at || 'Today',
+                from: t.pickup_location || 'Pickup',
+                to: t.delivery_location || 'In Transit',
+                status: t.status === 'picked_up' ? 'In Transit' : 'Pending',
+                type: t.type || 'Other'
+              }));
+            
+            setHistoryData(completed);
+            setPendingData(pending);
+          }
+        } else {
+          // Fetch farmer's listings
+          const response = await fetch(`http://localhost:5000/api/listings?farmer_id=${user.id}`);
+          const data = await response.json();
+          
+          if (response.ok) {
+            const listings = data.listings || [];
+            
+            // Separate completed and pending
+            const completed = listings
+              .filter((l: any) => l.status === 'delivered')
+              .map((l: any, index: number) => ({
+                id: index + 100,
+                item: `${l.title} (${l.quantity})`,
+                date: l.delivered_at || l.created_at || 'Recently',
+                org: l.claimed_by_name || 'NGO',
+                status: 'Completed',
+                type: l.type || 'Other'
+              }));
+            
+            const pending = listings
+              .filter((l: any) => l.status !== 'delivered')
+              .map((l: any, index: number) => ({
+                id: index + 200,
+                item: `${l.title} (${l.quantity})`,
+                date: l.created_at || 'Today',
+                org: l.status === 'available' ? 'Waiting for Pickup' : l.claimed_by_name || 'Claimed',
+                status: l.status === 'available' ? 'Pending' : 'In Progress',
+                type: l.type || 'Other'
+              }));
+            
+            setHistoryData(completed);
+            setPendingData(pending);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching history:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchHistory();
+  }, [user?.id, isDriver]);
 
   const currentList = activeTab === 'completed' ? historyData : pendingData;
 

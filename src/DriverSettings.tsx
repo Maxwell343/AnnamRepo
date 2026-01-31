@@ -71,19 +71,82 @@ const DriverSettings: React.FC = () => {
       }
       setUser(parsedUser);
       
-      const savedSettings = localStorage.getItem('driverSettings');
-      if (savedSettings) {
-        setFormData(prev => ({ ...prev, ...JSON.parse(savedSettings) }));
-      } else {
-        setFormData(prev => ({
-          ...prev,
-          fullName: parsedUser.name || '',
-          email: parsedUser.email || '',
-          phone: localStorage.getItem('userPhone') || '',
-          vehicleNumber: localStorage.getItem('vehicleNumber') || '',
-          language: localStorage.getItem('userLanguage') || 'English'
-        }));
-      }
+      // Fetch settings from API
+      const fetchSettings = async () => {
+        try {
+          const response = await fetch(`http://localhost:5000/api/settings/driver/${parsedUser.id}`);
+          const data = await response.json();
+          
+          if (response.ok && data) {
+            setFormData(prev => ({
+              ...prev,
+              fullName: data.name || parsedUser.name || '',
+              email: data.email || parsedUser.email || '',
+              phone: data.phone || '',
+              vehicleNumber: data.vehicle_number || '',
+              vehicleType: data.vehicle_type || 'Two Wheeler',
+              vehicleModel: data.vehicle_model || '',
+              vehicleColor: data.vehicle_color || '',
+              drivingLicenseNumber: data.license_number || '',
+              licenseExpiry: data.license_expiry || '',
+              language: data.language || 'English',
+              notificationsEmail: data.notifications_email ?? true,
+              notificationsSMS: data.notifications_sms ?? false,
+              notificationsWhatsApp: data.notifications_whatsapp ?? true,
+              notificationsPush: data.notifications_push ?? true,
+              soundAlerts: data.sound_alerts ?? true,
+              vibration: data.vibration ?? true,
+              bankAccountName: data.bank_account_name || '',
+              bankAccountNumber: data.bank_account_number || '',
+              bankIFSC: data.bank_ifsc || '',
+              upiId: data.upi_id || '',
+              emergencyContact: data.emergency_contact || '',
+              emergencyPhone: data.emergency_phone || '',
+              emergencyRelation: data.emergency_relation || '',
+              preferredZone: data.preferred_zone || 'Any',
+              maxDistance: data.max_distance?.toString() || '15',
+              autoAccept: data.auto_accept ?? false
+            }));
+          } else {
+            // Fallback to localStorage
+            const savedSettings = localStorage.getItem('driverSettings');
+            if (savedSettings) {
+              setFormData(prev => ({ ...prev, ...JSON.parse(savedSettings) }));
+            } else {
+              setFormData(prev => ({
+                ...prev,
+                fullName: parsedUser.name || '',
+                email: parsedUser.email || '',
+                phone: localStorage.getItem('userPhone') || '',
+                vehicleNumber: localStorage.getItem('vehicleNumber') || '',
+                language: localStorage.getItem('userLanguage') || 'English'
+              }));
+            }
+          }
+          
+          // Fetch stats from API
+          const statsResponse = await fetch(`http://localhost:5000/api/stats/driver/${parsedUser.id}`);
+          const statsData = await statsResponse.json();
+          
+          if (statsResponse.ok && statsData) {
+            setStats({
+              totalDeliveries: statsData.total_deliveries || 0,
+              totalEarnings: statsData.total_earnings || 0,
+              rating: statsData.average_rating || 4.8,
+              completionRate: statsData.completion_rate || 98
+            });
+          }
+        } catch (err) {
+          console.error('Error fetching driver settings:', err);
+          // Fallback to localStorage
+          const savedSettings = localStorage.getItem('driverSettings');
+          if (savedSettings) {
+            setFormData(prev => ({ ...prev, ...JSON.parse(savedSettings) }));
+          }
+        }
+      };
+      
+      fetchSettings();
 
       const savedOnlineStatus = localStorage.getItem('driverOnline');
       if (savedOnlineStatus !== null) {
@@ -118,7 +181,54 @@ const DriverSettings: React.FC = () => {
     setTimeout(() => setShowToast(false), 3000);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Save to API
+    try {
+      const response = await fetch(`http://localhost:5000/api/settings/driver/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          driver_id: user.id,
+          name: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          vehicle_number: formData.vehicleNumber,
+          vehicle_type: formData.vehicleType,
+          vehicle_model: formData.vehicleModel,
+          vehicle_color: formData.vehicleColor,
+          license_number: formData.drivingLicenseNumber,
+          license_expiry: formData.licenseExpiry,
+          language: formData.language,
+          notifications_email: formData.notificationsEmail,
+          notifications_sms: formData.notificationsSMS,
+          notifications_whatsapp: formData.notificationsWhatsApp,
+          notifications_push: formData.notificationsPush,
+          sound_alerts: formData.soundAlerts,
+          vibration: formData.vibration,
+          bank_account_name: formData.bankAccountName,
+          bank_account_number: formData.bankAccountNumber,
+          bank_ifsc: formData.bankIFSC,
+          upi_id: formData.upiId,
+          emergency_contact: formData.emergencyContact,
+          emergency_phone: formData.emergencyPhone,
+          emergency_relation: formData.emergencyRelation,
+          preferred_zone: formData.preferredZone,
+          max_distance: parseInt(formData.maxDistance),
+          auto_accept: formData.autoAccept
+        })
+      });
+      
+      if (response.ok) {
+        showToastMessage('Settings saved successfully!');
+      } else {
+        showToastMessage('Error saving settings. Saved locally.');
+      }
+    } catch (err) {
+      console.error('Error saving settings:', err);
+      showToastMessage('Error saving settings. Saved locally.');
+    }
+    
+    // Also save to localStorage as backup
     localStorage.setItem('driverSettings', JSON.stringify(formData));
     localStorage.setItem('userPhone', formData.phone);
     localStorage.setItem('vehicleNumber', formData.vehicleNumber);
@@ -132,7 +242,6 @@ const DriverSettings: React.FC = () => {
       localStorage.setItem('user', JSON.stringify(user));
     }
 
-    showToastMessage('Settings saved successfully!');
     setTimeout(() => navigate('/home'), 2000);
   };
 

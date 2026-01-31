@@ -1,0 +1,136 @@
+from fastapi import APIRouter, HTTPException
+from app.models.settings_model import DriverSettingsModel, FarmerSettingsModel, NgoSettingsModel
+from app.services.settings_service import (
+    get_driver_settings, save_driver_settings,
+    get_farmer_settings, save_farmer_settings,
+    get_ngo_settings, save_ngo_settings,
+    get_user_profile, update_user_profile,
+    get_farmer_analytics, get_ngo_analytics, get_driver_analytics
+)
+
+router = APIRouter()
+
+
+# ==================== DRIVER SETTINGS ====================
+
+@router.get("/api/settings/driver/{driver_id}")
+async def get_driver_settings_route(driver_id: str):
+    """Get driver settings"""
+    settings = await get_driver_settings(driver_id)
+    if not settings:
+        # Return empty settings if none exist
+        return {"driver_id": driver_id}
+    return settings
+
+
+@router.post("/api/settings/driver")
+async def save_driver_settings_route(settings: DriverSettingsModel):
+    """Save driver settings"""
+    settings_dict = settings.dict(exclude_unset=True)
+    result = await save_driver_settings(settings_dict)
+    return {"message": "Settings saved successfully", "settings": result}
+
+
+@router.put("/api/settings/driver/{driver_id}")
+async def update_driver_settings_route(driver_id: str, settings: DriverSettingsModel):
+    """Update driver settings"""
+    settings_dict = settings.dict(exclude_unset=True)
+    settings_dict["driver_id"] = driver_id
+    result = await save_driver_settings(settings_dict)
+    return {"message": "Settings updated successfully", "settings": result}
+
+
+# ==================== FARMER SETTINGS ====================
+
+@router.get("/api/settings/farmer/{farmer_id}")
+async def get_farmer_settings_route(farmer_id: str):
+    """Get farmer settings"""
+    settings = await get_farmer_settings(farmer_id)
+    if not settings:
+        return {"farmer_id": farmer_id}
+    return settings
+
+
+@router.post("/api/settings/farmer")
+async def save_farmer_settings_route(settings: FarmerSettingsModel):
+    """Save farmer settings"""
+    settings_dict = settings.dict(exclude_unset=True)
+    result = await save_farmer_settings(settings_dict)
+    return {"message": "Settings saved successfully", "settings": result}
+
+
+@router.put("/api/settings/farmer/{farmer_id}")
+async def update_farmer_settings_route(farmer_id: str, settings: FarmerSettingsModel):
+    """Update farmer settings"""
+    settings_dict = settings.dict(exclude_unset=True)
+    settings_dict["farmer_id"] = farmer_id
+    result = await save_farmer_settings(settings_dict)
+    return {"message": "Settings updated successfully", "settings": result}
+
+
+# ==================== NGO SETTINGS ====================
+
+@router.get("/api/settings/ngo/{ngo_id}")
+async def get_ngo_settings_route(ngo_id: str):
+    """Get NGO settings"""
+    settings = await get_ngo_settings(ngo_id)
+    if not settings:
+        return {"ngo_id": ngo_id}
+    return settings
+
+
+@router.post("/api/settings/ngo")
+async def save_ngo_settings_route(settings: NgoSettingsModel):
+    """Save NGO settings"""
+    settings_dict = settings.dict(exclude_unset=True)
+    result = await save_ngo_settings(settings_dict)
+    return {"message": "Settings saved successfully", "settings": result}
+
+
+@router.put("/api/settings/ngo/{ngo_id}")
+async def update_ngo_settings_route(ngo_id: str, settings: NgoSettingsModel):
+    """Update NGO settings"""
+    settings_dict = settings.dict(exclude_unset=True)
+    settings_dict["ngo_id"] = ngo_id
+    result = await save_ngo_settings(settings_dict)
+    return {"message": "Settings updated successfully", "settings": result}
+
+
+# ==================== USER PROFILE ====================
+
+@router.get("/api/users/{user_id}/profile")
+async def get_user_profile_route(user_id: str):
+    """Get user profile"""
+    profile = await get_user_profile(user_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="User not found")
+    return profile
+
+
+@router.put("/api/users/{user_id}/profile")
+async def update_user_profile_route(user_id: str, profile_data: dict):
+    """Update user profile"""
+    result = await update_user_profile(user_id, profile_data)
+    if not result:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "Profile updated successfully", "profile": result}
+
+
+# ==================== ANALYTICS ====================
+
+@router.get("/api/analytics/farmer/{farmer_id}")
+async def get_farmer_analytics_route(farmer_id: str):
+    """Get farmer analytics and impact data"""
+    return await get_farmer_analytics(farmer_id)
+
+
+@router.get("/api/analytics/ngo/{ngo_id}")
+async def get_ngo_analytics_route(ngo_id: str):
+    """Get NGO analytics and impact data"""
+    return await get_ngo_analytics(ngo_id)
+
+
+@router.get("/api/analytics/driver/{driver_id}")
+async def get_driver_analytics_route(driver_id: str):
+    """Get driver analytics data"""
+    return await get_driver_analytics(driver_id)

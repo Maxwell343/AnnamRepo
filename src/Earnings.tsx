@@ -50,94 +50,6 @@ const Earnings: React.FC = () => {
     pendingPayouts: 0,
   });
 
-  // Mock earnings data
-  const mockEarnings: EarningEntry[] = [
-    {
-      id: 1,
-      date: '2026-01-31',
-      deliveryId: 101,
-      title: 'Fresh Vegetables',
-      from: 'Green Farm, Sector 42',
-      to: 'Food For All NGO, Downtown',
-      distance: '8.5 km',
-      amount: 120,
-      tip: 20,
-      status: 'paid',
-    },
-    {
-      id: 2,
-      date: '2026-01-31',
-      deliveryId: 102,
-      title: 'Organic Fruits',
-      from: 'Sunny Orchards, Highway 7',
-      to: 'Hope Foundation, City Center',
-      distance: '12.3 km',
-      amount: 180,
-      tip: 30,
-      status: 'paid',
-    },
-    {
-      id: 3,
-      date: '2026-01-30',
-      deliveryId: 103,
-      title: 'Rice Bags (50kg)',
-      from: 'Grain Depot, Industrial Area',
-      to: 'Meals on Wheels, Suburb',
-      distance: '15.0 km',
-      amount: 220,
-      tip: 0,
-      status: 'paid',
-    },
-    {
-      id: 4,
-      date: '2026-01-30',
-      deliveryId: 104,
-      title: 'Mixed Produce',
-      from: 'Local Farmers Market',
-      to: 'Community Kitchen, East Side',
-      distance: '6.2 km',
-      amount: 95,
-      tip: 15,
-      status: 'processing',
-    },
-    {
-      id: 5,
-      date: '2026-01-29',
-      deliveryId: 105,
-      title: 'Dairy Products',
-      from: 'Sunrise Dairy, Rural Road',
-      to: 'Shelter Home, North District',
-      distance: '18.7 km',
-      amount: 280,
-      tip: 50,
-      status: 'paid',
-    },
-    {
-      id: 6,
-      date: '2026-01-28',
-      deliveryId: 106,
-      title: 'Bread & Bakery Items',
-      from: 'Golden Bakery, Main Street',
-      to: 'Children\'s Home, West Area',
-      distance: '4.5 km',
-      amount: 75,
-      tip: 10,
-      status: 'paid',
-    },
-    {
-      id: 7,
-      date: '2026-01-27',
-      deliveryId: 107,
-      title: 'Canned Foods',
-      from: 'Wholesale Market',
-      to: 'Relief Center, South Zone',
-      distance: '22.0 km',
-      amount: 320,
-      tip: 40,
-      status: 'pending',
-    },
-  ];
-
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (!storedUser) {
@@ -152,41 +64,70 @@ const Earnings: React.FC = () => {
     }
 
     setUser(parsedUser);
-    setEarnings(mockEarnings);
     
-    // Calculate stats from mock data
-    const today = new Date().toISOString().split('T')[0];
-    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    // Fetch earnings from API
+    const fetchEarnings = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/drivers/${parsedUser.id}/earnings`);
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Map API data to EarningEntry format
+          const earningsData: EarningEntry[] = (data.earnings || []).map((e: any, index: number) => ({
+            id: index + 1,
+            date: e.date || new Date().toISOString().split('T')[0],
+            deliveryId: e.task_id || index + 100,
+            title: e.listing_title || 'Delivery',
+            from: e.pickup_location || 'Pickup Location',
+            to: e.delivery_location || 'Delivery Location',
+            distance: `${e.distance || 0} km`,
+            amount: e.amount || 0,
+            tip: e.tip || 0,
+            status: e.status || 'paid',
+          }));
+          
+          setEarnings(earningsData);
+          
+          // Calculate stats from API data
+          const today = new Date().toISOString().split('T')[0];
+          const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+          const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+          
+          const todayEarnings = earningsData
+            .filter((e: EarningEntry) => e.date === today)
+            .reduce((sum: number, e: EarningEntry) => sum + e.amount + e.tip, 0);
+          
+          const weeklyEarnings = earningsData
+            .filter((e: EarningEntry) => e.date >= weekAgo)
+            .reduce((sum: number, e: EarningEntry) => sum + e.amount + e.tip, 0);
+          
+          const monthlyEarnings = earningsData
+            .filter((e: EarningEntry) => e.date >= monthAgo)
+            .reduce((sum: number, e: EarningEntry) => sum + e.amount + e.tip, 0);
+          
+          const totalEarnings = data.total_earnings || earningsData.reduce((sum: number, e: EarningEntry) => sum + e.amount + e.tip, 0);
+          const pendingPayouts = earningsData
+            .filter((e: EarningEntry) => e.status === 'pending' || e.status === 'processing')
+            .reduce((sum: number, e: EarningEntry) => sum + e.amount + e.tip, 0);
+          
+          setStats({
+            todayEarnings,
+            weeklyEarnings,
+            monthlyEarnings,
+            totalEarnings,
+            totalDeliveries: data.total_deliveries || earningsData.length,
+            avgPerDelivery: earningsData.length > 0 ? Math.round(totalEarnings / earningsData.length) : 0,
+            pendingPayouts,
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching earnings:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    const todayEarnings = mockEarnings
-      .filter(e => e.date === today)
-      .reduce((sum, e) => sum + e.amount + e.tip, 0);
-    
-    const weeklyEarnings = mockEarnings
-      .filter(e => e.date >= weekAgo)
-      .reduce((sum, e) => sum + e.amount + e.tip, 0);
-    
-    const monthlyEarnings = mockEarnings
-      .filter(e => e.date >= monthAgo)
-      .reduce((sum, e) => sum + e.amount + e.tip, 0);
-    
-    const totalEarnings = mockEarnings.reduce((sum, e) => sum + e.amount + e.tip, 0);
-    const pendingPayouts = mockEarnings
-      .filter(e => e.status === 'pending' || e.status === 'processing')
-      .reduce((sum, e) => sum + e.amount + e.tip, 0);
-    
-    setStats({
-      todayEarnings,
-      weeklyEarnings,
-      monthlyEarnings,
-      totalEarnings,
-      totalDeliveries: mockEarnings.length,
-      avgPerDelivery: Math.round(totalEarnings / mockEarnings.length),
-      pendingPayouts,
-    });
-    
-    setLoading(false);
+    fetchEarnings();
   }, [navigate]);
 
   const handleLogout = () => {

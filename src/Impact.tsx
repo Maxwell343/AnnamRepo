@@ -2,51 +2,106 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Impact.css';
 
+interface FarmerStats {
+  points: number;
+  carbonSaved: number;
+  rank: number;
+}
+
+interface DriverStats {
+  deliveries: number;
+  milesRidden: number;
+  rank: number;
+  rating: number;
+}
+
+interface LeaderboardEntry {
+  id: number;
+  name: string;
+  points?: number;
+  deliveries?: number;
+  avatar: string;
+  rating?: number;
+}
+
 const ImpactPage: React.FC = () => {
   const navigate = useNavigate();
   const [visibleLeaderboard, setVisibleLeaderboard] = useState<Set<number>>(new Set());
+  const [farmerStats, setFarmerStats] = useState<FarmerStats>({
+    points: 0,
+    carbonSaved: 0,
+    rank: 0
+  });
+  const [driverStats, setDriverStats] = useState<DriverStats>({
+    deliveries: 0,
+    milesRidden: 0,
+    rank: 0,
+    rating: 0
+  });
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const leaderboardRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
 
   // Get user from localStorage
   const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null;
   const isDriver = user?.role === 'driver';
 
-  // Mock Farmer Stats
-  const farmerStats = {
-    points: 1250,
-    carbonSaved: 340, // kg of CO2
-    rank: 4
-  };
-
-  // Mock Driver Stats
-  const driverStats = {
-    deliveries: 87,
-    milesRidden: 1245,
-    rank: 2,
-    rating: 4.9
-  };
-
   const userStats = isDriver ? driverStats : farmerStats;
 
-  // Mock Farmer Leaderboard
-  const farmerLeaderboard = [
-    { id: 1, name: 'Ramesh Farms', points: 5400, avatar: 'R' },
-    { id: 2, name: 'Seva Group', points: 4200, avatar: 'S' },
-    { id: 3, name: 'Green Valley', points: 3150, avatar: 'G' },
-    { id: 4, name: 'You (Aditya)', points: 1250, avatar: 'A' }, // Current User
-    { id: 5, name: 'Kisan Unit 4', points: 980, avatar: 'K' },
-  ];
-
-  // Mock Driver Leaderboard
-  const driverLeaderboard = [
-    { id: 1, name: 'Rajesh Kumar', deliveries: 234, avatar: 'R', rating: 4.9 },
-    { id: 2, name: 'You (Driver Name)', deliveries: 87, avatar: 'D', rating: 4.9 }, // Current Driver
-    { id: 3, name: 'Vikram Singh', deliveries: 156, avatar: 'V', rating: 4.7 },
-    { id: 4, name: 'Ashok Patel', deliveries: 142, avatar: 'A', rating: 4.6 },
-    { id: 5, name: 'Suresh Gupta', deliveries: 98, avatar: 'S', rating: 4.5 },
-  ];
-
-  const leaderboard = isDriver ? driverLeaderboard : farmerLeaderboard;
+  // Fetch impact data from API
+  useEffect(() => {
+    const fetchImpactData = async () => {
+      if (!user) return;
+      
+      try {
+        if (isDriver) {
+          const response = await fetch(`http://localhost:5000/api/analytics/driver/${user.id}`);
+          const data = await response.json();
+          
+          if (response.ok) {
+            setDriverStats({
+              deliveries: data.completed_deliveries || 0,
+              milesRidden: data.total_distance_km || 0,
+              rank: 1,
+              rating: data.average_rating || 4.5
+            });
+            
+            // Set mock leaderboard for now (could be API endpoint)
+            setLeaderboard([
+              { id: 1, name: 'Rajesh Kumar', deliveries: 234, avatar: 'R', rating: 4.9 },
+              { id: 2, name: user.name || 'You', deliveries: data.completed_deliveries || 0, avatar: user.name?.charAt(0) || 'D', rating: data.average_rating || 4.5 },
+              { id: 3, name: 'Vikram Singh', deliveries: 156, avatar: 'V', rating: 4.7 },
+              { id: 4, name: 'Ashok Patel', deliveries: 142, avatar: 'A', rating: 4.6 },
+              { id: 5, name: 'Suresh Gupta', deliveries: 98, avatar: 'S', rating: 4.5 },
+            ]);
+          }
+        } else {
+          const response = await fetch(`http://localhost:5000/api/analytics/farmer/${user.id}`);
+          const data = await response.json();
+          
+          if (response.ok) {
+            setFarmerStats({
+              points: data.meals_provided_estimate || 0,
+              carbonSaved: data.carbon_saved_kg || 0,
+              rank: 1
+            });
+            
+            // Set mock leaderboard for now
+            setLeaderboard([
+              { id: 1, name: 'Ramesh Farms', points: 5400, avatar: 'R' },
+              { id: 2, name: 'Seva Group', points: 4200, avatar: 'S' },
+              { id: 3, name: 'Green Valley', points: 3150, avatar: 'G' },
+              { id: 4, name: user.name || 'You', points: data.meals_provided_estimate || 0, avatar: user.name?.charAt(0) || 'A' },
+              { id: 5, name: 'Kisan Unit 4', points: 980, avatar: 'K' },
+            ]);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching impact data:', err);
+      }
+    };
+    
+    fetchImpactData();
+  }, [user?.id, isDriver]);
 
   // Intersection Observer for scroll-based reveals
   useEffect(() => {

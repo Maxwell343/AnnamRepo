@@ -98,38 +98,87 @@ const FarmerSettings: React.FC = () => {
     setIsLoading(true);
     const savedUser = localStorage.getItem('user');
     
-    setTimeout(() => {
-      if (savedUser) {
-        const parsedUser = JSON.parse(savedUser);
-        if (parsedUser.role !== 'farmer') {
-          navigate('/home');
-          return;
-        }
-        setUser(parsedUser);
+    const fetchSettings = async (parsedUser: User & { id: number }) => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/settings/farmer/${parsedUser.id}`);
+        const data = await response.json();
         
+        if (response.ok && data && Object.keys(data).length > 1) {
+          const apiData: FormData = {
+            fullName: data.name || parsedUser.name || '',
+            email: data.email || parsedUser.email || '',
+            phone: data.phone || '',
+            farmName: data.farm_name || '',
+            farmLocation: data.farm_location || '',
+            farmSize: data.farm_size || '',
+            farmSizeUnit: data.farm_size_unit || 'acres',
+            language: data.language || 'English',
+            notificationsEmail: data.notifications_email ?? true,
+            notificationsSMS: data.notifications_sms ?? false,
+            notificationsWhatsApp: data.notifications_whatsapp ?? true,
+            notificationsPush: data.notifications_push ?? true,
+            bankAccountName: data.bank_account_name || '',
+            bankAccountNumber: data.bank_account_number || '',
+            bankIFSC: data.bank_ifsc || '',
+            bankName: data.bank_name || '',
+            upiId: data.upi_id || '',
+            produce: data.produce || 'Mixed',
+            farmingType: data.farming_type || 'organic',
+            experience: data.experience || '',
+            profileImage: data.profile_image || '',
+            bio: data.bio || '',
+            theme: data.theme || 'system',
+            currency: data.currency || 'INR',
+            timezone: data.timezone || 'Asia/Kolkata'
+          };
+          setFormData(apiData);
+          setOriginalData(apiData);
+        } else {
+          // Fallback to localStorage
+          const savedSettings = localStorage.getItem('farmerSettings');
+          if (savedSettings) {
+            const parsedSettings = JSON.parse(savedSettings);
+            setFormData(parsedSettings);
+            setOriginalData(parsedSettings);
+          } else {
+            const initialData = {
+              ...formData,
+              fullName: parsedUser.name || '',
+              email: parsedUser.email || '',
+              phone: localStorage.getItem('userPhone') || '',
+              farmName: localStorage.getItem('farmName') || '',
+              farmLocation: localStorage.getItem('farmLocation') || '',
+              language: localStorage.getItem('userLanguage') || 'English'
+            };
+            setFormData(initialData);
+            setOriginalData(initialData);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching farmer settings:', err);
+        // Fallback to localStorage
         const savedSettings = localStorage.getItem('farmerSettings');
         if (savedSettings) {
           const parsedSettings = JSON.parse(savedSettings);
           setFormData(parsedSettings);
           setOriginalData(parsedSettings);
-        } else {
-          const initialData = {
-            ...formData,
-            fullName: parsedUser.name || '',
-            email: parsedUser.email || '',
-            phone: localStorage.getItem('userPhone') || '',
-            farmName: localStorage.getItem('farmName') || '',
-            farmLocation: localStorage.getItem('farmLocation') || '',
-            language: localStorage.getItem('userLanguage') || 'English'
-          };
-          setFormData(initialData);
-          setOriginalData(initialData);
         }
-      } else {
-        navigate('/');
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    }, 500);
+    };
+    
+    if (savedUser) {
+      const parsedUser = JSON.parse(savedUser);
+      if (parsedUser.role !== 'farmer') {
+        navigate('/home');
+        return;
+      }
+      setUser(parsedUser);
+      fetchSettings(parsedUser);
+    } else {
+      navigate('/');
+    }
   }, [navigate]);
 
   useEffect(() => {
@@ -221,9 +270,54 @@ const FarmerSettings: React.FC = () => {
 
     setIsSaving(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Save to API
+    try {
+      const savedUser = localStorage.getItem('user');
+      const parsedUser = savedUser ? JSON.parse(savedUser) : null;
+      
+      if (parsedUser?.id) {
+        const response = await fetch(`http://localhost:5000/api/settings/farmer/${parsedUser.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            farmer_id: parsedUser.id,
+            name: formData.fullName,
+            email: formData.email,
+            phone: formData.phone,
+            farm_name: formData.farmName,
+            farm_location: formData.farmLocation,
+            farm_size: formData.farmSize,
+            farm_size_unit: formData.farmSizeUnit,
+            language: formData.language,
+            notifications_email: formData.notificationsEmail,
+            notifications_sms: formData.notificationsSMS,
+            notifications_whatsapp: formData.notificationsWhatsApp,
+            notifications_push: formData.notificationsPush,
+            bank_account_name: formData.bankAccountName,
+            bank_account_number: formData.bankAccountNumber,
+            bank_ifsc: formData.bankIFSC,
+            bank_name: formData.bankName,
+            upi_id: formData.upiId,
+            produce: formData.produce,
+            farming_type: formData.farmingType,
+            experience: formData.experience,
+            profile_image: formData.profileImage,
+            bio: formData.bio,
+            theme: formData.theme,
+            currency: formData.currency,
+            timezone: formData.timezone
+          })
+        });
+        
+        if (!response.ok) {
+          console.error('Error saving to API');
+        }
+      }
+    } catch (err) {
+      console.error('Error saving farmer settings:', err);
+    }
 
+    // Also save to localStorage as backup
     localStorage.setItem('farmerSettings', JSON.stringify(formData));
     localStorage.setItem('userPhone', formData.phone);
     localStorage.setItem('farmName', formData.farmName);
