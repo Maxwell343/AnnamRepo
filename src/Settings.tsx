@@ -5,6 +5,27 @@ import './Settings.css';
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
 
+  // Redirect to role-specific settings page
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      if (user.role === 'farmer') {
+        navigate('/farmer-settings');
+        return;
+      } else if (user.role === 'driver') {
+        navigate('/driver-settings');
+        return;
+      } else if (user.role === 'ngo') {
+        navigate('/ngo-settings');
+        return;
+      }
+    } else {
+      navigate('/');
+      return;
+    }
+  }, [navigate]);
+
   // State for form fields
   const [formData, setFormData] = useState({
     fullName: '',

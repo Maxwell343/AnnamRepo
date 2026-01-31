@@ -644,17 +644,23 @@ const HomePage: React.FC = () => {
       ],
       driver: [
         { id: 'my-deliveries', icon: '📍', label: 'My Deliveries', action: () => navigate('/my-deliveries') },
-        { id: 'available-pickups', icon: '🚚', label: 'Available Pickups', action: () => setActiveTab('available-pickups') },
+        { id: 'available-pickups', icon: '🚚', label: 'Available Pickups', action: () => navigate('/available-pickups') },
         { id: 'route-map', icon: '🗺️', label: 'Route Map', action: () => navigate('/route-map') },
         { id: 'earnings', icon: '💰', label: 'Earnings', action: () => navigate('/earnings') },
       ],
+    };
+
+    const getSettingsRoute = () => {
+      if (user?.role === 'farmer') return '/farmer-settings';
+      if (user?.role === 'driver') return '/driver-settings';
+      return '/settings';
     };
 
     const items = [
       ...commonItems,
       ...(roleSpecificItems[user?.role as keyof typeof roleSpecificItems] || []),
       { id: 'leaderboards', icon: '🏆', label: 'Leaderboards', action: () => navigate('/leaderboards') },
-      { id: 'settings', icon: '⚙️', label: 'Settings', action: () => navigate('/settings') },
+      { id: 'settings', icon: '⚙️', label: 'Settings', action: () => navigate(getSettingsRoute()) },
     ];
 
     return (

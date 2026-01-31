@@ -186,6 +186,12 @@ const AuthPage: React.FC = () => {
               <div className="input-underline"></div>
             </div>
 
+            {isLogin && (
+              <div className="forgot-password-link">
+                <span onClick={() => navigate('/forgot-password')}>Forgot Password?</span>
+              </div>
+            )}
+
             {!isLogin && (
               <div className="form-group">
                 <label className="form-label">I am a...</label>
