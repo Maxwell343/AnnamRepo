@@ -96,26 +96,28 @@ const ListingForm: React.FC = () => {
       const user = JSON.parse(savedUser);
       console.log('Submitting listing with data:', {
         farmer_id: user.id,
+        farmer_name: user.name,
         title: formData.title,
         quantity: formData.quantity,
         type: formData.type,
-        expiry: formData.expiry,
+        expiry_date: formData.expiry,
         description: formData.description,
         imageSize: formData.image ? formData.image.length : 0
       });
 
       // Send data to backend API
-      const response = await fetch('http://localhost:5000/api/listings', {
+      const response = await fetch('http://localhost:8000/api/listings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           farmer_id: user.id,
+          farmer_name: user.name,
           title: formData.title,
           quantity: formData.quantity,
           type: formData.type,
-          expiry: formData.expiry,
+          expiry_date: formData.expiry,
           description: formData.description,
-          location: formData.location,
+          pickup_address: formData.location,
           image: formData.image
         }),
       });

@@ -54,7 +54,11 @@ def get_listings(
     filters = {}
     
     if farmer_id:
-        filters["farmer_id"] = farmer_id
+        # Handle both string and number farmer_id stored in DB
+        filters["$or"] = [
+            {"farmer_id": farmer_id},
+            {"farmer_id": int(farmer_id) if farmer_id.isdigit() else farmer_id}
+        ]
     if status:
         filters["status"] = status
     if type:
@@ -75,6 +79,39 @@ def get_available():
     return {
         "listings": listings,
         "count": len(listings)
+    }
+
+
+@router.get("/listings/claimed/{ngo_id}")
+def get_claimed_by_ngo(ngo_id: str):
+    """Get all listings claimed by a specific NGO"""
+    listings = get_all_listings()
+    
+    print(f"[DEBUG] Searching for claimed listings for NGO ID: {ngo_id}")
+    print(f"[DEBUG] Total listings in database: {len(listings)}")
+    
+    # Filter listings claimed by this NGO (not delivered yet - in progress)
+    claimed_listings = []
+    for listing in listings:
+        claimed_by = listing.get("claimed_by")
+        status = listing.get("status")
+        if claimed_by:
+            print(f"[DEBUG] Listing {listing.get('id')} - claimed_by: {claimed_by}, status: {status}")
+            # Handle both dict and string formats
+            if isinstance(claimed_by, dict):
+                # Check for ngo_id field (new format) or id field (old format)
+                claimed_ngo_id = str(claimed_by.get("ngo_id") or claimed_by.get("id") or "")
+                print(f"[DEBUG] Comparing claimed_ngo_id '{claimed_ngo_id}' with ngo_id '{ngo_id}'")
+                if claimed_ngo_id == ngo_id:
+                    claimed_listings.append(listing)
+            elif str(claimed_by) == ngo_id:
+                claimed_listings.append(listing)
+    
+    print(f"[DEBUG] Found {len(claimed_listings)} claimed listings for NGO {ngo_id}")
+    
+    return {
+        "listings": claimed_listings,
+        "count": len(claimed_listings)
     }
 
 

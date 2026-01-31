@@ -105,3 +105,23 @@ def reset_password(email: str, reset_token: str, new_password: str) -> bool:
     del otp_store[email]
     
     return result.modified_count > 0
+
+
+def create_google_user(user_data: dict):
+    """Create a new user via Google OAuth (no password required)"""
+    existing = users_collection.find_one({"email": user_data["email"]})
+    if existing:
+        return None
+
+    # No password hash needed for Google users
+    user_data["password"] = None  # Google users don't have a password
+    result = users_collection.insert_one(user_data)
+
+    user_data["_id"] = result.inserted_id
+    return user_data
+
+
+def authenticate_google_user(email: str):
+    """Authenticate a user via Google OAuth (just check if exists)"""
+    user = users_collection.find_one({"email": email})
+    return user

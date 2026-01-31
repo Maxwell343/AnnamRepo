@@ -273,7 +273,7 @@ const AvailablePickups: React.FC = () => {
     
     try {
       // Replace with actual API call
-      // const response = await fetch('http://localhost:5000/api/available-pickups');
+      // const response = await fetch('http://localhost:8000/api/available-pickups');
       // const data = await response.json();
       
       // Simulate API delay
@@ -334,7 +334,7 @@ const AvailablePickups: React.FC = () => {
     
     try {
       // Replace with actual API call
-      // await fetch(`http://localhost:5000/api/pickups/${pickupId}/accept`, {
+      // await fetch(`http://localhost:8000/api/pickups/${pickupId}/accept`, {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
       //   body: JSON.stringify({ driver_id: user?.id })

@@ -20,6 +20,7 @@ import ResetPassword from './ResetPassword'
 import Earnings from './Earnings'
 import RouteMap from './RouteMap'
 import NgoSettings from './NgoSettings'
+import ClaimedDonations from './ClaimedDonations'
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
         <Route path="/dashboard" element={<HomePage />} />
         <Route path="/listing" element={<ListingForm />} />
         <Route path="/order-tracking" element={<OrderTracking />} />
+        <Route path="/order-tracking/:orderId" element={<OrderTracking />} />
         <Route path="/leaderboards" element={<ImpactPage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/settings" element={<SettingsPage />} />
@@ -47,6 +49,7 @@ function App() {
         <Route path="/earnings" element={<Earnings />} />
         <Route path="/route-map" element={<RouteMap />} />
         <Route path="/ngo-settings" element={<NgoSettings />} />
+        <Route path="/claimed-donations" element={<ClaimedDonations />} />
       </Routes>
     </BrowserRouter>
   )

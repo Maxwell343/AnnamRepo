@@ -54,7 +54,7 @@ const ImpactPage: React.FC = () => {
       
       try {
         if (isDriver) {
-          const response = await fetch(`http://localhost:5000/api/analytics/driver/${user.id}`);
+          const response = await fetch(`http://localhost:8000/api/analytics/driver/${user.id}`);
           const data = await response.json();
           
           if (response.ok) {
@@ -75,7 +75,7 @@ const ImpactPage: React.FC = () => {
             ]);
           }
         } else {
-          const response = await fetch(`http://localhost:5000/api/analytics/farmer/${user.id}`);
+          const response = await fetch(`http://localhost:8000/api/analytics/farmer/${user.id}`);
           const data = await response.json();
           
           if (response.ok) {

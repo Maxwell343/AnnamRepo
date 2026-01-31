@@ -109,7 +109,7 @@ const EditListing: React.FC = () => {
 
   const fetchListing = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/listings/${id}`);
+      const response = await fetch(`http://localhost:8000/api/listings/${id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch listing');
       }
@@ -209,7 +209,7 @@ const EditListing: React.FC = () => {
 
     try {
       // Replace with actual API call
-      // const response = await fetch(`http://localhost:5000/api/listings/${id}`, {
+      // const response = await fetch(`http://localhost:8000/api/listings/${id}`, {
       //   method: 'PUT',
       //   headers: { 'Content-Type': 'application/json' },
       //   body: JSON.stringify(formData)
@@ -238,7 +238,7 @@ const EditListing: React.FC = () => {
   const handleDelete = async () => {
     try {
       // Replace with actual API call
-      // await fetch(`http://localhost:5000/api/listings/${id}`, { method: 'DELETE' });
+      // await fetch(`http://localhost:8000/api/listings/${id}`, { method: 'DELETE' });
 
       await new Promise(resolve => setTimeout(resolve, 500));
       navigate('/my-listings');

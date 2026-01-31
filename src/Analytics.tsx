@@ -92,7 +92,7 @@ const Analytics: React.FC = () => {
   // Fetch analytics data from API
   const fetchAnalyticsData = async (farmerId: number) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/analytics/farmer/${farmerId}`);
+      const response = await fetch(`http://localhost:8000/api/analytics/farmer/${farmerId}`);
       const data = await response.json();
       
       if (response.ok) {

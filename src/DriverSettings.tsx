@@ -74,7 +74,7 @@ const DriverSettings: React.FC = () => {
       // Fetch settings from API
       const fetchSettings = async () => {
         try {
-          const response = await fetch(`http://localhost:5000/api/settings/driver/${parsedUser.id}`);
+          const response = await fetch(`http://localhost:8000/api/settings/driver/${parsedUser.id}`);
           const data = await response.json();
           
           if (response.ok && data) {
@@ -125,7 +125,7 @@ const DriverSettings: React.FC = () => {
           }
           
           // Fetch stats from API
-          const statsResponse = await fetch(`http://localhost:5000/api/stats/driver/${parsedUser.id}`);
+          const statsResponse = await fetch(`http://localhost:8000/api/stats/driver/${parsedUser.id}`);
           const statsData = await statsResponse.json();
           
           if (statsResponse.ok && statsData) {
@@ -184,7 +184,7 @@ const DriverSettings: React.FC = () => {
   const handleSave = async () => {
     // Save to API
     try {
-      const response = await fetch(`http://localhost:5000/api/settings/driver/${user.id}`, {
+      const response = await fetch(`http://localhost:8000/api/settings/driver/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

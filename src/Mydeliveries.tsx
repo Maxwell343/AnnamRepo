@@ -80,7 +80,7 @@ const MyDeliveries: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await fetch(`http://localhost:5000/api/drivers/${user.id}/tasks`);
+      const response = await fetch(`http://localhost:8000/api/drivers/${user.id}/tasks`);
       const data = await response.json();
       
       if (response.ok) {
@@ -147,7 +147,18 @@ const MyDeliveries: React.FC = () => {
   }, [user, fetchDeliveries]);
 
   const handleLogout = () => {
+    // Clear all user-related data from localStorage
     localStorage.removeItem('user');
+    localStorage.removeItem('farmerSettings');
+    localStorage.removeItem('ngoSettings');
+    localStorage.removeItem('userSettings');
+    localStorage.removeItem('driverSettings');
+    localStorage.removeItem('userPhone');
+    localStorage.removeItem('farmName');
+    localStorage.removeItem('farmLocation');
+    localStorage.removeItem('userLanguage');
+    localStorage.removeItem('ngoName');
+    localStorage.removeItem('driverOnline');
     navigate('/');
   };
 
@@ -157,7 +168,7 @@ const MyDeliveries: React.FC = () => {
     
     try {
       // Replace with actual API call
-      // await fetch(`http://localhost:5000/api/deliveries/${deliveryId}/status`, {
+      // await fetch(`http://localhost:8000/api/deliveries/${deliveryId}/status`, {
       //   method: 'PUT',
       //   headers: { 'Content-Type': 'application/json' },
       //   body: JSON.stringify({ status: newStatus, driver_id: user?.id })

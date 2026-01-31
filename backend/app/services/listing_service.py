@@ -1,17 +1,65 @@
-from app.core.database import db
+from app.core.database import db, users_collection
 from bson import ObjectId
 from datetime import datetime
 from typing import Optional, List, Dict, Any
+from app.services.notification_service import send_whatsapp
 
 # Collections
 listings_collection = db["listings"]
 delivery_tasks_collection = db["delivery_tasks"]
 
 
+def notify_ngos_new_listing(listing_data: dict):
+    """Send WhatsApp notification to all NGOs about a new listing"""
+    try:
+        # Find all NGO users
+        ngos = users_collection.find({"role": "ngo"})
+        
+        for ngo in ngos:
+            ngo_id = str(ngo.get("_id"))
+            # First try to get phone from ngo_settings (updated settings)
+            ngo_settings = db["ngo_settings"].find_one({"ngo_id": ngo_id})
+            
+            # Check for phone in ngo_settings first, then fall back to user record
+            phone = None
+            if ngo_settings:
+                phone = ngo_settings.get("organization_phone") or ngo_settings.get("admin_phone")
+            
+            # Fallback to user's phone if not in settings
+            if not phone:
+                phone = ngo.get("phone")
+            
+            if phone:
+                # Create notification message
+                produce_name = listing_data.get("produce_name", listing_data.get("title", "Food items"))
+                quantity = listing_data.get("quantity", "")
+                location = listing_data.get("location", listing_data.get("pickup_location", ""))
+                
+                message = f"""🌾 *New Food Listing Available!*
+
+📦 *Item:* {produce_name}
+📊 *Quantity:* {quantity}
+📍 *Location:* {location}
+
+A farmer has listed fresh produce for donation. Open the ANNAM app to claim this listing before it expires!
+
+🙏 Thank you for helping reduce food waste."""
+
+                # Send WhatsApp notification
+                result = send_whatsapp(to_phone=phone, message=message)
+                print(f"[NOTIFICATION] WhatsApp sent to NGO {ngo.get('name', 'Unknown')} ({phone}): {result}")
+    except Exception as e:
+        print(f"[ERROR] Failed to notify NGOs: {e}")
+
+
 # ============== LISTINGS ==============
 
 def create_listing(listing_data: dict) -> dict:
     """Create a new food listing"""
+    # Ensure farmer_id is stored as string for consistent querying
+    if "farmer_id" in listing_data:
+        listing_data["farmer_id"] = str(listing_data["farmer_id"])
+    
     listing_data["status"] = "available"
     listing_data["created_at"] = datetime.utcnow().isoformat()
     listing_data["updated_at"] = datetime.utcnow().isoformat()
@@ -20,6 +68,10 @@ def create_listing(listing_data: dict) -> dict:
     
     result = listings_collection.insert_one(listing_data)
     listing_data["_id"] = result.inserted_id
+    
+    # Notify all NGOs about the new listing
+    notify_ngos_new_listing(listing_data)
+    
     return listing_data
 
 

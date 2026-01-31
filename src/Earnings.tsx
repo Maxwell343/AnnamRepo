@@ -68,7 +68,7 @@ const Earnings: React.FC = () => {
     // Fetch earnings from API
     const fetchEarnings = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/drivers/${parsedUser.id}/earnings`);
+        const response = await fetch(`http://localhost:8000/api/drivers/${parsedUser.id}/earnings`);
         const data = await response.json();
         
         if (response.ok) {
@@ -131,8 +131,19 @@ const Earnings: React.FC = () => {
   }, [navigate]);
 
   const handleLogout = () => {
+    // Clear all user-related data from localStorage
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('farmerSettings');
+    localStorage.removeItem('ngoSettings');
+    localStorage.removeItem('userSettings');
+    localStorage.removeItem('driverSettings');
+    localStorage.removeItem('userPhone');
+    localStorage.removeItem('farmName');
+    localStorage.removeItem('farmLocation');
+    localStorage.removeItem('userLanguage');
+    localStorage.removeItem('ngoName');
+    localStorage.removeItem('driverOnline');
     navigate('/auth');
   };
 

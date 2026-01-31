@@ -16,6 +16,7 @@ interface Listing {
   quantity: string;
   type: 'Vegetable' | 'Fruit' | 'Grain' | 'Other';
   expiry: string;
+  expiry_date?: string;
   description?: string;
   image?: string;
   created_at?: string;
@@ -34,13 +35,17 @@ type FilterStatus = 'all' | 'available' | 'claimed' | 'in_transit' | 'delivered'
 type SortOption = 'newest' | 'oldest' | 'expiring_soon' | 'quantity_high' | 'quantity_low';
 
 // Helper function to parse expiry
-function parseExpiryAndGetCountdown(expiryStr: string, createdAtStr?: string): { 
+function parseExpiryAndGetCountdown(expiryStr: string | undefined | null, createdAtStr?: string): { 
   days: number; 
   hours: number; 
   minutes: number; 
   isExpired: boolean;
   totalMinutes: number;
 } {
+  if (!expiryStr) {
+    return { days: 0, hours: 0, minutes: 0, isExpired: true, totalMinutes: 0 };
+  }
+  
   const now = new Date();
   let expiryDate: Date | null = null;
   
@@ -104,7 +109,8 @@ function parseExpiryAndGetCountdown(expiryStr: string, createdAtStr?: string): {
   return { days, hours, minutes, isExpired: false, totalMinutes };
 }
 
-function getCountdownDisplay(expiryStr: string, createdAtStr?: string): string {
+function getCountdownDisplay(expiryStr: string | undefined | null, createdAtStr?: string): string {
+  if (!expiryStr) return 'No expiry';
   const { days, hours, minutes, isExpired } = parseExpiryAndGetCountdown(expiryStr, createdAtStr);
   
   if (isExpired) return 'Expired';
@@ -113,7 +119,8 @@ function getCountdownDisplay(expiryStr: string, createdAtStr?: string): string {
   return `${minutes}m left`;
 }
 
-function getUrgencyLevel(expiryStr: string, createdAtStr?: string): 'critical' | 'warning' | 'safe' {
+function getUrgencyLevel(expiryStr: string | undefined | null, createdAtStr?: string): 'critical' | 'warning' | 'safe' {
+  if (!expiryStr) return 'critical';
   const { days, hours, isExpired } = parseExpiryAndGetCountdown(expiryStr, createdAtStr);
   if (isExpired) return 'critical';
   if (days === 0 && hours < 6) return 'critical';
@@ -148,15 +155,19 @@ const MyListings: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await fetch(`http://localhost:5000/api/listings?farmer_id=${user.id}`);
+      const response = await fetch(`http://localhost:8000/api/listings?farmer_id=${user.id}`);
       const data = await response.json();
+      
+      console.log('MyListings - User ID:', user.id, 'Fetched listings:', data.listings?.length);
       
       if (response.ok) {
         // Add status based on expiry if not present
-        const processedListings = (data.listings || []).map((listing: Listing) => {
-          const { isExpired } = parseExpiryAndGetCountdown(listing.expiry, listing.created_at);
+        const processedListings = (data.listings || []).map((listing: any) => {
+          const expiryValue = listing.expiry || listing.expiry_date;
+          const { isExpired } = expiryValue ? parseExpiryAndGetCountdown(expiryValue, listing.created_at) : { isExpired: false };
           return {
             ...listing,
+            expiry: expiryValue,
             status: isExpired ? 'expired' : (listing.status || 'available')
           };
         });
@@ -191,7 +202,18 @@ const MyListings: React.FC = () => {
   }, [user, fetchListings]);
 
   const handleLogout = () => {
+    // Clear all user-related data from localStorage
     localStorage.removeItem('user');
+    localStorage.removeItem('farmerSettings');
+    localStorage.removeItem('ngoSettings');
+    localStorage.removeItem('userSettings');
+    localStorage.removeItem('driverSettings');
+    localStorage.removeItem('userPhone');
+    localStorage.removeItem('farmName');
+    localStorage.removeItem('farmLocation');
+    localStorage.removeItem('userLanguage');
+    localStorage.removeItem('ngoName');
+    localStorage.removeItem('driverOnline');
     navigate('/');
   };
 
@@ -199,7 +221,7 @@ const MyListings: React.FC = () => {
     setDeletingId(listingId);
     
     try {
-      const response = await fetch(`http://localhost:5000/api/listings/${listingId}`, {
+      const response = await fetch(`http://localhost:8000/api/listings/${listingId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -270,8 +292,8 @@ const MyListings: React.FC = () => {
         case 'oldest':
           return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
         case 'expiring_soon':
-          const aExpiry = parseExpiryAndGetCountdown(a.expiry, a.created_at);
-          const bExpiry = parseExpiryAndGetCountdown(b.expiry, b.created_at);
+          const aExpiry = parseExpiryAndGetCountdown(a.expiry || a.expiry_date, a.created_at);
+          const bExpiry = parseExpiryAndGetCountdown(b.expiry || b.expiry_date, b.created_at);
           return aExpiry.totalMinutes - bExpiry.totalMinutes;
         case 'quantity_high':
           return parseFloat(b.quantity) - parseFloat(a.quantity);
@@ -593,7 +615,7 @@ const MyListings: React.FC = () => {
         ) : (
           <section className={`my-listings-container ${viewMode}`}>
             {filteredListings.map((listing) => {
-              const urgencyLevel = getUrgencyLevel(listing.expiry, listing.created_at);
+              const urgencyLevel = getUrgencyLevel(listing.expiry || listing.expiry_date, listing.created_at);
               
               return (
                 <div 
@@ -638,7 +660,7 @@ const MyListings: React.FC = () => {
                       <div className="meta-item">
                         <span className="meta-icon">⏳</span>
                         <span className={`meta-value countdown ${urgencyLevel}`}>
-                          {getCountdownDisplay(listing.expiry, listing.created_at)}
+                          {getCountdownDisplay(listing.expiry || listing.expiry_date, listing.created_at)}
                         </span>
                       </div>
                       <div className="meta-item">
@@ -807,8 +829,8 @@ const MyListings: React.FC = () => {
                     </div>
                     <div className="detail-item">
                       <span className="detail-label">Expiry</span>
-                      <span className={`detail-value ${getUrgencyLevel(selectedListing.expiry, selectedListing.created_at)}`}>
-                        {getCountdownDisplay(selectedListing.expiry, selectedListing.created_at)}
+                      <span className={`detail-value ${getUrgencyLevel(selectedListing.expiry || selectedListing.expiry_date, selectedListing.created_at)}`}>
+                        {getCountdownDisplay(selectedListing.expiry || selectedListing.expiry_date, selectedListing.created_at)}
                       </span>
                     </div>
                     <div className="detail-item">

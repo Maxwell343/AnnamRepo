@@ -34,7 +34,7 @@ const HistoryPage: React.FC = () => {
       try {
         if (isDriver) {
           // Fetch driver's delivery tasks
-          const response = await fetch(`http://localhost:5000/api/drivers/${user.id}/tasks`);
+          const response = await fetch(`http://localhost:8000/api/drivers/${user.id}/tasks`);
           const data = await response.json();
           
           if (response.ok) {
@@ -70,7 +70,7 @@ const HistoryPage: React.FC = () => {
           }
         } else {
           // Fetch farmer's listings
-          const response = await fetch(`http://localhost:5000/api/listings?farmer_id=${user.id}`);
+          const response = await fetch(`http://localhost:8000/api/listings?farmer_id=${user.id}`);
           const data = await response.json();
           
           if (response.ok) {
@@ -240,10 +240,10 @@ const HistoryPage: React.FC = () => {
                   )}
                   
                   {/* Track Button (Only for pending items) */}
-                  {item.status === 'Pending' || item.status === 'In Transit' && (
+                  {(item.status === 'Pending' || item.status === 'In Transit') && item.id && (
                     <button 
                       className="btn-certificate"
-                      onClick={() => navigate('/order-tracking')}
+                      onClick={() => navigate(`/order-tracking/${item.id}`)}
                       style={{borderColor: '#ff9800', color: '#f57c00'}}
                     >
                       <span>🚚</span> Track

@@ -100,7 +100,7 @@ const FarmerSettings: React.FC = () => {
     
     const fetchSettings = async (parsedUser: User & { id: number }) => {
       try {
-        const response = await fetch(`http://localhost:5000/api/settings/farmer/${parsedUser.id}`);
+        const response = await fetch(`http://localhost:8000/api/settings/farmer/${parsedUser.id}`);
         const data = await response.json();
         
         if (response.ok && data && Object.keys(data).length > 1) {
@@ -276,7 +276,7 @@ const FarmerSettings: React.FC = () => {
       const parsedUser = savedUser ? JSON.parse(savedUser) : null;
       
       if (parsedUser?.id) {
-        const response = await fetch(`http://localhost:5000/api/settings/farmer/${parsedUser.id}`, {
+        const response = await fetch(`http://localhost:8000/api/settings/farmer/${parsedUser.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

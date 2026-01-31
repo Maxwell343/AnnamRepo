@@ -141,8 +141,19 @@ const RouteMap: React.FC = () => {
   }, [navigate]);
 
   const handleLogout = () => {
+    // Clear all user-related data from localStorage
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('farmerSettings');
+    localStorage.removeItem('ngoSettings');
+    localStorage.removeItem('userSettings');
+    localStorage.removeItem('driverSettings');
+    localStorage.removeItem('userPhone');
+    localStorage.removeItem('farmName');
+    localStorage.removeItem('farmLocation');
+    localStorage.removeItem('userLanguage');
+    localStorage.removeItem('ngoName');
+    localStorage.removeItem('driverOnline');
     navigate('/auth');
   };
 

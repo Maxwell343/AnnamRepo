@@ -10,15 +10,28 @@ interface FoodListing {
   title: string;
   quantity: string;
   type: 'Vegetable' | 'Fruit' | 'Grain' | 'Other';
-  expiry: string;
+  expiry?: string;
+  expiry_date?: string;
   description?: string;
   image?: string;
   created_at?: string;
-  status?: 'available' | 'claimed' | 'in_transit' | 'delivered';
+  status?: 'available' | 'claimed' | 'assigned' | 'in_transit' | 'delivered';
   pickup_location?: string;
+  pickup_address?: string;
   delivery_location?: string;
-  claimed_by?: number;
-  assigned_driver?: number;
+  claimed_by?: number | {
+    ngo_id: string;
+    ngo_name: string;
+    ngo_phone?: string;
+    ngo_address?: string;
+    claim_quantity?: string;
+  };
+  assigned_driver?: number | {
+    driver_id: string;
+    driver_name: string;
+    driver_phone?: string;
+    vehicle_number?: string;
+  };
 }
 
 interface User {
@@ -27,6 +40,7 @@ interface User {
   role: 'farmer' | 'ngo' | 'driver';
   email?: string;
   phone?: string;
+  address?: string;
   organization?: string;
   vehicle_number?: string;
 }
@@ -44,7 +58,12 @@ interface DeliveryTask {
 }
 
 // Function to parse expiry string and calculate countdown
-function parseExpiryAndGetCountdown(expiryStr: string, createdAtStr?: string): { days: number; hours: number; minutes: number; isExpired: boolean } {
+function parseExpiryAndGetCountdown(expiryStr: string | undefined, createdAtStr?: string): { days: number; hours: number; minutes: number; isExpired: boolean } {
+  // Handle undefined or empty expiry string
+  if (!expiryStr) {
+    return { days: 0, hours: 0, minutes: 0, isExpired: false };
+  }
+  
   const now = new Date();
   let expiryDate: Date | null = null;
   
@@ -109,7 +128,9 @@ function parseExpiryAndGetCountdown(expiryStr: string, createdAtStr?: string): {
 }
 
 // Function to format countdown display
-function getCountdownDisplay(expiryStr: string, createdAtStr?: string): string {
+function getCountdownDisplay(expiryStr: string | undefined, createdAtStr?: string): string {
+  if (!expiryStr) return 'No expiry set';
+  
   const { days, hours, minutes, isExpired } = parseExpiryAndGetCountdown(expiryStr, createdAtStr);
   
   if (isExpired) {
@@ -133,6 +154,7 @@ const HomePage: React.FC = () => {
   const [listings, setListings] = useState<FoodListing[]>([]);
   const [deliveryTasks, setDeliveryTasks] = useState<DeliveryTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [visibleCards, setVisibleCards] = useState<Set<number>>(new Set());
   const [claimingId, setClaimingId] = useState<number | null>(null);
   const [claimQuantity, setClaimQuantity] = useState<{ [key: number]: string }>({});
@@ -143,7 +165,7 @@ const HomePage: React.FC = () => {
   // Fetch listings from backend
   const fetchListings = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/listings');
+      const response = await fetch('http://localhost:8000/api/listings');
       const data = await response.json();
       
       if (response.ok) {
@@ -161,7 +183,7 @@ const HomePage: React.FC = () => {
   // Fetch delivery tasks for drivers
   const fetchDeliveryTasks = async (driverId: number) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/drivers/${driverId}/tasks`);
+      const response = await fetch(`http://localhost:8000/api/drivers/${driverId}/tasks`);
       const data = await response.json();
       
       if (response.ok) {
@@ -217,10 +239,10 @@ const HomePage: React.FC = () => {
     countdownIntervalRef.current = setInterval(() => {
       setListings(prev => {
         const activeListings = prev.filter(listing => {
-          const { isExpired } = parseExpiryAndGetCountdown(listing.expiry, listing.created_at);
+          const { isExpired } = parseExpiryAndGetCountdown(listing.expiry || listing.expiry_date, listing.created_at);
           
           if (isExpired) {
-            fetch(`http://localhost:5000/api/listings/${listing.id}`, {
+            fetch(`http://localhost:8000/api/listings/${listing.id}`, {
               method: 'DELETE',
               headers: { 'Content-Type': 'application/json' }
             }).catch(err => console.error('Error deleting expired listing:', err));
@@ -248,6 +270,7 @@ const HomePage: React.FC = () => {
         if (parsedUser && parsedUser.id && parsedUser.name && 
             ['farmer', 'ngo', 'driver'].includes(parsedUser.role)) {
           setUser(parsedUser);
+          setLoading(false);
           
           // Fetch role-specific data
           if (parsedUser.role === 'driver') {
@@ -256,16 +279,19 @@ const HomePage: React.FC = () => {
         } else {
           // Invalid user data, redirect to login
           console.error('Invalid user data in localStorage');
+          setIsRedirecting(true);
           navigate('/auth');
           return;
         }
       } catch (e) {
         console.error('Error parsing user from localStorage');
+        setIsRedirecting(true);
         navigate('/auth');
         return;
       }
     } else {
       // No user found, redirect to login
+      setIsRedirecting(true);
       navigate('/auth');
       return;
     }
@@ -273,7 +299,18 @@ const HomePage: React.FC = () => {
   }, [navigate]);
 
   const handleLogout = () => {
+    // Clear all user-related data from localStorage
     localStorage.removeItem('user');
+    localStorage.removeItem('farmerSettings');
+    localStorage.removeItem('ngoSettings');
+    localStorage.removeItem('userSettings');
+    localStorage.removeItem('driverSettings');
+    localStorage.removeItem('userPhone');
+    localStorage.removeItem('farmName');
+    localStorage.removeItem('farmLocation');
+    localStorage.removeItem('userLanguage');
+    localStorage.removeItem('ngoName');
+    localStorage.removeItem('driverOnline');
     navigate('/');
   };
 
@@ -294,12 +331,15 @@ const HomePage: React.FC = () => {
     setClaimingId(listingId);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/listings/${listingId}/claim`, {
+      const response = await fetch(`http://localhost:8000/api/listings/${listingId}/claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          claimedQuantity: claimedQty,
-          ngo_id: user.id
+          ngo_id: String(user.id),
+          ngo_name: user.name || 'NGO',
+          ngo_phone: user.phone || '',
+          ngo_address: user.address || '',
+          claim_quantity: String(claimedQty)
         })
       });
 
@@ -343,7 +383,7 @@ const HomePage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/listings/${listingId}`, {
+      const response = await fetch(`http://localhost:8000/api/listings/${listingId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -376,16 +416,21 @@ const HomePage: React.FC = () => {
     if (user?.role !== 'driver') return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/listings/${listingId}/assign-driver`, {
+      const response = await fetch(`http://localhost:8000/api/listings/${listingId}/assign-driver`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ driver_id: user.id })
+        body: JSON.stringify({ 
+          driver_id: String(user.id),
+          driver_name: user.name || 'Driver',
+          driver_phone: user.phone || '',
+          vehicle_number: user.vehicle_number || ''
+        })
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to accept delivery');
+        throw new Error(data.detail || data.message || 'Failed to accept delivery');
       }
 
       setListings(prevListings =>
@@ -409,7 +454,7 @@ const HomePage: React.FC = () => {
     if (user?.role !== 'driver') return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/delivery-tasks/${taskId}/status`, {
+      const response = await fetch(`http://localhost:8000/api/delivery-tasks/${taskId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus, driver_id: user.id })
@@ -438,14 +483,14 @@ const HomePage: React.FC = () => {
     
     switch (user.role) {
       case 'farmer':
-        // Farmers see only their own listings
-        return filteredListings.filter(l => l.farmer_id === user.id);
+        // Farmers see only their own listings (compare as strings)
+        return filteredListings.filter(l => String(l.farmer_id) === String(user.id));
       case 'ngo':
         // NGOs see all available listings
         return filteredListings.filter(l => l.status === 'available' || !l.status);
       case 'driver':
-        // Drivers see only claimed listings ready for delivery
-        return filteredListings.filter(l => l.status === 'claimed' || l.status === 'in_transit');
+        // Drivers see claimed listings ready for pickup and assigned/in_transit listings they accepted
+        return filteredListings.filter(l => l.status === 'claimed' || l.status === 'assigned' || l.status === 'in_transit');
       default:
         return filteredListings;
     }
@@ -460,7 +505,8 @@ const HomePage: React.FC = () => {
   }, []);
 
   // Get urgency level for countdown styling
-  const getUrgencyLevel = (expiryStr: string, createdAtStr?: string): 'critical' | 'warning' | 'safe' => {
+  const getUrgencyLevel = (expiryStr: string | undefined, createdAtStr?: string): 'critical' | 'warning' | 'safe' => {
+    if (!expiryStr) return 'safe';
     const { days, hours, isExpired } = parseExpiryAndGetCountdown(expiryStr, createdAtStr);
     if (isExpired) return 'critical';
     if (days === 0 && hours < 6) return 'critical';
@@ -546,20 +592,20 @@ const HomePage: React.FC = () => {
       case 'ngo':
         return (
           <section className="stats-section">
-            <div className="stat-card primary">
-              <div className="stat-icon">🍽️</div>
+            <div className="stat-card primary" onClick={() => navigate('/claimed-donations')} style={{cursor: 'pointer'}}>
+              <div className="stat-icon">🤝</div>
               <div className="stat-content">
-                <span className="stat-value">1,024</span>
-                <span className="stat-label">Meals Distributed</span>
-                <span className="stat-change positive">+12% this month</span>
+                <span className="stat-value">{listings.filter(l => l.claimed_by === user?.id || String(l.claimed_by) === String(user?.id)).length}</span>
+                <span className="stat-label">Claimed Donations</span>
+                <span className="stat-change positive">Click to view</span>
               </div>
             </div>
             <div className="stat-card secondary">
               <div className="stat-icon">📦</div>
               <div className="stat-content">
-                <span className="stat-value">540 kg</span>
-                <span className="stat-label">Food Rescued</span>
-                <span className="stat-change positive">+8% this month</span>
+                <span className="stat-value">{listings.filter(l => l.status === 'in_transit' && (l.claimed_by === user?.id || String(l.claimed_by) === String(user?.id))).length}</span>
+                <span className="stat-label">In Transit</span>
+                <span className="stat-change positive">On the way</span>
               </div>
             </div>
             <div className="stat-card warning">
@@ -573,9 +619,9 @@ const HomePage: React.FC = () => {
             <div className="stat-card success">
               <div className="stat-icon">✅</div>
               <div className="stat-content">
-                <span className="stat-value">Active</span>
-                <span className="stat-label">Current Status</span>
-                <span className="stat-change">All systems operational</span>
+                <span className="stat-value">{listings.filter(l => l.status === 'delivered' && (l.claimed_by === user?.id || String(l.claimed_by) === String(user?.id))).length}</span>
+                <span className="stat-label">Delivered</span>
+                <span className="stat-change">Completed</span>
               </div>
             </div>
           </section>
@@ -638,9 +684,9 @@ const HomePage: React.FC = () => {
         { id: 'analytics', icon: '📊', label: 'Analytics', action: () => navigate('/analytics') },
       ],
       ngo: [
-        { id: 'claimed', icon: '🤝', label: 'Claimed Donations', action: () => navigate('/claimed') },
+        { id: 'claimed', icon: '🤝', label: 'Claimed Donations', action: () => navigate('/claimed-donations') },
         { id: 'tracking', icon: '🚚', label: 'Order Tracking', action: () => navigate('/order-tracking') },
-        { id: 'beneficiaries', icon: '👥', label: 'Beneficiaries', action: () => navigate('/beneficiaries') },
+        { id: 'ngo-settings', icon: '⚙️', label: 'Settings', action: () => navigate('/ngo-settings') },
       ],
       driver: [
         { id: 'my-deliveries', icon: '📍', label: 'My Deliveries', action: () => navigate('/my-deliveries') },
@@ -687,7 +733,7 @@ const HomePage: React.FC = () => {
           <>
             <button
               className="btn-primary-action"
-              onClick={() => navigate(`/listing/edit/${listing.id}`)}
+              onClick={() => navigate(`/edit-listing/${listing.id}`)}
             >
               ✏️ Edit
             </button>
@@ -707,9 +753,12 @@ const HomePage: React.FC = () => {
             <input
               type="number"
               className="claim-input"
-              placeholder="Enter quantity (kg)"
+              placeholder={`Max: ${listing.quantity}`}
               value={claimQuantity[listing.id] || ''}
               onChange={(e) => setClaimQuantity(prev => ({...prev, [listing.id]: e.target.value}))}
+              min="1"
+              max={parseFloat(listing.quantity) || 100}
+              step="0.5"
               autoFocus
             />
             <button
@@ -742,7 +791,14 @@ const HomePage: React.FC = () => {
         );
       
       case 'driver':
-        if (listing.assigned_driver === user?.id) {
+        // Check if this driver is assigned (handle both object and primitive formats)
+        const isAssignedToMe = listing.assigned_driver && (
+          listing.assigned_driver === user?.id || 
+          (typeof listing.assigned_driver === 'object' && (listing.assigned_driver as any).driver_id === String(user?.id))
+        );
+        const hasOtherDriver = listing.assigned_driver && !isAssignedToMe;
+        
+        if (isAssignedToMe) {
           return (
             <div className="driver-actions">
               <span className="status-badge in-transit">🚚 Assigned to you</span>
@@ -763,7 +819,7 @@ const HomePage: React.FC = () => {
               ✅ Accept Delivery
             </button>
           );
-        } else if (listing.assigned_driver && listing.assigned_driver !== user?.id) {
+        } else if (hasOtherDriver) {
           return <span className="status-badge">Assigned to another driver</span>;
         }
         return null;
@@ -869,6 +925,15 @@ const HomePage: React.FC = () => {
       </section>
     );
   };
+
+  if (isRedirecting) {
+    // Show a message while redirecting
+    return (
+      <div className="loading-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#f5f5f5' }}>
+        <p style={{ fontSize: '18px', color: '#666' }}>Redirecting to login...</p>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -1019,7 +1084,7 @@ const HomePage: React.FC = () => {
               </div>
             ) : (
               displayListings.map((listing, index) => {
-                const urgencyLevel = getUrgencyLevel(listing.expiry, listing.created_at);
+                const urgencyLevel = getUrgencyLevel(listing.expiry || listing.expiry_date, listing.created_at);
                 return (
                   <div 
                     key={listing.id} 
@@ -1027,17 +1092,16 @@ const HomePage: React.FC = () => {
                     ref={(ref) => registerCardRef(listing.id, ref)}
                     data-card-id={listing.id}
                     style={{
-                      opacity: visibleCards.has(listing.id) ? 1 : 0,
-                      transform: visibleCards.has(listing.id) 
-                        ? 'translateY(0) scale(1)' 
-                        : 'translateY(20px) scale(0.98)',
+                      opacity: 1,
+                      transform: 'translateY(0) scale(1)',
                       transition: `all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 80}ms`,
                     }}
                   >
                     {/* Status Badge for Driver View */}
                     {user?.role === 'driver' && listing.status && (
                       <div className={`status-ribbon ${listing.status}`}>
-                        {listing.status === 'claimed' ? '🤝 Claimed' : 
+                        {listing.status === 'claimed' ? '🤝 Awaiting Pickup' : 
+                         listing.status === 'assigned' ? '✅ Assigned' :
                          listing.status === 'in_transit' ? '🚚 In Transit' : 
                          listing.status}
                       </div>
@@ -1082,14 +1146,19 @@ const HomePage: React.FC = () => {
                         <div className="detail-row">
                           <span className="detail-icon">📦</span>
                           <span className="detail-label">Quantity:</span>
-                          <span className="detail-value">{listing.quantity}</span>
+                          <span className="detail-value">
+                            {/* For drivers, show claimed quantity if available */}
+                            {user?.role === 'driver' && listing.claimed_by && typeof listing.claimed_by === 'object' && listing.claimed_by.claim_quantity
+                              ? `${listing.claimed_by.claim_quantity} kg (claimed)`
+                              : listing.quantity}
+                          </span>
                         </div>
                         
                         <div className="detail-row">
                           <span className="detail-icon">⏳</span>
                           <span className="detail-label">Expires:</span>
                           <span className={`detail-value countdown ${urgencyLevel}`}>
-                            {getCountdownDisplay(listing.expiry, listing.created_at)}
+                            {getCountdownDisplay(listing.expiry || listing.expiry_date, listing.created_at)}
                           </span>
                         </div>
 
@@ -1103,11 +1172,29 @@ const HomePage: React.FC = () => {
                         )}
 
                         {/* Show pickup location for Driver */}
-                        {user?.role === 'driver' && listing.pickup_location && (
+                        {user?.role === 'driver' && (listing.pickup_location || listing.pickup_address) && (
                           <div className="detail-row">
                             <span className="detail-icon">📍</span>
                             <span className="detail-label">Pickup:</span>
-                            <span className="detail-value">{listing.pickup_location}</span>
+                            <span className="detail-value">{listing.pickup_location || listing.pickup_address}</span>
+                          </div>
+                        )}
+
+                        {/* Show NGO name for Driver */}
+                        {user?.role === 'driver' && listing.claimed_by && typeof listing.claimed_by === 'object' && listing.claimed_by.ngo_name && (
+                          <div className="detail-row">
+                            <span className="detail-icon">🏢</span>
+                            <span className="detail-label">NGO:</span>
+                            <span className="detail-value">{listing.claimed_by.ngo_name}</span>
+                          </div>
+                        )}
+
+                        {/* Show delivery address (NGO address) for Driver */}
+                        {user?.role === 'driver' && listing.claimed_by && typeof listing.claimed_by === 'object' && listing.claimed_by.ngo_address && (
+                          <div className="detail-row">
+                            <span className="detail-icon">🏠</span>
+                            <span className="detail-label">Delivery:</span>
+                            <span className="detail-value">{listing.claimed_by.ngo_address}</span>
                           </div>
                         )}
                         
