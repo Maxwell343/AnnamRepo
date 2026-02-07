@@ -6,7 +6,7 @@ import ListingForm from './Listing'
 import OrderTracking from './OrderTracking'
 import ImpactPage from './Impact'
 import HistoryPage from './History'
-import SettingsPage from './settings'
+import SettingsPage from './Settings'
 import Analytics from './Analytics'
 import AvailablePickups from './AvailablePickups'
 import MyDeliveries from './Mydeliveries'
@@ -21,6 +21,11 @@ import Earnings from './Earnings'
 import RouteMap from './RouteMap'
 import NgoSettings from './NgoSettings'
 import ClaimedDonations from './ClaimedDonations'
+// Marketplace imports
+import Marketplace from './Marketplace'
+import FarmerListingForm from './FarmerListingForm'
+import ImpactDashboard from './ImpactDashboard'
+import Checkout from './Checkout'
 
 function App() {
   return (
@@ -50,6 +55,16 @@ function App() {
         <Route path="/route-map" element={<RouteMap />} />
         <Route path="/ngo-settings" element={<NgoSettings />} />
         <Route path="/claimed-donations" element={<ClaimedDonations />} />
+        
+        {/* Marketplace Routes */}
+        <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/marketplace/category/:category" element={<Marketplace />} />
+        <Route path="/marketplace/product/:productId" element={<Marketplace />} />
+        <Route path="/farmer/new-listing" element={<FarmerListingForm />} />
+        <Route path="/farmer/edit-listing/:listingId" element={<FarmerListingForm />} />
+        <Route path="/impact-dashboard" element={<ImpactDashboard />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/tracking" element={<OrderTracking />} />
       </Routes>
     </BrowserRouter>
   )

@@ -29,13 +29,13 @@
 }
 
 .quick-stat-card.active {
-  border-color: #2e7d32;
-  background: #e8f5e9;
+  border-color: #064e3b;
+  background: #f0fdf4;
 }
 
 .quick-stat-card.available.active {
-  border-color: #4caf50;
-  background: #e8f5e9;
+  border-color: #059669;
+  background: #f0fdf4;
 }
 
 .quick-stat-card.claimed.active {

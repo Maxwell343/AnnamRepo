@@ -33,4 +33,50 @@ export const API_ENDPOINTS = {
   sendWhatsApp: `${API_BASE_URL}/api/notifications/whatsapp`,
   sendSms: `${API_BASE_URL}/api/notifications/sms`,
   sendNotification: `${API_BASE_URL}/api/notifications/send`,
+  
+  // Marketplace
+  marketplace: {
+    // Listings
+    listings: `${API_BASE_URL}/api/marketplace/listings`,
+    listingById: (id: string) => `${API_BASE_URL}/api/marketplace/listings/${id}`,
+    listingsByFarmer: (farmerId: string) => `${API_BASE_URL}/api/marketplace/listings/farmer/${farmerId}`,
+    
+    // Categories & Filters
+    categories: `${API_BASE_URL}/api/marketplace/categories`,
+    filters: `${API_BASE_URL}/api/marketplace/filters`,
+    
+    // Search & Discovery
+    search: `${API_BASE_URL}/api/marketplace/search`,
+    nearExpiry: `${API_BASE_URL}/api/marketplace/near-expiry`,
+    flashSales: `${API_BASE_URL}/api/marketplace/flash-sales`,
+    ngoRescue: `${API_BASE_URL}/api/marketplace/ngo-rescue`,
+    bulkLots: `${API_BASE_URL}/api/marketplace/bulk-lots`,
+    
+    // Smart Pricing
+    priceSuggestion: `${API_BASE_URL}/api/marketplace/price-suggestion`,
+    spoilagePredict: `${API_BASE_URL}/api/marketplace/spoilage-predict`,
+    
+    // Orders & Cart
+    cart: `${API_BASE_URL}/api/marketplace/cart`,
+    orders: `${API_BASE_URL}/api/marketplace/orders`,
+    orderById: (id: string) => `${API_BASE_URL}/api/marketplace/orders/${id}`,
+    
+    // Impact & Analytics
+    impact: `${API_BASE_URL}/api/marketplace/impact`,
+    impactByDistrict: `${API_BASE_URL}/api/marketplace/impact/districts`,
+    impactTrends: `${API_BASE_URL}/api/marketplace/impact/trends`,
+    governmentReport: `${API_BASE_URL}/api/marketplace/impact/government-report`,
+    
+    // Farmer Dashboard
+    farmerDashboard: (farmerId: string) => `${API_BASE_URL}/api/marketplace/farmer/${farmerId}/dashboard`,
+    farmerAnalytics: (farmerId: string) => `${API_BASE_URL}/api/marketplace/farmer/${farmerId}/analytics`,
+    
+    // NGO Dashboard
+    ngoDashboard: (ngoId: string) => `${API_BASE_URL}/api/marketplace/ngo/${ngoId}/dashboard`,
+    ngoRescueHistory: (ngoId: string) => `${API_BASE_URL}/api/marketplace/ngo/${ngoId}/rescues`,
+    
+    // Trust & Ratings
+    farmerRating: (farmerId: string) => `${API_BASE_URL}/api/marketplace/farmers/${farmerId}/rating`,
+    productReviews: (listingId: string) => `${API_BASE_URL}/api/marketplace/listings/${listingId}/reviews`,
+  },
 };

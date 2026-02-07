@@ -1,12 +1,13 @@
-from app.core.database import db, users_collection
+from app.core.database import (
+    db, 
+    users_collection, 
+    listings_collection,
+    delivery_tasks_collection
+)
 from bson import ObjectId
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from app.services.notification_service import send_whatsapp
-
-# Collections
-listings_collection = db["listings"]
-delivery_tasks_collection = db["delivery_tasks"]
 
 
 def notify_ngos_new_listing(listing_data: dict):

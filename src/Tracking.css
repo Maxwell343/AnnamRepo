@@ -1,8 +1,8 @@
 /* Tracking.css - Order Tracking Page Styles */
 :root {
-  --primary: #2e7d32;
-  --primary-dark: #1b5e20;
-  --secondary: #f57c00;
+  --primary: #064e3b;
+  --primary-dark: #022c22;
+  --secondary: #f59e0b;
   --bg-color: #f0f2f5;
   --white: #ffffff;
   --text-primary: #1a1a1a;
@@ -174,7 +174,7 @@
 }
 
 .status-badge {
-  background: linear-gradient(135deg, var(--secondary) 0%, #e65100 100%);
+  background: linear-gradient(135deg, var(--secondary) 0%, #d97706 100%);
   color: white;
   padding: 10px 18px;
   border-radius: 24px;
@@ -498,7 +498,7 @@
 .pulse {
   width: 10px;
   height: 10px;
-  background: #4caf50;
+  background: #064e3b;
   border-radius: 50%;
   animation: pulseAnim 1.5s ease-in-out infinite;
 }

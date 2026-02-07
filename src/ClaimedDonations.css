@@ -20,7 +20,7 @@
   width: 50px;
   height: 50px;
   border: 4px solid #e0e0e0;
-  border-top-color: #4caf50;
+  border-top-color: #064e3b;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -65,7 +65,7 @@
 .header-title h1 {
   margin: 0;
   font-size: 1.8rem;
-  color: #2e7d32;
+  color: #064e3b;
 }
 
 .header-title p {
@@ -76,7 +76,7 @@
 
 .refresh-btn {
   padding: 12px 24px;
-  background: linear-gradient(135deg, #4caf50, #66bb6a);
+  background: linear-gradient(135deg, #064e3b, #059669);
   color: white;
   border: none;
   border-radius: 12px;
@@ -119,11 +119,11 @@
 }
 
 .stat-card.claimed {
-  border-left: 4px solid #ff9800;
+  border-left: 4px solid #f59e0b;
 }
 
 .stat-card.assigned {
-  border-left: 4px solid #4caf50;
+  border-left: 4px solid #064e3b;
 }
 
 .stat-card.in-transit {
@@ -180,7 +180,7 @@
 }
 
 .search-box:focus-within {
-  border-color: #4caf50;
+  border-color: #064e3b;
   background: white;
 }
 
@@ -238,7 +238,7 @@
 
 .filter-group select:focus {
   outline: none;
-  border-color: #4caf50;
+  border-color: #064e3b;
 }
 
 /* Donations Section */
@@ -277,7 +277,7 @@
 
 .browse-btn {
   padding: 14px 28px;
-  background: linear-gradient(135deg, #4caf50, #66bb6a);
+  background: linear-gradient(135deg, #064e3b, #059669);
   color: white;
   border: none;
   border-radius: 12px;
@@ -315,11 +315,11 @@
 }
 
 .donation-card.claimed {
-  border-top: 4px solid #4caf50;
+  border-top: 4px solid #064e3b;
 }
 
 .donation-card.in_transit {
-  border-top: 4px solid #ff9800;
+  border-top: 4px solid #f59e0b;
 }
 
 .donation-card.delivered {
@@ -467,7 +467,7 @@
 
 .driver-phone {
   font-size: 0.85rem;
-  color: #f57c00;
+  color: #0284c7;
   text-decoration: none;
 }
 
@@ -503,13 +503,13 @@
 }
 
 .action-btn.track {
-  background: linear-gradient(135deg, #ff9800, #ffa726);
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
   color: white;
 }
 
 .action-btn.track:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
 }
 
 /* Modal Styles */
@@ -587,12 +587,12 @@
 }
 
 .modal-status.claimed {
-  background: #4caf50;
+  background: #064e3b;
   color: white;
 }
 
 .modal-status.in_transit {
-  background: #ff9800;
+  background: #f59e0b;
   color: white;
 }
 
@@ -664,7 +664,7 @@
 
 .modal-driver-section h4 {
   margin: 0 0 15px;
-  color: #e65100;
+  color: #064e3b;
 }
 
 .driver-card {
@@ -729,7 +729,7 @@
 }
 
 .timeline-item.completed .timeline-dot {
-  background: #4caf50;
+  background: #064e3b;
 }
 
 .timeline-content {
@@ -769,13 +769,13 @@
 }
 
 .modal-btn.primary {
-  background: linear-gradient(135deg, #ff9800, #ffa726);
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
   color: white;
 }
 
 .modal-btn.primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
 }
 
 .modal-btn.secondary {

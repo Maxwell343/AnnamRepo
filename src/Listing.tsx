@@ -1,44 +1,62 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Listing.css';
+import './HomePage.css';
+import { API_ENDPOINTS } from './config/api';
+import { MapContainer, TileLayer, CircleMarker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import type { LeafletMouseEvent } from 'leaflet';
+
+type LatLng = { lat: number; lng: number };
+
+const formatCoords = (coords: LatLng) => `${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`;
+
+const MapClickToPick: React.FC<{ onPick: (coords: LatLng) => void }> = ({ onPick }) => {
+  useMapEvents({
+    click(e: LeafletMouseEvent) {
+      onPick({ lat: e.latlng.lat, lng: e.latlng.lng });
+    },
+  });
+  return null;
+};
 
 const ListingForm: React.FC = () => {
   const navigate = useNavigate();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
   // State to hold form data
   const [formData, setFormData] = useState({
     title: '',
     quantity: '',
+    price: '',
     type: 'Vegetable',
     expiry: '',
     description: '',
     image: '',
-    location: ''
+    pickupAddress: ''
   });
   const [imagePreview, setImagePreview] = useState<string>('');
-  const [locationError, setLocationError] = useState<string>('');
+  const [pickupCoords, setPickupCoords] = useState<LatLng | null>(null);
+  const [showMapPicker, setShowMapPicker] = useState(false);
 
-  // Request user location on component mount
-  React.useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setFormData(prev => ({
-            ...prev,
-            location: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
-          }));
-          setLocationError('');
-        },
-        (error) => {
-          console.error('Geolocation error:', error);
-          setLocationError('Unable to get your location. Please enter it manually.');
-        }
-      );
-    } else {
-      setLocationError('Geolocation is not supported by your browser.');
+  const mapCenter = useMemo<LatLng>(() => ({ lat: 20.5937, lng: 78.9629 }), []);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (!savedUser) {
+      navigate('/auth');
+      return;
     }
-  }, []);
+
+    try {
+      const parsedUser = JSON.parse(savedUser);
+      if (parsedUser.role !== 'farmer') {
+        navigate('/dashboard');
+      }
+    } catch {
+      navigate('/auth');
+    }
+  }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -94,19 +112,33 @@ const ListingForm: React.FC = () => {
       }
 
       const user = JSON.parse(savedUser);
+
+      const addressText = (formData.pickupAddress || '').trim();
+      const coordsText = pickupCoords ? formatCoords(pickupCoords) : '';
+      const pickup_address = addressText
+        ? (coordsText ? `${addressText} (${coordsText})` : addressText)
+        : coordsText;
+
+      if (!pickup_address) {
+        alert('Please enter a pickup address or pick a location on the map.');
+        return;
+      }
+
       console.log('Submitting listing with data:', {
         farmer_id: user.id,
         farmer_name: user.name,
         title: formData.title,
         quantity: formData.quantity,
+        price: formData.price,
         type: formData.type,
         expiry_date: formData.expiry,
         description: formData.description,
+        pickup_address,
         imageSize: formData.image ? formData.image.length : 0
       });
 
       // Send data to backend API
-      const response = await fetch('http://localhost:8000/api/listings', {
+      const response = await fetch(API_ENDPOINTS.listings, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -114,10 +146,11 @@ const ListingForm: React.FC = () => {
           farmer_name: user.name,
           title: formData.title,
           quantity: formData.quantity,
+          price: formData.price === '' ? null : Number(formData.price),
           type: formData.type,
           expiry_date: formData.expiry,
           description: formData.description,
-          pickup_address: formData.location,
+          pickup_address,
           image: formData.image
         }),
       });
@@ -136,21 +169,94 @@ const ListingForm: React.FC = () => {
       setTimeout(() => {
         navigate('/dashboard');
       }, 500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Listing submission error:', err);
-      alert(`Error: ${err.message}`);
+      const message = err instanceof Error ? err.message : 'Failed to create listing';
+      if (message.toLowerCase().includes('failed to fetch')) {
+        alert('Error: Failed to reach backend. Please start FastAPI on http://localhost:8000 and try again.');
+      } else {
+        alert(`Error: ${message}`);
+      }
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    navigate('/auth');
+  };
+
   return (
-    <div className="form-container">
-      <div className="form-card">
-        <div className="form-header">
-          <h2>🌽 Food Details</h2>
-          <p>Update information for your donation</p>
+    <div className="app-container farmer-theme">
+      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+        <div className="sidebar-header">
+          <div className="brand">
+            <span className="brand-icon">🌾</span>
+            {!sidebarCollapsed && <span className="brand-text">Annam</span>}
+          </div>
+          <button
+            className="collapse-btn"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {sidebarCollapsed ? '»' : '«'}
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <nav className="sidebar-nav">
+          <div className="nav-item" onClick={() => navigate('/dashboard')}>
+            <span className="nav-icon">🏠</span>
+            {!sidebarCollapsed && <span className="nav-label">Dashboard</span>}
+          </div>
+          <div className="nav-item" onClick={() => navigate('/history')}>
+            <span className="nav-icon">📜</span>
+            {!sidebarCollapsed && <span className="nav-label">History</span>}
+          </div>
+          <div className="nav-item" onClick={() => navigate('/my-listings')}>
+            <span className="nav-icon">📦</span>
+            {!sidebarCollapsed && <span className="nav-label">My Listings</span>}
+          </div>
+          <div className="nav-item active" onClick={() => navigate('/listing')}>
+            <span className="nav-icon">➕</span>
+            {!sidebarCollapsed && <span className="nav-label">Add Listing</span>}
+          </div>
+          <div className="nav-item" onClick={() => navigate('/analytics')}>
+            <span className="nav-icon">📊</span>
+            {!sidebarCollapsed && <span className="nav-label">Analytics</span>}
+          </div>
+          <div className="nav-item" onClick={() => navigate('/leaderboards')}>
+            <span className="nav-icon">🏆</span>
+            {!sidebarCollapsed && <span className="nav-label">Leaderboards</span>}
+          </div>
+          <div className="nav-item" onClick={() => navigate('/farmer-settings')}>
+            <span className="nav-icon">⚙️</span>
+            {!sidebarCollapsed && <span className="nav-label">Settings</span>}
+          </div>
+        </nav>
+
+        <div className="sidebar-footer">
+          <div className="nav-item logout-item" onClick={handleLogout}>
+            <span className="nav-icon">🚪</span>
+            {!sidebarCollapsed && <span className="nav-label">Logout</span>}
+          </div>
+        </div>
+      </aside>
+
+      <main className="main-content listing-page">
+        <header className="top-header">
+          <div className="header-left">
+            <h1 className="page-title">➕ Add Listing</h1>
+            <p className="page-subtitle">Create a new donation listing</p>
+          </div>
+        </header>
+
+        <div className="form-container">
+          <div className="form-card">
+            <div className="form-header">
+              <h2>🌽 Food Details</h2>
+              <p>Update information for your donation</p>
+            </div>
+
+            <form onSubmit={handleSubmit}>
           {/* Image Upload */}
           <div className="form-group">
             <label>Food Image</label>
@@ -216,6 +322,21 @@ const ListingForm: React.FC = () => {
             </div>
           </div>
 
+          {/* Price */}
+          <div className="form-group">
+            <label>Price (₹ per kg)</label>
+            <input
+              type="number"
+              name="price"
+              className="form-control"
+              placeholder="0"
+              value={formData.price}
+              onChange={handleChange}
+              min={0}
+              step={1}
+            />
+          </div>
+
           {/* Expiry Date */}
           <div className="form-group">
             <label>Expires In (Days or "2 days", "24 hours")</label>
@@ -232,18 +353,49 @@ const ListingForm: React.FC = () => {
 
           {/* Location */}
           <div className="form-group">
-            <label>📍 Your Pickup Location</label>
+            <label>📍 Pickup Address</label>
             <input 
               type="text" 
-              name="location" 
+              name="pickupAddress" 
               className="form-control" 
-              placeholder="Auto-detected from your device..."
-              value={formData.location}
+              placeholder="Enter pickup address manually"
+              value={formData.pickupAddress}
               onChange={handleChange}
-              disabled={!!formData.location && !locationError}
-              title="Your location is automatically detected. Edit if needed."
+              title="Enter the pickup address, or pick a location from the map."
             />
-            {locationError && <small style={{color: '#d32f2f', marginTop: '5px', display: 'block'}}>{locationError}</small>}
+
+            <div className="map-picker-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setShowMapPicker(v => !v)}
+              >
+                {showMapPicker ? 'Hide Map' : 'Pick on Map'}
+              </button>
+              {pickupCoords && (
+                <span className="map-picker-coords">Selected: {formatCoords(pickupCoords)}</span>
+              )}
+            </div>
+
+            {showMapPicker && (
+              <div className="map-picker">
+                <MapContainer
+                  center={[mapCenter.lat, mapCenter.lng]}
+                  zoom={5}
+                  scrollWheelZoom={false}
+                  className="map-picker-map"
+                >
+                  <TileLayer
+                    attribution="&copy; OpenStreetMap contributors"
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <MapClickToPick onPick={setPickupCoords} />
+                  {pickupCoords && (
+                    <CircleMarker center={[pickupCoords.lat, pickupCoords.lng]} radius={10} pathOptions={{ color: '#064e3b' }} />
+                  )}
+                </MapContainer>
+              </div>
+            )}
           </div>
 
           {/* Description */}
@@ -268,8 +420,10 @@ const ListingForm: React.FC = () => {
               Save Details
             </button>
           </div>
-        </form>
-      </div>
+            </form>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

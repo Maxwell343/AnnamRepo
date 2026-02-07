@@ -155,7 +155,6 @@ const HomePage: React.FC = () => {
   const [deliveryTasks, setDeliveryTasks] = useState<DeliveryTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [visibleCards, setVisibleCards] = useState<Set<number>>(new Set());
   const [claimingId, setClaimingId] = useState<number | null>(null);
   const [claimQuantity, setClaimQuantity] = useState<{ [key: number]: string }>({});
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -213,8 +212,6 @@ const HomePage: React.FC = () => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const element = entry.target as HTMLElement;
-            const cardId = parseInt(element.getAttribute('data-card-id') || '0');
-            setVisibleCards((prev) => new Set([...prev, cardId]));
             observer.unobserve(element);
           }
         });
@@ -681,6 +678,7 @@ const HomePage: React.FC = () => {
       farmer: [
         { id: 'my-listings', icon: '📦', label: 'My Listings', action: () => navigate('/my-listings') },
         { id: 'add-listing', icon: '➕', label: 'Add Listing', action: () => navigate('/listing') },
+        { id: 'marketplace', icon: '🛒', label: 'Marketplace', action: () => navigate('/marketplace') },
         { id: 'analytics', icon: '📊', label: 'Analytics', action: () => navigate('/analytics') },
       ],
       ngo: [
@@ -1002,51 +1000,55 @@ const HomePage: React.FC = () => {
 
         {/* Listings Section */}
         <section className="listings-section">
-          <div className="section-header">
-            <div className="section-title-group">
+          <div className="listings-header">
+            <div className="listings-title-group">
               <h2 className="section-title">{getSectionTitle()}</h2>
               <span className="listings-count">{displayListings.length} listings</span>
             </div>
             
-            <div className="section-actions">
-              <div className="filter-group">
-                {['All', 'Vegetable', 'Fruit', 'Grain'].map(filter => (
-                  <button 
-                    key={filter}
-                    className={`filter-btn ${activeFilter === filter ? 'active' : ''}`}
-                    onClick={() => setActiveFilter(filter)}
-                  >
-                    <span className="filter-icon">
-                      {filter === 'All' ? '🌟' : 
-                       filter === 'Vegetable' ? '🥦' :
-                       filter === 'Fruit' ? '🍎' : '🌾'}
-                    </span>
-                    {filter}
-                  </button>
-                ))}
+            <div className="listings-toolbar">
+              <div className="listings-toolbar-left">
+                <div className="filter-group">
+                  {['All', 'Vegetable', 'Fruit', 'Grain'].map(filter => (
+                    <button 
+                      key={filter}
+                      className={`filter-btn ${activeFilter === filter ? 'active' : ''}`}
+                      onClick={() => setActiveFilter(filter)}
+                    >
+                      <span className="filter-icon">
+                        {filter === 'All' ? '🌟' : 
+                        filter === 'Vegetable' ? '🥦' :
+                        filter === 'Fruit' ? '🍎' : '🌾'}
+                      </span>
+                      {filter}
+                    </button>
+                  ))}
+                </div>
               </div>
-              
-              <button 
-                className="refresh-btn"
-                onClick={() => {
-                  fetchListings();
-                  if (user?.role === 'driver') {
-                    fetchDeliveryTasks(user.id);
-                  }
-                }}
-                title="Refresh listings"
-              >
-                🔄
-              </button>
-              
-              {user?.role === 'farmer' && (
+
+              <div className="listings-toolbar-right">
                 <button 
-                  className="new-listing-btn"
-                  onClick={() => navigate('/listing')}
+                  className="refresh-btn"
+                  onClick={() => {
+                    fetchListings();
+                    if (user?.role === 'driver') {
+                      fetchDeliveryTasks(user.id);
+                    }
+                  }}
+                  title="Refresh listings"
                 >
-                  <span>+</span> New Listing
+                  🔄
                 </button>
-              )}
+                
+                {user?.role === 'farmer' && (
+                  <button 
+                    className="new-listing-btn"
+                    onClick={() => navigate('/listing')}
+                  >
+                    <span>+</span> New Listing
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 

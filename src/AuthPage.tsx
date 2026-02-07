@@ -164,7 +164,7 @@ const AuthPage: React.FC = () => {
       console.log('Checking if user exists:', userData.email);
 
       // Check if user exists
-      const checkResponse = await fetch('http://localhost:8000/api/google-auth/check', {
+      const checkResponse = await fetch('http://localhost:5000/api/google-auth/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: userData.email }),
@@ -176,7 +176,7 @@ const AuthPage: React.FC = () => {
       if (checkData.exists) {
         // User exists, log them in
         console.log('User exists, logging in...');
-        const loginResponse = await fetch('http://localhost:8000/api/google-auth/login', {
+        const loginResponse = await fetch('http://localhost:5000/api/google-auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -247,7 +247,7 @@ const AuthPage: React.FC = () => {
       
       console.log('Google signup data:', signupData);
       
-      const response = await fetch('http://localhost:8000/api/google-auth/signup', {
+      const response = await fetch('http://localhost:5000/api/google-auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(signupData),
@@ -303,8 +303,8 @@ const AuthPage: React.FC = () => {
     }
 
     const endpoint = isLogin 
-      ? 'http://localhost:8000/api/login' 
-      : 'http://localhost:8000/api/signup';
+      ? 'http://localhost:5000/api/login' 
+      : 'http://localhost:5000/api/signup';
 
     try {
       const requestBody = isLogin 
@@ -378,7 +378,7 @@ const AuthPage: React.FC = () => {
       {/* Background Image */}
       <div className="auth-background">
         <img 
-          src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1920" 
+          src="./public/sgnp.png" 
           alt="Field background"
         />
         <div className="auth-overlay"></div>
@@ -438,7 +438,6 @@ const AuthPage: React.FC = () => {
               <div className="form-group">
                 <label className="form-label">Full Name</label>
                 <div className="input-wrapper">
-                  <span className="input-icon">👤</span>
                   <input 
                     type="text"
                     className="form-input" 
@@ -454,7 +453,6 @@ const AuthPage: React.FC = () => {
               <div className="form-group">
                 <label className="form-label">Phone Number</label>
                 <div className="input-wrapper">
-                  <span className="input-icon">📱</span>
                   <input 
                     type="tel"
                     className="form-input" 
@@ -470,7 +468,6 @@ const AuthPage: React.FC = () => {
               <div className="form-group">
                 <label className="form-label">City / District</label>
                 <div className="input-wrapper">
-                  <span className="input-icon">📍</span>
                   <input 
                     type="text"
                     className="form-input" 
@@ -489,7 +486,6 @@ const AuthPage: React.FC = () => {
           <div className="form-group">
             <label className="form-label">Email or Phone</label>
             <div className="input-wrapper">
-              <span className="input-icon">✉️</span>
               <input 
                 type="email"
                 className={`form-input ${emailError ? 'input-error' : ''}`} 
@@ -507,7 +503,6 @@ const AuthPage: React.FC = () => {
           <div className="form-group">
             <label className="form-label">Password</label>
             <div className="input-wrapper">
-              <span className="input-icon">🔒</span>
               <input 
                 type={showPassword ? 'text' : 'password'}
                 className="form-input" 
@@ -585,7 +580,6 @@ const AuthPage: React.FC = () => {
             <div className="form-group">
               <label className="form-label">NGO Name</label>
               <div className="input-wrapper">
-                <span className="input-icon">🏛️</span>
                 <input 
                   type="text"
                   className="form-input" 
@@ -604,7 +598,6 @@ const AuthPage: React.FC = () => {
             <div className="form-group">
               <label className="form-label">Vehicle Type</label>
               <div className="input-wrapper">
-                <span className="input-icon">🚗</span>
                 <select 
                   className="form-input" 
                   name="vehicleType" 
@@ -684,7 +677,6 @@ const AuthPage: React.FC = () => {
               <div className="form-group">
                 <label className="form-label">Phone Number *</label>
                 <div className="input-wrapper">
-                  <span className="input-icon">📱</span>
                   <input 
                     type="tel"
                     className="form-input" 
@@ -699,7 +691,6 @@ const AuthPage: React.FC = () => {
               <div className="form-group">
                 <label className="form-label">City / District *</label>
                 <div className="input-wrapper">
-                  <span className="input-icon">📍</span>
                   <input 
                     type="text"
                     className="form-input" 
@@ -734,7 +725,6 @@ const AuthPage: React.FC = () => {
                 <div className="form-group">
                   <label className="form-label">NGO Name *</label>
                   <div className="input-wrapper">
-                    <span className="input-icon">🏛️</span>
                     <input 
                       type="text"
                       className="form-input" 
@@ -751,7 +741,6 @@ const AuthPage: React.FC = () => {
                 <div className="form-group">
                   <label className="form-label">Vehicle Type *</label>
                   <div className="input-wrapper">
-                    <span className="input-icon">🚗</span>
                     <select 
                       className="form-input" 
                       value={googleVehicleType} 

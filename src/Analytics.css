@@ -23,12 +23,12 @@
 }
 
 .range-btn:hover {
-  color: #2e7d32;
+  color: #064e3b;
 }
 
 .range-btn.active {
   background: white;
-  color: #2e7d32;
+  color: #064e3b;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -63,17 +63,17 @@
   left: 0;
   width: 0;
   height: 3px;
-  background: linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%);
+  background: linear-gradient(135deg, #064e3b 0%, #059669 100%);
   border-radius: 3px 3px 0 0;
   transition: width 0.3s ease;
 }
 
 .tab-btn:hover {
-  color: #2e7d32;
+  color: #064e3b;
 }
 
 .tab-btn.active {
-  color: #2e7d32;
+  color: #064e3b;
 }
 
 .tab-btn.active::after {
@@ -120,15 +120,15 @@
 }
 
 .stat-card-analytics.primary::before {
-  background: linear-gradient(90deg, #2e7d32, #66bb6a);
+  background: linear-gradient(90deg, #064e3b, #059669);
 }
 
 .stat-card-analytics.success::before {
-  background: linear-gradient(90deg, #4caf50, #81c784);
+  background: linear-gradient(90deg, #059669, #10b981);
 }
 
 .stat-card-analytics.warning::before {
-  background: linear-gradient(90deg, #ff9800, #ffb74d);
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
 }
 
 .stat-card-analytics.danger::before {
@@ -176,8 +176,8 @@
 }
 
 .stat-trend.positive {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: #f0fdf4;
+  color: #064e3b;
 }
 
 .stat-trend.negative {
@@ -246,11 +246,11 @@
 }
 
 .legend-color.donations {
-  background: #2e7d32;
+  background: #064e3b;
 }
 
 .legend-color.claimed {
-  background: #66bb6a;
+  background: #059669;
 }
 
 /* Bar Chart */
@@ -292,11 +292,11 @@
 }
 
 .bar.donations {
-  background: linear-gradient(180deg, #2e7d32 0%, #1b5e20 100%);
+  background: linear-gradient(180deg, #064e3b 0%, #022c22 100%);
 }
 
 .bar.claimed {
-  background: linear-gradient(180deg, #66bb6a 0%, #4caf50 100%);
+  background: linear-gradient(180deg, #059669 0%, #10b981 100%);
 }
 
 .bar-value {
@@ -454,7 +454,7 @@
 
 .progress-ring-fill {
   fill: none;
-  stroke: url(#gradient) #2e7d32;
+  stroke: url(#gradient) #064e3b;
   stroke-width: 10;
   stroke-linecap: round;
   transition: stroke-dasharray 1s ease;
@@ -472,7 +472,7 @@
   display: block;
   font-size: 32px;
   font-weight: 800;
-  color: #2e7d32;
+  color: #064e3b;
 }
 
 .progress-label {
@@ -507,7 +507,7 @@
 }
 
 .rate-dot.delivered {
-  background: #66bb6a;
+  background: #059669;
 }
 
 .rate-dot.expired {
@@ -595,14 +595,14 @@
   border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
-  color: #2e7d32;
+  color: #064e3b;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .view-all-btn:hover {
-  background: #e8f5e9;
-  border-color: #2e7d32;
+  background: #f0fdf4;
+  border-color: #064e3b;
 }
 
 /* ============================================
@@ -675,11 +675,11 @@
 }
 
 .chart-line.donations {
-  stroke: #2e7d32;
+  stroke: #064e3b;
 }
 
 .chart-line.claimed {
-  stroke: #66bb6a;
+  stroke: #059669;
   stroke-dasharray: 8 4;
 }
 
@@ -689,11 +689,11 @@
 }
 
 .data-point.donations {
-  fill: #2e7d32;
+  fill: #064e3b;
 }
 
 .data-point.claimed {
-  fill: #66bb6a;
+  fill: #059669;
 }
 
 .data-point:hover {
@@ -757,7 +757,7 @@
 .insight-detail {
   display: block;
   font-size: 12px;
-  color: #2e7d32;
+  color: #064e3b;
   font-weight: 600;
   margin-top: 2px;
 }
@@ -823,7 +823,7 @@
 }
 
 .impact-card.food-saved::before {
-  background: linear-gradient(90deg, #4caf50, #81c784);
+  background: linear-gradient(90deg, #064e3b, #059669);
 }
 
 .impact-card.people-fed::before {
@@ -960,7 +960,7 @@
   display: block;
   font-size: 24px;
   font-weight: 800;
-  color: #2e7d32;
+  color: #064e3b;
   margin-bottom: 6px;
 }
 

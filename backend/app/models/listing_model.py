@@ -25,6 +25,7 @@ class ListingCreate(BaseModel):
     description: Optional[str] = ""
     quantity: str
     type: ListingType = ListingType.OTHER
+    price: Optional[float] = None
     expiry_date: Optional[str] = None
     pickup_address: str
     pickup_time: Optional[str] = None
@@ -39,6 +40,7 @@ class ListingUpdate(BaseModel):
     description: Optional[str] = None
     quantity: Optional[str] = None
     type: Optional[ListingType] = None
+    price: Optional[float] = None
     expiry_date: Optional[str] = None
     pickup_address: Optional[str] = None
     pickup_time: Optional[str] = None

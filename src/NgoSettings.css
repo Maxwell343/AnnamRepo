@@ -1,11 +1,11 @@
-/* NGO Settings - Modern Professional Design */
+/* NGO Settings - Dark Forest Green Theme */
 
 /* ==================== Variables ==================== */
 :root {
-  --ngo-primary: #10b981;
-  --ngo-primary-light: #34d399;
-  --ngo-primary-dark: #059669;
-  --ngo-secondary: #6366f1;
+  --ngo-primary: #064e3b;
+  --ngo-primary-light: #059669;
+  --ngo-primary-dark: #022c22;
+  --ngo-secondary: #0284c7;
   --ngo-accent: #f59e0b;
   
   --ngo-bg-primary: #f8fafc;
@@ -17,7 +17,7 @@
   --ngo-text-tertiary: #94a3b8;
   
   --ngo-border: #e2e8f0;
-  --ngo-border-focus: #10b981;
+  --ngo-border-focus: #064e3b;
   
   --ngo-success: #22c55e;
   --ngo-warning: #f59e0b;

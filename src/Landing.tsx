@@ -1,301 +1,324 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Landing.css';
+import { ArrowRight, Leaf, Users, Truck, Shield, CheckCircle, Star, Menu, X } from 'lucide-react';
+import { useState } from 'react';
 
-const Landing: React.FC = () => {
+// Professional food-related images
+const heroImage = 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80';
+const farmImage = 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&q=80';
+const communityImage = 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=600&q=80';
+const deliveryImage = 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600&q=80';
+const testimonial1 = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80';
+const testimonial2 = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80';
+const testimonial3 = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80';
+
+const Landing = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const foodCategories = [
-    {
-      id: 1,
-      title: 'Fresh Produce',
-      subtitle: 'Vegetables & Fruits',
-      image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=600',
-      tag: 'Perishable',
-      tagColor: '#4CAF50'
-    },
-    {
-      id: 2,
-      title: 'Grains & Cereals',
-      subtitle: 'Rice, Wheat & More',
-      image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600',
-      tag: 'Staples',
-      tagColor: '#FF9800'
-    },
-    {
-      id: 3,
-      title: 'Dairy Products',
-      subtitle: 'Milk, Cheese & Yogurt',
-      image: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=600',
-      tag: 'Fresh',
-      tagColor: '#2196F3'
-    },
-    {
-      id: 4,
-      title: 'Packaged Foods',
-      subtitle: 'Canned & Preserved',
-      image: 'https://images.unsplash.com/photo-1534483509719-3feaee7c30da?w=600',
-      tag: 'Long-life',
-      tagColor: '#9C27B0'
-    }
-  ];
+  const handleGetStarted = () => {
+    navigate('/auth');
+  };
 
-  const quickTools = [
-    {
-      icon: '🌾',
-      title: 'Donate Food',
-      description: 'List surplus food for donation',
-      color: '#4CAF50',
-      bgColor: '#E8F5E9'
-    },
-    {
-      icon: '🏢',
-      title: 'Claim Donations',
-      description: 'NGOs can claim available food',
-      color: '#2196F3',
-      bgColor: '#E3F2FD'
-    },
-    {
-      icon: '🚚',
-      title: 'Deliver Food',
-      description: 'Drivers can pick up and deliver',
-      color: '#FF9800',
-      bgColor: '#FFF3E0'
-    },
-    {
-      icon: '📊',
-      title: 'Track Impact',
-      description: 'See your donation statistics',
-      color: '#9C27B0',
-      bgColor: '#F3E5F5'
-    },
-    {
-      icon: '🤝',
-      title: 'Join Network',
-      description: 'Connect with food warriors',
-      color: '#F44336',
-      bgColor: '#FFEBEE'
-    }
-  ];
-
-  const impactStats = [
-    { value: '50,000+', label: 'Meals Donated' },
-    { value: '200+', label: 'Active Donors' },
-    { value: '100+', label: 'NGO Partners' },
-    { value: '50+', label: 'Delivery Partners' }
-  ];
+  const handleLogin = () => {
+    navigate('/auth');
+  };
 
   return (
-    <div className="landing-container">
-      {/* Navigation */}
-      <nav className="landing-nav">
-        <div className="nav-content">
-          <div className="nav-logo">
-            <span className="logo-icon">🍃</span>
-            <span className="logo-text">ANNAM</span>
-          </div>
-          
-          <div className={`nav-links ${mobileMenuOpen ? 'active' : ''}`}>
-            <a href="#home">Home</a>
-            <a href="#categories">Donate</a>
-            <a href="#tools">How It Works</a>
-            <a href="#impact">Impact</a>
-            <a href="#about">About</a>
+    <div className="landing-page">
+      {/* Header */}
+      <header className="landing-header">
+        <div className="header-container">
+          <Link to="/" className="logo">
+            <span className="logo-icon">🌾</span>
+            <span className="logo-text">Annam</span>
+          </Link>
+
+          <nav className={`header-nav ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+            <Link to="/marketplace" className="nav-link nav-link-highlight" onClick={() => setMobileMenuOpen(false)}>🛒 Marketplace</Link>
+            <a href="#how-it-works" className="nav-link" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
+            <a href="#features" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Features</a>
+            <a href="#impact" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Our Impact</a>
+            <a href="#testimonials" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Stories</a>
+          </nav>
+
+          <div className="header-actions">
+            <button className="btn-login" onClick={handleLogin}>
+              Log In
+            </button>
+            <button className="btn-signup" onClick={handleGetStarted}>
+              Get Started
+            </button>
           </div>
 
-          <div className="nav-actions">
-            <button className="nav-btn-login" onClick={() => navigate('/auth')}>
-              Login
-            </button>
-            <button className="nav-btn-signup" onClick={() => navigate('/auth')}>
-              Sign Up
-            </button>
-          </div>
-
-          <button 
-            className="mobile-menu-btn"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <span></span>
-            <span></span>
-            <span></span>
+          <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
-      </nav>
+      </header>
 
       {/* Hero Section */}
-      <section className="hero-section" id="home">
-        <div className="hero-background">
-          <img 
-            src="https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=1920" 
-            alt="Food donation background"
-          />
-          <div className="hero-overlay"></div>
-        </div>
-        
+      <section className="hero-section">
         <div className="hero-content">
-          <div className="hero-card">
-            <div className="hero-icon">
-              <span>🍃</span>
+          <div className="hero-badge">
+            <Leaf size={16} />
+            <span>Reducing Food Waste Together</span>
+          </div>
+          <h1>
+            Connect Surplus Food <br />
+            <span className="gradient-text">With Those Who Need It</span>
+          </h1>
+          <p className="hero-description">
+            Annam bridges the gap between farmers, NGOs, and volunteers to ensure 
+            no food goes to waste. Join our mission to create a sustainable food ecosystem.
+          </p>
+          <div className="hero-cta">
+            <button className="btn-primary" onClick={handleGetStarted}>
+              Join Annam Today
+              <ArrowRight size={20} />
+            </button>
+            <a href="#how-it-works" className="btn-secondary">
+              Learn More
+            </a>
+          </div>
+          <div className="hero-stats">
+            <div className="stat-item">
+              <span className="stat-number">50K+</span>
+              <span className="stat-label">Meals Saved</span>
             </div>
-            <h1 className="hero-title">
-              Connecting Surplus Food with{' '}
-              <span className="highlight">Those in Need</span>
-            </h1>
-            <p className="hero-subtitle">
-              Join India's growing food donation network. Reduce waste, feed communities, 
-              and make a lasting impact with every donation.
-            </p>
-            <div className="hero-buttons">
-              <button 
-                className="btn-primary"
-                onClick={() => navigate('/auth')}
-              >
-                Get Started
-              </button>
-              <button 
-                className="btn-secondary"
-                onClick={() => document.getElementById('tools')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                Explore Features
-              </button>
+            <div className="stat-divider"></div>
+            <div className="stat-item">
+              <span className="stat-number">500+</span>
+              <span className="stat-label">Active Partners</span>
+            </div>
+            <div className="stat-divider"></div>
+            <div className="stat-item">
+              <span className="stat-number">25+</span>
+              <span className="stat-label">Cities Covered</span>
             </div>
           </div>
         </div>
-      </section>
-
-      {/* Food Categories Section */}
-      <section className="categories-section" id="categories">
-        <div className="section-header">
-          <h2 className="section-title">Explore Food Donations</h2>
-          <p className="section-subtitle">
-            Discover various categories of food that can be donated to help those in need
-          </p>
-        </div>
-        
-        <div className="categories-grid">
-          {foodCategories.map((category) => (
-            <div key={category.id} className="category-card">
-              <div className="category-image">
-                <img src={category.image} alt={category.title} />
-                <span 
-                  className="category-tag"
-                  style={{ backgroundColor: category.tagColor }}
-                >
-                  {category.tag}
-                </span>
-              </div>
-              <div className="category-info">
-                <h3>{category.title}</h3>
-                <p>{category.subtitle}</p>
-                <button className="category-arrow" onClick={() => navigate('/auth')}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                  </svg>
-                </button>
+        <div className="hero-visual">
+          <div className="hero-image-wrapper">
+            <img src={heroImage} alt="Fresh produce ready for distribution" className="hero-image" />
+            <div className="floating-card card-1">
+              <CheckCircle size={20} className="card-icon success" />
+              <div>
+                <span className="card-title">Pickup Completed</span>
+                <span className="card-subtitle">15 kg vegetables saved</span>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Quick Access Tools */}
-      <section className="tools-section" id="tools">
-        <div className="section-header">
-          <h2 className="section-title">Quick Access Tools</h2>
-          <p className="section-subtitle">
-            Everything you need to donate, claim, and track food donations
-          </p>
-        </div>
-        
-        <div className="tools-grid">
-          {quickTools.map((tool, index) => (
-            <div key={index} className="tool-card">
-              <div 
-                className="tool-icon"
-                style={{ backgroundColor: tool.bgColor, color: tool.color }}
-              >
-                <span>{tool.icon}</span>
+            <div className="floating-card card-2">
+              <Users size={20} className="card-icon primary" />
+              <div>
+                <span className="card-title">New NGO Partner</span>
+                <span className="card-subtitle">Hope Foundation joined</span>
               </div>
-              <h3>{tool.title}</h3>
-              <p>{tool.description}</p>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Impact Stats */}
-      <section className="impact-section" id="impact">
-        <div className="impact-background">
-          <img 
-            src="https://images.unsplash.com/photo-1593113598332-cd288d649433?w=1920" 
-            alt="Community impact"
-          />
-          <div className="impact-overlay"></div>
-        </div>
-        
-        <div className="impact-content">
-          <div className="section-header light">
-            <h2 className="section-title">Our Impact</h2>
-            <p className="section-subtitle">
-              Together we're making a difference in fighting hunger across communities
-            </p>
-          </div>
-          
-          <div className="stats-grid">
-            {impactStats.map((stat, index) => (
-              <div key={index} className="stat-card">
-                <span className="stat-value">{stat.value}</span>
-                <span className="stat-label">{stat.label}</span>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="how-section" id="about">
+      <section id="how-it-works" className="how-it-works-section">
         <div className="section-header">
-          <h2 className="section-title">How ANNAM Works</h2>
-          <p className="section-subtitle">
-            Simple steps to start your food donation journey
+          <span className="section-tag">Simple Process</span>
+          <h2>How Annam Works</h2>
+          <p>Our streamlined process makes food redistribution effortless</p>
+        </div>
+
+        <div className="process-grid">
+          <div className="process-card">
+            <div className="process-number">01</div>
+            <div className="process-icon">
+              <Leaf size={32} />
+            </div>
+            <h3>Farmers List Surplus</h3>
+            <p>Farmers and food businesses list their surplus produce on our platform with pickup details.</p>
+          </div>
+
+          <div className="process-connector"></div>
+
+          <div className="process-card">
+            <div className="process-number">02</div>
+            <div className="process-icon">
+              <Users size={32} />
+            </div>
+            <h3>NGOs Claim Donations</h3>
+            <p>Verified NGOs browse available listings and claim what their communities need most.</p>
+          </div>
+
+          <div className="process-connector"></div>
+
+          <div className="process-card">
+            <div className="process-number">03</div>
+            <div className="process-icon">
+              <Truck size={32} />
+            </div>
+            <h3>Volunteers Deliver</h3>
+            <p>Our network of volunteer drivers picks up and delivers food to distribution centers.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="features-section">
+        <div className="section-header">
+          <span className="section-tag">Why Choose Us</span>
+          <h2>Built for Impact</h2>
+          <p>Powerful features designed to maximize food redistribution efficiency</p>
+        </div>
+
+        <div className="features-grid">
+          <div className="feature-card">
+            <img src={farmImage} alt="Local farms" className="feature-image" />
+            <div className="feature-content">
+              <h3>For Farmers & Producers</h3>
+              <ul className="feature-list">
+                <li><CheckCircle size={18} /> Easy listing in under 2 minutes</li>
+                <li><CheckCircle size={18} /> Schedule flexible pickup times</li>
+                <li><CheckCircle size={18} /> Track your environmental impact</li>
+                <li><CheckCircle size={18} /> Tax deduction documentation</li>
+              </ul>
+              <button className="btn-feature" onClick={handleGetStarted}>
+                Start Donating <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
+
+          <div className="feature-card">
+            <img src={communityImage} alt="Community support" className="feature-image" />
+            <div className="feature-content">
+              <h3>For NGOs & Charities</h3>
+              <ul className="feature-list">
+                <li><CheckCircle size={18} /> Real-time food availability</li>
+                <li><CheckCircle size={18} /> Filter by dietary requirements</li>
+                <li><CheckCircle size={18} /> Coordinate multiple pickups</li>
+                <li><CheckCircle size={18} /> Distribution analytics</li>
+              </ul>
+              <button className="btn-feature" onClick={handleGetStarted}>
+                Partner With Us <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
+
+          <div className="feature-card">
+            <img src={deliveryImage} alt="Delivery volunteers" className="feature-image" />
+            <div className="feature-content">
+              <h3>For Volunteer Drivers</h3>
+              <ul className="feature-list">
+                <li><CheckCircle size={18} /> Optimized route planning</li>
+                <li><CheckCircle size={18} /> Flexible scheduling</li>
+                <li><CheckCircle size={18} /> Earn recognition badges</li>
+                <li><CheckCircle size={18} /> Track your contributions</li>
+              </ul>
+              <button className="btn-feature" onClick={handleGetStarted}>
+                Become a Driver <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Impact Section */}
+      <section id="impact" className="impact-section">
+        <div className="impact-content">
+          <span className="section-tag light">Our Impact</span>
+          <h2>Making a Real Difference</h2>
+          <p>
+            Every meal saved is a step towards a more sustainable future. 
+            Together, we're building a community that values food and cares for each other.
           </p>
+          
+          <div className="impact-metrics">
+            <div className="metric">
+              <span className="metric-value">150+</span>
+              <span className="metric-label">Tons of Food Saved</span>
+            </div>
+            <div className="metric">
+              <span className="metric-value">10K+</span>
+              <span className="metric-label">Families Helped</span>
+            </div>
+            <div className="metric">
+              <span className="metric-value">75%</span>
+              <span className="metric-label">Reduction in Waste</span>
+            </div>
+          </div>
         </div>
         
-        <div className="steps-container">
-          <div className="step-card">
-            <div className="step-number">1</div>
-            <div className="step-icon">📝</div>
-            <h3>Register</h3>
-            <p>Sign up as a donor, NGO, or delivery partner</p>
+        <div className="impact-visual">
+          <div className="impact-card">
+            <Shield size={40} />
+            <h4>Verified Partners</h4>
+            <p>All NGOs and organizations are thoroughly vetted for trust and accountability.</p>
           </div>
-          
-          <div className="step-connector"></div>
-          
-          <div className="step-card">
-            <div className="step-number">2</div>
-            <div className="step-icon">📦</div>
-            <h3>List or Claim</h3>
-            <p>Donors list food, NGOs claim donations</p>
+          <div className="impact-card">
+            <Leaf size={40} />
+            <h4>Eco-Friendly</h4>
+            <p>Reducing carbon footprint by minimizing food waste in landfills.</p>
           </div>
-          
-          <div className="step-connector"></div>
-          
-          <div className="step-card">
-            <div className="step-number">3</div>
-            <div className="step-icon">🚚</div>
-            <h3>Deliver</h3>
-            <p>Drivers pick up and deliver to NGOs</p>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section id="testimonials" className="testimonials-section">
+        <div className="section-header">
+          <span className="section-tag">Success Stories</span>
+          <h2>Voices from Our Community</h2>
+          <p>Real stories from the people making a difference</p>
+        </div>
+
+        <div className="testimonials-grid">
+          <div className="testimonial-card featured">
+            <div className="testimonial-rating">
+              {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
+            </div>
+            <p className="testimonial-quote">
+              "Annam has transformed how we handle surplus produce. What used to go to waste 
+              now reaches families in need. The platform is incredibly easy to use, and seeing 
+              the impact reports motivates us to donate even more."
+            </p>
+            <div className="testimonial-author">
+              <img src={testimonial1} alt="Rajesh Sharma" />
+              <div>
+                <h4>Rajesh Sharma</h4>
+                <span>Organic Farmer, Punjab</span>
+              </div>
+            </div>
           </div>
-          
-          <div className="step-connector"></div>
-          
-          <div className="step-card">
-            <div className="step-number">4</div>
-            <div className="step-icon">🎉</div>
-            <h3>Impact</h3>
-            <p>Track your contribution and celebrate</p>
+
+          <div className="testimonial-card">
+            <div className="testimonial-rating">
+              {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
+            </div>
+            <p className="testimonial-quote">
+              "As an NGO serving 200+ families daily, reliable food sources are crucial. 
+              Annam connects us with quality donations consistently."
+            </p>
+            <div className="testimonial-author">
+              <img src={testimonial2} alt="Priya Patel" />
+              <div>
+                <h4>Priya Patel</h4>
+                <span>Director, Food for All NGO</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="testimonial-card">
+            <div className="testimonial-rating">
+              {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
+            </div>
+            <p className="testimonial-quote">
+              "Volunteering as a driver gives me purpose. The route optimization 
+              helps me complete more deliveries, maximizing my impact."
+            </p>
+            <div className="testimonial-author">
+              <img src={testimonial3} alt="Amit Kumar" />
+              <div>
+                <h4>Amit Kumar</h4>
+                <span>Volunteer Driver, Delhi</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -303,85 +326,65 @@ const Landing: React.FC = () => {
       {/* CTA Section */}
       <section className="cta-section">
         <div className="cta-content">
-          <h2>Ready to Make a Difference?</h2>
-          <p>Join thousands of donors, NGOs, and volunteers fighting food waste</p>
+          <h2>Ready to Make an Impact?</h2>
+          <p>
+            Join thousands of farmers, NGOs, and volunteers who are already 
+            making a difference. Start your journey with Annam today.
+          </p>
           <div className="cta-buttons">
-            <button className="btn-primary large" onClick={() => navigate('/auth')}>
-              Start Donating Today
+            <button className="btn-cta-primary" onClick={handleGetStarted}>
+              Create Free Account
+              <ArrowRight size={20} />
             </button>
-            <button className="btn-outline large" onClick={() => navigate('/auth')}>
-              Join as NGO
-            </button>
+            <Link to="/auth" className="btn-cta-secondary">
+              Already have an account? Log in
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="landing-footer">
-        <div className="footer-content">
-          <div className="footer-main">
-            <div className="footer-brand">
-              <div className="footer-logo">
-                <span className="logo-icon">🍃</span>
-                <span className="logo-text">ANNAM</span>
-              </div>
-              <p className="footer-desc">
-                India's leading food donation platform connecting surplus food with 
-                communities in need. Together, we're fighting hunger one meal at a time.
-              </p>
-              <div className="social-links">
-                <a href="#" aria-label="Facebook">
-                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                </a>
-                <a href="#" aria-label="Twitter">
-                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                  </svg>
-                </a>
-                <a href="#" aria-label="Instagram">
-                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-                  </svg>
-                </a>
-                <a href="#" aria-label="LinkedIn">
-                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                  </svg>
-                </a>
-              </div>
+        <div className="footer-main">
+          <div className="footer-brand">
+            <div className="logo">
+              <span className="logo-icon">🌾</span>
+              <span className="logo-text">Annam</span>
             </div>
-            
-            <div className="footer-links">
-              <div className="footer-column">
-                <h4>Platform</h4>
-                <a href="#categories">Donate Food</a>
-                <a href="#categories">Claim Donations</a>
-                <a href="#tools">Become a Driver</a>
-                <a href="#impact">Track Impact</a>
-              </div>
-              
-              <div className="footer-column">
-                <h4>Support</h4>
-                <a href="#">Help Center</a>
-                <a href="#">FAQs</a>
-                <a href="#">Contact Us</a>
-                <a href="#">Report Issue</a>
-              </div>
-              
-              <div className="footer-column">
-                <h4>Legal</h4>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-                <a href="#">Cookie Policy</a>
-                <a href="#">Guidelines</a>
-              </div>
+            <p>Connecting surplus food with those who need it most. Building a sustainable future, one meal at a time.</p>
+          </div>
+
+          <div className="footer-links">
+            <div className="footer-column">
+              <h4>Platform</h4>
+              <a href="#how-it-works">How It Works</a>
+              <a href="#features">Features</a>
+              <a href="#impact">Our Impact</a>
+              <Link to="/auth">Get Started</Link>
+            </div>
+            <div className="footer-column">
+              <h4>Resources</h4>
+              <a href="#">Help Center</a>
+              <a href="#">Partner Guidelines</a>
+              <a href="#">Food Safety</a>
+              <a href="#">Blog</a>
+            </div>
+            <div className="footer-column">
+              <h4>Company</h4>
+              <a href="#">About Us</a>
+              <a href="#">Careers</a>
+              <a href="#">Press</a>
+              <a href="#">Contact</a>
             </div>
           </div>
-          
-          <div className="footer-bottom">
-            <p>&copy; 2024 ANNAM. All rights reserved. Made with ❤️ for India</p>
+        </div>
+
+        <div className="footer-bottom">
+          <p>&copy; 2026 Annam. All rights reserved.</p>
+          <div className="footer-legal-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Cookie Policy</a>
           </div>
         </div>
       </footer>
