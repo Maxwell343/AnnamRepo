@@ -150,14 +150,12 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('All');
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [listings, setListings] = useState<FoodListing[]>([]);
   const [deliveryTasks, setDeliveryTasks] = useState<DeliveryTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [claimingId, setClaimingId] = useState<number | null>(null);
   const [claimQuantity, setClaimQuantity] = useState<{ [key: number]: string }>({});
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const cardRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -295,21 +293,6 @@ const HomePage: React.FC = () => {
     fetchListings();
   }, [navigate]);
 
-  const handleLogout = () => {
-    // Clear all user-related data from localStorage
-    localStorage.removeItem('user');
-    localStorage.removeItem('farmerSettings');
-    localStorage.removeItem('ngoSettings');
-    localStorage.removeItem('userSettings');
-    localStorage.removeItem('driverSettings');
-    localStorage.removeItem('userPhone');
-    localStorage.removeItem('farmName');
-    localStorage.removeItem('farmLocation');
-    localStorage.removeItem('userLanguage');
-    localStorage.removeItem('ngoName');
-    localStorage.removeItem('driverOnline');
-    navigate('/');
-  };
 
   const handleClaimDonation = async (listingId: number) => {
     if (user?.role !== 'ngo') {
@@ -667,62 +650,6 @@ const HomePage: React.FC = () => {
     }
   };
 
-  // Render role-specific sidebar navigation
-  const renderSidebarNav = () => {
-    const commonItems = [
-      { id: 'dashboard', icon: '🏠', label: 'Dashboard', action: () => setActiveTab('dashboard') },
-      { id: 'history', icon: '📜', label: 'History', action: () => navigate('/history') },
-    ];
-
-    const roleSpecificItems = {
-      farmer: [
-        { id: 'my-listings', icon: '📦', label: 'My Listings', action: () => navigate('/my-listings') },
-        { id: 'add-listing', icon: '➕', label: 'Add Listing', action: () => navigate('/listing') },
-        { id: 'marketplace', icon: '🛒', label: 'Marketplace', action: () => navigate('/marketplace') },
-        { id: 'analytics', icon: '📊', label: 'Analytics', action: () => navigate('/analytics') },
-      ],
-      ngo: [
-        { id: 'claimed', icon: '🤝', label: 'Claimed Donations', action: () => navigate('/claimed-donations') },
-        { id: 'tracking', icon: '🚚', label: 'Order Tracking', action: () => navigate('/order-tracking') },
-        { id: 'ngo-settings', icon: '⚙️', label: 'Settings', action: () => navigate('/ngo-settings') },
-      ],
-      driver: [
-        { id: 'my-deliveries', icon: '📍', label: 'My Deliveries', action: () => navigate('/my-deliveries') },
-        { id: 'available-pickups', icon: '🚚', label: 'Available Pickups', action: () => navigate('/available-pickups') },
-        { id: 'route-map', icon: '🗺️', label: 'Route Map', action: () => navigate('/route-map') },
-        { id: 'earnings', icon: '💰', label: 'Earnings', action: () => navigate('/earnings') },
-      ],
-    };
-
-    const getSettingsRoute = () => {
-      if (user?.role === 'farmer') return '/farmer-settings';
-      if (user?.role === 'driver') return '/driver-settings';
-      return '/settings';
-    };
-
-    const items = [
-      ...commonItems,
-      ...(roleSpecificItems[user?.role as keyof typeof roleSpecificItems] || []),
-      { id: 'leaderboards', icon: '🏆', label: 'Leaderboards', action: () => navigate('/leaderboards') },
-      { id: 'settings', icon: '⚙️', label: 'Settings', action: () => navigate(getSettingsRoute()) },
-    ];
-
-    return (
-      <nav className="sidebar-nav">
-        {items.map(item => (
-          <div
-            key={item.id}
-            className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
-            onClick={item.action}
-          >
-            <span className="nav-icon">{item.icon}</span>
-            {!sidebarCollapsed && <span className="nav-label">{item.label}</span>}
-          </div>
-        ))}
-      </nav>
-    );
-  };
-
   // Render role-specific listing actions
   const renderListingActions = (listing: FoodListing) => {
     switch (user?.role) {
@@ -943,37 +870,7 @@ const HomePage: React.FC = () => {
   }
 
   return (
-    <div className={`app-container ${user.role}-theme`}>
-      
-      {/* --- Sidebar Navigation --- */}
-      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
-        <div className="sidebar-header">
-          <div className="brand">
-            <span className="brand-icon">🌾</span>
-            {!sidebarCollapsed && <span className="brand-text">Annam</span>}
-          </div>
-          <button 
-            className="collapse-btn"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {sidebarCollapsed ? '»' : '«'}
-          </button>
-        </div>
-        
-        {renderSidebarNav()}
-
-        <div className="sidebar-footer">
-          <div className="nav-item logout-item" onClick={handleLogout}>
-            <span className="nav-icon">🚪</span>
-            {!sidebarCollapsed && <span className="nav-label">Logout</span>}
-          </div>
-        </div>
-      </aside>
-
-      {/* --- Main Content Area --- */}
-      <main className="main-content">
-        
+    <>
         {/* Top Header */}
         <header className="top-header">
           <div className="header-left">
@@ -1221,8 +1118,7 @@ const HomePage: React.FC = () => {
           </div>
         </section>
 
-      </main>
-    </div>
+    </>
   );
 };
 

@@ -186,63 +186,8 @@ const ListingForm: React.FC = () => {
   };
 
   return (
-    <div className="app-container farmer-theme">
-      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
-        <div className="sidebar-header">
-          <div className="brand">
-            <span className="brand-icon">🌾</span>
-            {!sidebarCollapsed && <span className="brand-text">Annam</span>}
-          </div>
-          <button
-            className="collapse-btn"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {sidebarCollapsed ? '»' : '«'}
-          </button>
-        </div>
-
-        <nav className="sidebar-nav">
-          <div className="nav-item" onClick={() => navigate('/dashboard')}>
-            <span className="nav-icon">🏠</span>
-            {!sidebarCollapsed && <span className="nav-label">Dashboard</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/history')}>
-            <span className="nav-icon">📜</span>
-            {!sidebarCollapsed && <span className="nav-label">History</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/my-listings')}>
-            <span className="nav-icon">📦</span>
-            {!sidebarCollapsed && <span className="nav-label">My Listings</span>}
-          </div>
-          <div className="nav-item active" onClick={() => navigate('/listing')}>
-            <span className="nav-icon">➕</span>
-            {!sidebarCollapsed && <span className="nav-label">Add Listing</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/analytics')}>
-            <span className="nav-icon">📊</span>
-            {!sidebarCollapsed && <span className="nav-label">Analytics</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/leaderboards')}>
-            <span className="nav-icon">🏆</span>
-            {!sidebarCollapsed && <span className="nav-label">Leaderboards</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/farmer-settings')}>
-            <span className="nav-icon">⚙️</span>
-            {!sidebarCollapsed && <span className="nav-label">Settings</span>}
-          </div>
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="nav-item logout-item" onClick={handleLogout}>
-            <span className="nav-icon">🚪</span>
-            {!sidebarCollapsed && <span className="nav-label">Logout</span>}
-          </div>
-        </div>
-      </aside>
-
-      <main className="main-content listing-page">
-        <header className="top-header">
+    <>
+      <header className="top-header">
           <div className="header-left">
             <h1 className="page-title">➕ Add Listing</h1>
             <p className="page-subtitle">Create a new donation listing</p>
@@ -423,9 +368,8 @@ const ListingForm: React.FC = () => {
             </form>
           </div>
         </div>
-      </main>
-    </div>
-  );
-};
-
-export default ListingForm;
+      </>
+    );
+  };
+  
+  export default ListingForm;

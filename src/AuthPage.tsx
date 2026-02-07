@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './AuthStyles.css';
 
 // Declare google global for TypeScript
@@ -15,7 +15,7 @@ interface FormData {
   name: string;
   phone: string;
   city: string;
-  role: 'farmer' | 'ngo' | 'driver';
+  role: 'farmer' | 'ngo' | 'driver' | 'customer';
   ngoName?: string;
   vehicleType?: string;
 }
@@ -24,7 +24,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'farmer' | 'ngo' | 'driver';
+  role: 'farmer' | 'ngo' | 'driver' | 'customer';
 }
 
 interface GoogleUserData {
@@ -38,6 +38,7 @@ const GOOGLE_CLIENT_ID = '252459668976-fdlbf40t3jh7h8eg13o308th2gp7r22k.apps.goo
 
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [emailError, setEmailError] = useState<string>('');
@@ -48,7 +49,7 @@ const AuthPage: React.FC = () => {
   // Google OAuth states
   const [showRoleModal, setShowRoleModal] = useState<boolean>(false);
   const [googleUserData, setGoogleUserData] = useState<GoogleUserData | null>(null);
-  const [selectedRole, setSelectedRole] = useState<'farmer' | 'ngo' | 'driver'>('farmer');
+  const [selectedRole, setSelectedRole] = useState<'farmer' | 'ngo' | 'driver' | 'customer'>('farmer');
   const [googleNgoName, setGoogleNgoName] = useState<string>('');
   const [googleVehicleType, setGoogleVehicleType] = useState<string>('');
   const [googlePhone, setGooglePhone] = useState<string>('');
@@ -164,19 +165,25 @@ const AuthPage: React.FC = () => {
       console.log('Checking if user exists:', userData.email);
 
       // Check if user exists
-      const checkResponse = await fetch('http://localhost:5000/api/google-auth/check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: userData.email }),
-      });
+      let userExists = false;
+      try {
+        const checkResponse = await fetch('http://localhost:8000/api/google-auth/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userData.email }),
+        });
+        const checkData = await checkResponse.json();
+        console.log('Check response:', checkData);
+        userExists = checkData.exists === true;
+      } catch (checkErr) {
+        console.error('Check endpoint error:', checkErr);
+        userExists = false;
+      }
 
-      const checkData = await checkResponse.json();
-      console.log('Check response:', checkData);
-
-      if (checkData.exists) {
-        // User exists, log them in
+      if (userExists) {
+        // User exists, log them in directly
         console.log('User exists, logging in...');
-        const loginResponse = await fetch('http://localhost:5000/api/google-auth/login', {
+        const loginResponse = await fetch('http://localhost:8000/api/google-auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -196,14 +203,20 @@ const AuthPage: React.FC = () => {
             role: loginData.user.role
           };
           localStorage.setItem('user', JSON.stringify(user));
-          navigate('/home');
+          navigate(getRedirectUrl(user.role));
         } else {
           setError(loginData.detail || 'Failed to login with Google');
         }
       } else {
-        // New user, show role selection modal
+        // New user — always show role selection modal
         console.log('New user, showing role modal...');
         setGoogleUserData(userData);
+        setSelectedRole('farmer');
+        setGooglePhone('');
+        setGoogleCity('');
+        setGoogleNgoName('');
+        setGoogleVehicleType('');
+        setError('');
         setShowRoleModal(true);
       }
     } catch (err: any) {
@@ -247,7 +260,7 @@ const AuthPage: React.FC = () => {
       
       console.log('Google signup data:', signupData);
       
-      const response = await fetch('http://localhost:5000/api/google-auth/signup', {
+      const response = await fetch('http://localhost:8000/api/google-auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(signupData),
@@ -264,7 +277,7 @@ const AuthPage: React.FC = () => {
           role: data.user.role
         };
         localStorage.setItem('user', JSON.stringify(user));
-        navigate('/home');
+        navigate(getRedirectUrl());
       } else {
         setError(data.detail || 'Failed to create account');
       }
@@ -280,13 +293,37 @@ const AuthPage: React.FC = () => {
     return emailRegex.test(email);
   };
 
+  const getRedirectUrl = (userRole?: string): string => {
+    // Check if there's a returnTo parameter in the location state
+    const returnTo = (location.state as any)?.returnTo;
+    
+    // If returnTo exists, use it
+    if (returnTo) return returnTo;
+    
+    // Otherwise, redirect based on role
+    const role = userRole || localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}').role : 'farmer';
+    
+    switch (role) {
+      case 'customer':
+        return '/customer-home';
+      case 'farmer':
+        return '/home';
+      case 'ngo':
+        return '/home';
+      case 'driver':
+        return '/home';
+      default:
+        return '/home';
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     if (name === 'email') setEmailError('');
   };
 
-  const handleRoleSelect = (role: 'farmer' | 'ngo' | 'driver') => {
+  const handleRoleSelect = (role: 'farmer' | 'ngo' | 'driver' | 'customer') => {
     setFormData({ ...formData, role });
   };
 
@@ -303,8 +340,8 @@ const AuthPage: React.FC = () => {
     }
 
     const endpoint = isLogin 
-      ? 'http://localhost:5000/api/login' 
-      : 'http://localhost:5000/api/signup';
+      ? 'http://localhost:8000/api/login' 
+      : 'http://localhost:8000/api/signup';
 
     try {
       const requestBody = isLogin 
@@ -344,7 +381,7 @@ const AuthPage: React.FC = () => {
         };
 
         localStorage.setItem('user', JSON.stringify(user));
-        navigate('/home');
+        navigate(getRedirectUrl());
       } else {
         alert('Account created successfully! Please login.');
         setIsLogin(true);
@@ -370,7 +407,8 @@ const AuthPage: React.FC = () => {
   const roles = [
     { id: 'farmer' as const, icon: '🌱', label: 'Farmer', desc: 'Donate surplus food' },
     { id: 'ngo' as const, icon: '🏢', label: 'NGO', desc: 'Receive donations' },
-    { id: 'driver' as const, icon: '🚚', label: 'Driver', desc: 'Deliver food' }
+    { id: 'driver' as const, icon: '🚚', label: 'Driver', desc: 'Deliver food' },
+    { id: 'customer' as const, icon: '🛒', label: 'Customer', desc: 'Buy fresh food' }
   ];
 
   return (

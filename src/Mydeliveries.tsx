@@ -328,69 +328,9 @@ const MyDeliveries: React.FC = () => {
   }
 
   return (
-    <div className="app-container driver-theme">
-      {/* Sidebar */}
-      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
-        <div className="sidebar-header">
-          <div className="brand">
-            <span className="brand-icon">🌾</span>
-            {!sidebarCollapsed && <span className="brand-text">Annam</span>}
-          </div>
-          <button 
-            className="collapse-btn"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          >
-            {sidebarCollapsed ? '»' : '«'}
-          </button>
-        </div>
-        
-        <nav className="sidebar-nav">
-          <div className="nav-item" onClick={() => navigate('/home')}>
-            <span className="nav-icon">🏠</span>
-            {!sidebarCollapsed && <span className="nav-label">Dashboard</span>}
-          </div>
-          <div className="nav-item active">
-            <span className="nav-icon">📍</span>
-            {!sidebarCollapsed && <span className="nav-label">My Deliveries</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/available-pickups')}>
-            <span className="nav-icon">🚚</span>
-            {!sidebarCollapsed && <span className="nav-label">Available Pickups</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/route-map')}>
-            <span className="nav-icon">🗺️</span>
-            {!sidebarCollapsed && <span className="nav-label">Route Map</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/earnings')}>
-            <span className="nav-icon">💰</span>
-            {!sidebarCollapsed && <span className="nav-label">Earnings</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/history')}>
-            <span className="nav-icon">📜</span>
-            {!sidebarCollapsed && <span className="nav-label">History</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/leaderboards')}>
-            <span className="nav-icon">🏆</span>
-            {!sidebarCollapsed && <span className="nav-label">Leaderboards</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/driver-settings')}>
-            <span className="nav-icon">⚙️</span>
-            {!sidebarCollapsed && <span className="nav-label">Settings</span>}
-          </div>
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="nav-item logout-item" onClick={handleLogout}>
-            <span className="nav-icon">🚪</span>
-            {!sidebarCollapsed && <span className="nav-label">Logout</span>}
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="main-content">
-        {/* Header */}
-        <header className="top-header">
+    <>
+      {/* Header */}
+      <header className="top-header">
           <div className="header-left">
             <h1 className="page-title">🚚 My Deliveries</h1>
             <p className="page-subtitle">Manage your pickup and delivery tasks</p>
@@ -993,9 +933,8 @@ const MyDeliveries: React.FC = () => {
             </div>
           </div>
         )}
-      </main>
-    </div>
-  );
-};
-
-export default MyDeliveries;
+      </>
+    );
+  };
+  
+  export default MyDeliveries;

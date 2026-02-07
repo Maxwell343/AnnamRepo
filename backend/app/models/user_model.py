@@ -7,7 +7,7 @@ class UserCreate(BaseModel):
     password: str
     phone: str
     city: str
-    role: Literal["farmer", "ngo", "driver"]
+    role: Literal["farmer", "ngo", "driver", "customer"]
 
     ngoName: Optional[str] = None
     vehicleType: Optional[str] = None

@@ -357,61 +357,9 @@ const MyListings: React.FC = () => {
   }
 
   return (
-    <div className="app-container farmer-theme">
-      {/* Sidebar */}
-      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
-        <div className="sidebar-header">
-          <div className="brand">
-            <span className="brand-icon">🌾</span>
-            {!sidebarCollapsed && <span className="brand-text">Annam</span>}
-          </div>
-          <button 
-            className="collapse-btn"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          >
-            {sidebarCollapsed ? '»' : '«'}
-          </button>
-        </div>
-        
-        <nav className="sidebar-nav">
-          <div className="nav-item" onClick={() => navigate('/home')}>
-            <span className="nav-icon">🏠</span>
-            {!sidebarCollapsed && <span className="nav-label">Dashboard</span>}
-          </div>
-          <div className="nav-item active">
-            <span className="nav-icon">📦</span>
-            {!sidebarCollapsed && <span className="nav-label">My Listings</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/analytics')}>
-            <span className="nav-icon">📊</span>
-            {!sidebarCollapsed && <span className="nav-label">Analytics</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/history')}>
-            <span className="nav-icon">📜</span>
-            {!sidebarCollapsed && <span className="nav-label">History</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/leaderboards')}>
-            <span className="nav-icon">🏆</span>
-            {!sidebarCollapsed && <span className="nav-label">Leaderboards</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/farmer-settings')}>
-            <span className="nav-icon">⚙️</span>
-            {!sidebarCollapsed && <span className="nav-label">Settings</span>}
-          </div>
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="nav-item logout-item" onClick={handleLogout}>
-            <span className="nav-icon">🚪</span>
-            {!sidebarCollapsed && <span className="nav-label">Logout</span>}
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="main-content">
-        {/* Header */}
-        <header className="top-header">
+    <>
+      {/* Header */}
+      <header className="top-header">
           <div className="header-left">
             <h1 className="page-title">📦 My Listings</h1>
             <p className="page-subtitle">Manage your food donation listings</p>
@@ -904,9 +852,8 @@ const MyListings: React.FC = () => {
             </div>
           </div>
         )}
-      </main>
-    </div>
-  );
-};
-
-export default MyListings;
+      </>
+    );
+  };
+  
+  export default MyListings;

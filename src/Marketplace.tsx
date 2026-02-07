@@ -1634,12 +1634,8 @@ const Marketplace: React.FC = () => {
   const addToCart = useCallback((listing: MarketplaceListing, quantity: number) => {
     // Check if user is logged in
     if (!user) {
-      const confirmLogin = window.confirm(
-        'You need to login to add items to cart.\n\nWould you like to login now?'
-      );
-      if (confirmLogin) {
-        navigate('/auth');
-      }
+      // Redirect to auth page and return to marketplace after login
+      navigate('/auth', { state: { returnTo: '/marketplace' } });
       return;
     }
     
@@ -1674,12 +1670,8 @@ const Marketplace: React.FC = () => {
   const handleRescue = useCallback((listing: MarketplaceListing) => {
     // Check if user is logged in
     if (!user) {
-      const confirmLogin = window.confirm(
-        'You need to login as an NGO to rescue food items.\n\nWould you like to login now?'
-      );
-      if (confirmLogin) {
-        navigate('/auth');
-      }
+      // Redirect to auth page and return to marketplace after login
+      navigate('/auth', { state: { returnTo: '/marketplace' } });
       return;
     }
     
@@ -1690,12 +1682,8 @@ const Marketplace: React.FC = () => {
   const handleCheckout = useCallback(() => {
     // Check if user is logged in
     if (!user) {
-      const confirmLogin = window.confirm(
-        'You need to login to proceed to checkout.\n\nWould you like to login now?'
-      );
-      if (confirmLogin) {
-        navigate('/auth');
-      }
+      // Redirect to auth page and return to marketplace after login
+      navigate('/auth', { state: { returnTo: '/marketplace' } });
       return;
     }
     
