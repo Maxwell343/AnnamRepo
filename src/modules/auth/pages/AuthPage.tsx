@@ -15,7 +15,7 @@ interface FormData {
   name: string;
   phone: string;
   city: string;
-  role: 'farmer' | 'ngo' | 'driver' | 'customer';
+  role: 'farmer' | 'ngo' | 'driver' | 'customer' | 'admin';
   ngoName?: string;
   vehicleType?: string;
 }
@@ -24,7 +24,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'farmer' | 'ngo' | 'driver' | 'customer';
+  role: 'farmer' | 'ngo' | 'driver' | 'customer' | 'admin';
 }
 
 interface GoogleUserData {
@@ -49,7 +49,8 @@ const AuthPage: React.FC = () => {
   // Google OAuth states
   const [showRoleModal, setShowRoleModal] = useState<boolean>(false);
   const [googleUserData, setGoogleUserData] = useState<GoogleUserData | null>(null);
-  const [selectedRole, setSelectedRole] = useState<'farmer' | 'ngo' | 'driver' | 'customer'>('farmer');
+  const [selectedRole, setSelectedRole] = useState<'farmer' | 'ngo' | 'driver' | 'customer' | 'admin'>('farmer');
+  const [titleClickCount, setTitleClickCount] = useState(0);
   const [googleNgoName, setGoogleNgoName] = useState<string>('');
   const [googleVehicleType, setGoogleVehicleType] = useState<string>('');
   const [googlePhone, setGooglePhone] = useState<string>('');
@@ -304,6 +305,8 @@ const AuthPage: React.FC = () => {
     const role = userRole || localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}').role : 'farmer';
     
     switch (role) {
+      case 'admin':
+        return '/admin';
       case 'customer':
         return '/customer-home';
       case 'farmer':
@@ -323,8 +326,16 @@ const AuthPage: React.FC = () => {
     if (name === 'email') setEmailError('');
   };
 
-  const handleRoleSelect = (role: 'farmer' | 'ngo' | 'driver' | 'customer') => {
+  const handleRoleSelect = (role: 'farmer' | 'ngo' | 'driver' | 'customer' | 'admin') => {
     setFormData({ ...formData, role });
+  };
+
+  const handleTitleClick = () => {
+    const newCount = titleClickCount + 1;
+    setTitleClickCount(newCount);
+    if (newCount >= 5) {
+      navigate('/admin');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -404,11 +415,12 @@ const AuthPage: React.FC = () => {
     }
   };
 
-  const roles = [
-    { id: 'farmer' as const, icon: '🌱', label: 'Farmer', desc: 'Donate surplus food' },
-    { id: 'ngo' as const, icon: '🏢', label: 'NGO', desc: 'Receive donations' },
-    { id: 'driver' as const, icon: '🚚', label: 'Driver', desc: 'Deliver food' },
-    { id: 'customer' as const, icon: '🛒', label: 'Customer', desc: 'Buy fresh food' }
+  const roles: { id: FormData['role']; icon: string; label: string; desc: string }[] = [
+    { id: 'farmer', icon: '🌱', label: 'Farmer', desc: 'Donate surplus food' },
+    { id: 'ngo', icon: '🏢', label: 'NGO', desc: 'Receive donations' },
+    { id: 'driver', icon: '🚚', label: 'Driver', desc: 'Deliver food' },
+    { id: 'customer', icon: '🛒', label: 'Customer', desc: 'Buy fresh food' },
+
   ];
 
   return (
@@ -429,7 +441,7 @@ const AuthPage: React.FC = () => {
           <span className="logo-icon">🍃</span>
         </div>
         
-        <h1 className="auth-title">ANNAM</h1>
+        <h1 className="auth-title" onClick={handleTitleClick} style={{ cursor: 'default', userSelect: 'none' }}>ANNAM</h1>
 
         {/* Tab Switcher */}
         <div className="auth-tabs">

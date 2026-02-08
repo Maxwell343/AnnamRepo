@@ -1,0 +1,197 @@
+.transactions {
+  padding: 24px;
+}
+
+.transactions__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.transactions__header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Filters */
+.transactions__filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.transactions__search {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.transactions__search:focus {
+  outline: none;
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+.transactions__select {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.transactions__date-input {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* Table */
+.transactions__table-wrap {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.transactions__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transactions__table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.transactions__table td {
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.transactions__table tr:hover {
+  background: #f9fafb;
+}
+
+.transactions__txn-id {
+  font-family: monospace;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Type Badges */
+.transactions__type {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.transactions__type--order {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.transactions__type--payout {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.transactions__type--refund {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.transactions__type--commission {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* Amount */
+.transactions__amount {
+  font-weight: 700;
+}
+
+.transactions__amount--credit {
+  color: #16a34a;
+}
+
+.transactions__amount--debit {
+  color: #dc2626;
+}
+
+/* Status */
+.transactions__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.transactions__status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.transactions__status-dot--success { background: #16a34a; }
+.transactions__status-dot--pending { background: #f59e0b; }
+.transactions__status-dot--failed { background: #ef4444; }
+
+/* Pagination */
+.transactions__pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  font-size: 13px;
+  color: #6b7280;
+  border-top: 1px solid #e5e7eb;
+}
+
+.transactions__page-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.transactions__page-btn {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.transactions__page-btn--active {
+  background: #16a34a;
+  color: #fff;
+  border-color: #16a34a;
+}
+
+@media (max-width: 768px) {
+  .transactions__filters {
+    flex-direction: column;
+  }
+  .transactions__table-wrap {
+    overflow-x: auto;
+  }
+}

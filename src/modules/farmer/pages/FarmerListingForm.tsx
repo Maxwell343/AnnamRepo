@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './FarmerListingForm.css';
-import type { ProductType, SellingMode, SmartPriceSuggestion, Location } from './types/marketplace';
+import type { ProductType, SellingMode, SmartPriceSuggestion, Location } from '../../../types/marketplace';
 
 // ============================================
 // UTILITY FUNCTIONS

@@ -1,0 +1,217 @@
+.region-heatmap {
+  padding: 24px;
+}
+
+.region-heatmap__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.region-heatmap__header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.region-heatmap__controls {
+  display: flex;
+  gap: 10px;
+}
+
+.region-heatmap__select {
+  padding: 8px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+}
+
+/* Map + Sidebar Layout */
+.region-heatmap__content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+/* Map Area */
+.region-heatmap__map {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.region-heatmap__map-area {
+  height: 480px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #d1fae5 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.region-heatmap__placeholder {
+  text-align: center;
+  color: #6b7280;
+}
+
+.region-heatmap__placeholder-icon {
+  font-size: 72px;
+  margin-bottom: 12px;
+}
+
+.region-heatmap__placeholder-text {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.region-heatmap__placeholder-sub {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+/* Legend */
+.region-heatmap__legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.region-heatmap__legend-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.region-heatmap__gradient {
+  flex: 1;
+  height: 8px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #dcfce7 0%, #86efac 25%, #22c55e 50%, #f59e0b 75%, #ef4444 100%);
+}
+
+.region-heatmap__legend-range {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+/* Sidebar */
+.region-heatmap__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.region-sidebar-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 16px 20px;
+}
+
+.region-sidebar-card__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+/* Region List */
+.region-list__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.region-list__item:last-child {
+  border-bottom: none;
+}
+
+.region-list__item:hover {
+  background: #f9fafb;
+  margin: 0 -20px;
+  padding: 10px 20px;
+}
+
+.region-list__name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.region-list__stats {
+  text-align: right;
+}
+
+.region-list__value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.region-list__sub {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* Heat Indicator */
+.region-list__heat {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  display: inline-block;
+}
+
+.region-list__heat--high { background: #ef4444; }
+.region-list__heat--medium { background: #f59e0b; }
+.region-list__heat--low { background: #22c55e; }
+
+/* Summary Stats */
+.region-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.region-summary__item {
+  text-align: center;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.region-summary__value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.region-summary__label {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+@media (max-width: 900px) {
+  .region-heatmap__content {
+    grid-template-columns: 1fr;
+  }
+  .region-heatmap__map-area {
+    height: 320px;
+  }
+}

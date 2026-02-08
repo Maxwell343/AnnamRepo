@@ -1,0 +1,218 @@
+.driver-payouts {
+  padding: 24px;
+}
+
+.driver-payouts__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.driver-payouts__header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Summary Cards */
+.driver-payouts__summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.payout-summary-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 20px;
+}
+
+.payout-summary-card__label {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.payout-summary-card__value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.payout-summary-card__sub {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+/* Search & Filters */
+.driver-payouts__filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.driver-payouts__search {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.driver-payouts__search:focus {
+  outline: none;
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+.driver-payouts__select {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+}
+
+/* Table */
+.driver-payouts__table-wrap {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.driver-payouts__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.driver-payouts__table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.driver-payouts__table td {
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.driver-payouts__table tr:hover {
+  background: #f9fafb;
+}
+
+.driver-payouts__driver-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.driver-payouts__avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.driver-payouts__name {
+  font-weight: 600;
+  color: #111827;
+}
+
+.driver-payouts__id {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* Payout Status */
+.driver-payouts__status {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.driver-payouts__status--paid {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.driver-payouts__status--pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.driver-payouts__status--failed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Action Buttons */
+.driver-payouts__action-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #16a34a;
+  background: #fff;
+  color: #16a34a;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.driver-payouts__action-btn:hover {
+  background: #16a34a;
+  color: #fff;
+}
+
+.driver-payouts__action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Footer */
+.driver-payouts__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  font-size: 13px;
+  color: #6b7280;
+  border-top: 1px solid #e5e7eb;
+}
+
+@media (max-width: 1024px) {
+  .driver-payouts__summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .driver-payouts__filters {
+    flex-direction: column;
+  }
+  .driver-payouts__table-wrap {
+    overflow-x: auto;
+  }
+}

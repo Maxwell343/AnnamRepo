@@ -1,0 +1,247 @@
+.live-operations {
+  padding: 24px;
+}
+
+.live-operations__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.live-operations__header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.live-operations__live-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #16a34a;
+}
+
+.live-operations__live-dot {
+  width: 8px;
+  height: 8px;
+  background: #16a34a;
+  border-radius: 50%;
+  animation: live-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* Stats Row */
+.live-operations__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.live-stat-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.live-stat-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.live-stat-card__icon--active { background: #dcfce7; }
+.live-stat-card__icon--transit { background: #dbeafe; }
+.live-stat-card__icon--pending { background: #fef3c7; }
+.live-stat-card__icon--completed { background: #f3e8ff; }
+
+.live-stat-card__value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.live-stat-card__label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* Orders Table */
+.live-operations__content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.live-orders {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.live-orders__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.live-orders__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.live-orders__table th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.live-orders__table td {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.live-orders__table tr:hover {
+  background: #f9fafb;
+}
+
+.live-orders__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.live-orders__status--pickup {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.live-orders__status--transit {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.live-orders__status--delivered {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.live-orders__status--delayed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Driver Activity Sidebar */
+.driver-activity {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 16px 20px;
+}
+
+.driver-activity__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.driver-activity__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.driver-activity__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.driver-activity__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: #16a34a;
+}
+
+.driver-activity__info {
+  flex: 1;
+}
+
+.driver-activity__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.driver-activity__status-text {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.driver-activity__status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.driver-activity__status-dot--online { background: #16a34a; }
+.driver-activity__status-dot--busy { background: #f59e0b; }
+.driver-activity__status-dot--offline { background: #d1d5db; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .live-operations__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .live-operations__content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .live-operations__stats {
+    grid-template-columns: 1fr;
+  }
+}

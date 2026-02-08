@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ImpactDashboard.css';
-import type { ImpactMetrics, DistrictAnalytics } from './types/marketplace';
+import type { ImpactMetrics, DistrictAnalytics } from '../../../types/marketplace';
 
 // ============================================
 // MOCK DATA

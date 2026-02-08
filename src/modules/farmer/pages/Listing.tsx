@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Listing.css';
-import './HomePage.css';
-import { API_ENDPOINTS } from './config/api';
+import '../../../app/HomePage.css';
+import { API_ENDPOINTS } from '../../../config/api';
 import { MapContainer, TileLayer, CircleMarker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { LeafletMouseEvent } from 'leaflet';
