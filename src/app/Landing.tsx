@@ -3,9 +3,9 @@ import './Landing.css';
 import { 
   ArrowRight, Leaf, Users, Truck, Shield, CheckCircle, Star, 
   Menu, X, Play, Sparkles, TrendingUp, Heart, Globe, Zap,
-  ChevronDown, ArrowUpRight, MousePointer2
+  ArrowUpRight
 } from 'lucide-react';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Images
 const heroImage = 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80';
@@ -17,20 +17,6 @@ const testimonial2 = 'https://images.unsplash.com/photo-1494790108377-be9c29b293
 const testimonial3 = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80';
 
 // Custom Hooks
-const useMousePosition = () => {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-  
-  return position;
-};
-
 const useInView = (options = {}) => {
   const ref = useRef<HTMLDivElement>(null);
   const [isInView, setIsInView] = useState(false);
@@ -98,40 +84,10 @@ const MagneticButton = ({ children, className, onClick }: any) => {
 };
 
 const TiltCard = ({ children, className }: any) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [transform, setTransform] = useState('');
-  const [glare, setGlare] = useState({ x: 50, y: 50 });
-  
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = cardRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
-    const rotateX = (y - 0.5) * -20;
-    const rotateY = (x - 0.5) * 20;
-    setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`);
-    setGlare({ x: x * 100, y: y * 100 });
-  };
-  
-  const handleMouseLeave = () => {
-    setTransform('perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)');
-    setGlare({ x: 50, y: 50 });
-  };
-  
   return (
     <div
-      ref={cardRef}
       className={`tilt-card ${className}`}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{ transform }}
     >
-      <div 
-        className="tilt-glare" 
-        style={{ 
-          background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,0.15) 0%, transparent 60%)` 
-        }} 
-      />
       {children}
     </div>
   );
@@ -195,8 +151,6 @@ const Landing = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
-  const mousePosition = useMousePosition();
-  const [cursorVariant, setCursorVariant] = useState('default');
   
   // Refs for sections
   const [statsRef, statsInView] = useInView();
@@ -241,22 +195,6 @@ const Landing = () => {
 
   return (
     <div className="landing-page">
-      {/* Custom Cursor */}
-      <div 
-        className={`custom-cursor ${cursorVariant}`}
-        style={{ 
-          left: mousePosition.x, 
-          top: mousePosition.y 
-        }}
-      />
-      <div 
-        className="cursor-follower"
-        style={{ 
-          left: mousePosition.x, 
-          top: mousePosition.y 
-        }}
-      />
-      
       {/* Animated Background */}
       <div className="animated-bg">
         <div className="gradient-orb orb-1" />
@@ -280,8 +218,6 @@ const Landing = () => {
             <Link 
               to="/marketplace" 
               className="nav-link nav-link-highlight"
-              onMouseEnter={() => setCursorVariant('hover')}
-              onMouseLeave={() => setCursorVariant('default')}
             >
               <span className="nav-icon">🛒</span>
               <span>Marketplace</span>
@@ -321,8 +257,6 @@ const Landing = () => {
             <button 
               className="btn-login"
               onClick={handleLogin}
-              onMouseEnter={() => setCursorVariant('hover')}
-              onMouseLeave={() => setCursorVariant('default')}
             >
               Log In
             </button>
@@ -419,12 +353,6 @@ const Landing = () => {
               <span className="stat-label">Cities Covered</span>
             </div>
           </div>
-          
-          <div className="hero-scroll-indicator">
-            <MousePointer2 size={20} />
-            <span>Scroll to explore</span>
-            <ChevronDown size={20} className="bounce" />
-          </div>
         </div>
         
         <div className="hero-visual">
@@ -461,18 +389,6 @@ const Landing = () => {
                   <div className="card-content">
                     <span className="card-title">New NGO Partner</span>
                     <span className="card-subtitle">Hope Foundation joined</span>
-                  </div>
-                </TiltCard>
-              </FloatingElement>
-              
-              <FloatingElement delay={1} amplitude={18}>
-                <TiltCard className="floating-card card-3">
-                  <div className="card-icon-wrapper warning">
-                    <TrendingUp size={20} />
-                  </div>
-                  <div className="card-content">
-                    <span className="card-title">Impact Growing</span>
-                    <span className="card-subtitle">+23% this month</span>
                   </div>
                 </TiltCard>
               </FloatingElement>
@@ -604,6 +520,38 @@ const Landing = () => {
                 <li><CheckCircle size={16} /> Environmental impact tracking</li>
                 <li><CheckCircle size={16} /> Tax deduction documentation</li>
               </ul>
+
+              <div className="landing-farmer-stats">
+                <div className="landing-farmer-stat">
+                  <Globe size={18} />
+                  <div className="landing-farmer-stat-text">
+                    <span className="landing-farmer-stat-value">25+</span>
+                    <span className="landing-farmer-stat-label">Cities</span>
+                  </div>
+                </div>
+                <div className="landing-farmer-stat">
+                  <Users size={18} />
+                  <div className="landing-farmer-stat-text">
+                    <span className="landing-farmer-stat-value">500+</span>
+                    <span className="landing-farmer-stat-label">Partners</span>
+                  </div>
+                </div>
+                <div className="landing-farmer-stat">
+                  <Heart size={18} />
+                  <div className="landing-farmer-stat-text">
+                    <span className="landing-farmer-stat-value">50K+</span>
+                    <span className="landing-farmer-stat-label">Meals</span>
+                  </div>
+                </div>
+                <div className="landing-farmer-stat">
+                  <Leaf size={18} />
+                  <div className="landing-farmer-stat-text">
+                    <span className="landing-farmer-stat-value">150T</span>
+                    <span className="landing-farmer-stat-label">Saved</span>
+                  </div>
+                </div>
+              </div>
+
               <MagneticButton className="bento-cta" onClick={handleGetStarted}>
                 Start Donating <ArrowRight size={16} />
               </MagneticButton>
@@ -652,30 +600,6 @@ const Landing = () => {
             </div>
           </TiltCard>
 
-          <TiltCard className="bento-card bento-stats">
-            <div className="stats-grid">
-              <div className="stat-box">
-                <Globe size={24} />
-                <span className="stat-value">25+</span>
-                <span className="stat-desc">Cities</span>
-              </div>
-              <div className="stat-box">
-                <Users size={24} />
-                <span className="stat-value">500+</span>
-                <span className="stat-desc">Partners</span>
-              </div>
-              <div className="stat-box">
-                <Heart size={24} />
-                <span className="stat-value">50K+</span>
-                <span className="stat-desc">Meals</span>
-              </div>
-              <div className="stat-box">
-                <Leaf size={24} />
-                <span className="stat-value">150T</span>
-                <span className="stat-desc">Saved</span>
-              </div>
-            </div>
-          </TiltCard>
         </div>
       </section>
 

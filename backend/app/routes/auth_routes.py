@@ -39,6 +39,17 @@ def signup(user: UserCreate):
 
 @router.post("/login")
 def login(user: UserLogin):
+    existing = get_user_by_email(user.email)
+
+    if not existing:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    if existing.get("password") is None:
+        raise HTTPException(
+            status_code=400,
+            detail="This account was created with Google Sign-In. Please continue with Google."
+        )
+
     db_user = authenticate_user(user.email, user.password)
 
     if not db_user:

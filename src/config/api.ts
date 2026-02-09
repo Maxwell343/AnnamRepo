@@ -1,13 +1,19 @@
 // API Configuration
-// Change this URL when deploying to production
+// Set `VITE_API_BASE_URL` in your environment for non-default backends.
+// Example: VITE_API_BASE_URL=http://127.0.0.1:5000
 
-export const API_BASE_URL = 'http://localhost:8000';
+export const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:5000';
 
 // API Endpoints
 export const API_ENDPOINTS = {
   // Auth
   login: `${API_BASE_URL}/api/login`,
   signup: `${API_BASE_URL}/api/signup`,
+  googleAuth: {
+    check: `${API_BASE_URL}/api/google-auth/check`,
+    login: `${API_BASE_URL}/api/google-auth/login`,
+    signup: `${API_BASE_URL}/api/google-auth/signup`,
+  },
   forgotPassword: `${API_BASE_URL}/api/forgot-password`,
   verifyOtp: `${API_BASE_URL}/api/verify-otp`,
   resetPassword: `${API_BASE_URL}/api/reset-password`,
