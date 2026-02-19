@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './AuthStyles.css';
+import { API_ENDPOINTS } from '../../../config/api';
 
 // Declare google global for TypeScript
 declare global {
@@ -168,7 +169,7 @@ const AuthPage: React.FC = () => {
       // Check if user exists
       let userExists = false;
       try {
-        const checkResponse = await fetch('http://localhost:8000/api/google-auth/check', {
+        const checkResponse = await fetch(API_ENDPOINTS.googleAuth.check, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: userData.email }),
@@ -184,7 +185,7 @@ const AuthPage: React.FC = () => {
       if (userExists) {
         // User exists, log them in directly
         console.log('User exists, logging in...');
-        const loginResponse = await fetch('http://localhost:8000/api/google-auth/login', {
+        const loginResponse = await fetch(API_ENDPOINTS.googleAuth.login, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -261,7 +262,7 @@ const AuthPage: React.FC = () => {
       
       console.log('Google signup data:', signupData);
       
-      const response = await fetch('http://localhost:8000/api/google-auth/signup', {
+      const response = await fetch(API_ENDPOINTS.googleAuth.signup, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(signupData),
@@ -302,7 +303,7 @@ const AuthPage: React.FC = () => {
     if (returnTo) return returnTo;
     
     // Otherwise, redirect based on role
-    const role = userRole || localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}').role : 'farmer';
+    const role = userRole ?? (localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}').role : 'farmer');
     
     switch (role) {
       case 'admin':
@@ -351,8 +352,8 @@ const AuthPage: React.FC = () => {
     }
 
     const endpoint = isLogin 
-      ? 'http://localhost:8000/api/login' 
-      : 'http://localhost:8000/api/signup';
+      ? API_ENDPOINTS.login
+      : API_ENDPOINTS.signup;
 
     try {
       const requestBody = isLogin 
