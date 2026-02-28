@@ -1,4 +1,14 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import {
+  Apple, Truck, CreditCard, Package, User, HeartCrack, HelpCircle,
+  Circle, Search, Clock, CheckCircle, AlertTriangle, Lock,
+  Handshake, Car, Wheat, Factory, Building2, Settings,
+  MessageSquare, Wrench, RefreshCw, Paperclip, XCircle, Info, X,
+  Target, Megaphone, Check, Mail, Phone, DollarSign, Banknote,
+  Calendar, Link2, Download, Trash2, ClipboardList, Pencil,
+  ArrowLeft, Send, Upload, FileText, Eye, Pin, BarChart3, Zap,
+  Image, AlertOctagon
+} from 'lucide-react';
 import './DisputeDetails.css';
 
 /* ─── Types ─── */
@@ -30,7 +40,7 @@ interface Attachment {
   uploadedBy: string;
   uploadedAt: string;
   url: string;
-  thumbnail?: string;
+  thumbnail?: React.ReactNode;
 }
 
 interface InternalNote {
@@ -208,8 +218,8 @@ const mockTimeline: TimelineEvent[] = [
 ];
 
 const mockAttachments: Attachment[] = [
-  { id: '1', name: 'rotten_tomatoes.jpg', type: 'image', size: '2.4 MB', uploadedBy: 'Ravi Sharma', uploadedAt: mockTimeline[1].timestamp, url: '#', thumbnail: '🍅' },
-  { id: '2', name: 'wilted_spinach.jpg', type: 'image', size: '1.8 MB', uploadedBy: 'Ravi Sharma', uploadedAt: mockTimeline[1].timestamp, url: '#', thumbnail: '🥬' },
+  { id: '1', name: 'rotten_tomatoes.jpg', type: 'image', size: '2.4 MB', uploadedBy: 'Ravi Sharma', uploadedAt: mockTimeline[1].timestamp, url: '#', thumbnail: <Image size={20} /> },
+  { id: '2', name: 'wilted_spinach.jpg', type: 'image', size: '1.8 MB', uploadedBy: 'Ravi Sharma', uploadedAt: mockTimeline[1].timestamp, url: '#', thumbnail: <Image size={20} /> },
   { id: '3', name: 'order_receipt.pdf', type: 'document', size: '156 KB', uploadedBy: 'System', uploadedAt: mockDispute.createdAt, url: '#' },
 ];
 
@@ -264,49 +274,49 @@ const getSLAStatus = (deadline: string): { status: 'ok' | 'warning' | 'critical'
   return { status: 'ok', timeLeft: `${hours}h ${minutes % 60}m left`, percent: 50 + Math.min((hours / 24) * 50, 50) };
 };
 
-const categoryConfig: Record<DisputeCategory, { icon: string; label: string; color: string }> = {
-  quality: { icon: '🍎', label: 'Quality Issue', color: '#ef4444' },
-  delivery: { icon: '🚚', label: 'Delivery Issue', color: '#3b82f6' },
-  payment: { icon: '💳', label: 'Payment Issue', color: '#16a34a' },
-  quantity: { icon: '📦', label: 'Quantity Issue', color: '#f59e0b' },
-  no_show: { icon: '👤', label: 'No-Show', color: '#8b5cf6' },
-  damage: { icon: '💔', label: 'Damage', color: '#ec4899' },
-  other: { icon: '❓', label: 'Other', color: '#6b7280' },
+const categoryConfig: Record<DisputeCategory, { icon: React.ReactNode; label: string; color: string }> = {
+  quality: { icon: <Apple size={16} />, label: 'Quality Issue', color: '#ef4444' },
+  delivery: { icon: <Truck size={16} />, label: 'Delivery Issue', color: '#3b82f6' },
+  payment: { icon: <CreditCard size={16} />, label: 'Payment Issue', color: '#16a34a' },
+  quantity: { icon: <Package size={16} />, label: 'Quantity Issue', color: '#f59e0b' },
+  no_show: { icon: <User size={16} />, label: 'No-Show', color: '#8b5cf6' },
+  damage: { icon: <HeartCrack size={16} />, label: 'Damage', color: '#ec4899' },
+  other: { icon: <HelpCircle size={16} />, label: 'Other', color: '#6b7280' },
 };
 
-const priorityConfig: Record<DisputePriority, { icon: string; label: string; color: string }> = {
-  critical: { icon: '🔴', label: 'Critical', color: '#dc2626' },
-  high: { icon: '🟠', label: 'High', color: '#f59e0b' },
-  medium: { icon: '🟡', label: 'Medium', color: '#eab308' },
-  low: { icon: '🟢', label: 'Low', color: '#16a34a' },
+const priorityConfig: Record<DisputePriority, { icon: React.ReactNode; label: string; color: string }> = {
+  critical: { icon: <Circle size={16} fill="#dc2626" color="#dc2626" />, label: 'Critical', color: '#dc2626' },
+  high: { icon: <Circle size={16} fill="#f59e0b" color="#f59e0b" />, label: 'High', color: '#f59e0b' },
+  medium: { icon: <Circle size={16} fill="#eab308" color="#eab308" />, label: 'Medium', color: '#eab308' },
+  low: { icon: <Circle size={16} fill="#16a34a" color="#16a34a" />, label: 'Low', color: '#16a34a' },
 };
 
-const statusConfig: Record<DisputeStatus, { icon: string; label: string; color: string }> = {
-  open: { icon: '🔵', label: 'Open', color: '#3b82f6' },
-  investigating: { icon: '🔍', label: 'Investigating', color: '#8b5cf6' },
-  awaiting_response: { icon: '⏳', label: 'Awaiting Response', color: '#f59e0b' },
-  resolved: { icon: '✅', label: 'Resolved', color: '#16a34a' },
-  escalated: { icon: '⚠️', label: 'Escalated', color: '#dc2626' },
-  closed: { icon: '🔒', label: 'Closed', color: '#6b7280' },
+const statusConfig: Record<DisputeStatus, { icon: React.ReactNode; label: string; color: string }> = {
+  open: { icon: <Circle size={16} fill="#3b82f6" color="#3b82f6" />, label: 'Open', color: '#3b82f6' },
+  investigating: { icon: <Search size={16} />, label: 'Investigating', color: '#8b5cf6' },
+  awaiting_response: { icon: <Clock size={16} />, label: 'Awaiting Response', color: '#f59e0b' },
+  resolved: { icon: <CheckCircle size={16} />, label: 'Resolved', color: '#16a34a' },
+  escalated: { icon: <AlertTriangle size={16} />, label: 'Escalated', color: '#dc2626' },
+  closed: { icon: <Lock size={16} />, label: 'Closed', color: '#6b7280' },
 };
 
-const roleIcons: Record<PartyRole, string> = {
-  customer: '👤',
-  ngo: '🤝',
-  driver: '🚗',
-  farmer: '🌾',
-  vendor: '🏭',
-  platform: '🏢',
+const roleIcons: Record<PartyRole, React.ReactNode> = {
+  customer: <User size={16} />,
+  ngo: <Handshake size={16} />,
+  driver: <Car size={16} />,
+  farmer: <Wheat size={16} />,
+  vendor: <Factory size={16} />,
+  platform: <Building2 size={16} />,
 };
 
-const eventTypeConfig: Record<EventType, { icon: string; color: string }> = {
-  system: { icon: '⚙️', color: '#6b7280' },
-  message: { icon: '💬', color: '#3b82f6' },
-  action: { icon: '🔧', color: '#8b5cf6' },
-  escalation: { icon: '⚠️', color: '#dc2626' },
-  resolution: { icon: '✅', color: '#16a34a' },
-  attachment: { icon: '📎', color: '#f59e0b' },
-  status_change: { icon: '🔄', color: '#06b6d4' },
+const eventTypeConfig: Record<EventType, { icon: React.ReactNode; color: string }> = {
+  system: { icon: <Settings size={16} />, color: '#6b7280' },
+  message: { icon: <MessageSquare size={16} />, color: '#3b82f6' },
+  action: { icon: <Wrench size={16} />, color: '#8b5cf6' },
+  escalation: { icon: <AlertTriangle size={16} />, color: '#dc2626' },
+  resolution: { icon: <CheckCircle size={16} />, color: '#16a34a' },
+  attachment: { icon: <Paperclip size={16} />, color: '#f59e0b' },
+  status_change: { icon: <RefreshCw size={16} />, color: '#06b6d4' },
 };
 
 /* ─── Toast Component ─── */
@@ -316,7 +326,7 @@ const Toast: React.FC<{ toast: ToastNotification; onDismiss: (id: string) => voi
     return () => clearTimeout(t);
   }, [toast.id, onDismiss]);
 
-  const icons: Record<string, string> = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const icons: Record<string, React.ReactNode> = { success: <CheckCircle size={16} />, error: <XCircle size={16} />, warning: <AlertTriangle size={16} />, info: <Info size={16} /> };
 
   return (
     <div className={`dd-toast dd-toast--${toast.type}`}>
@@ -325,7 +335,7 @@ const Toast: React.FC<{ toast: ToastNotification; onDismiss: (id: string) => voi
         <div className="dd-toast__title">{toast.title}</div>
         <div className="dd-toast__message">{toast.message}</div>
       </div>
-      <button className="dd-toast__close" onClick={() => onDismiss(toast.id)}>✕</button>
+      <button className="dd-toast__close" onClick={() => onDismiss(toast.id)}><X size={14} /></button>
       <div className="dd-toast__progress" style={{ animationDuration: '4s' }} />
     </div>
   );
@@ -398,7 +408,7 @@ const TimelineItem: React.FC<{ event: TimelineEvent; isLast: boolean }> = ({ eve
           <div className="dd-timeline-item__attachments">
             {event.attachments.map((att, i) => (
               <div key={i} className="dd-timeline-attachment">
-                <span className="dd-timeline-attachment__icon">📎</span>
+                <span className="dd-timeline-attachment__icon"><Paperclip size={14} /></span>
                 <span className="dd-timeline-attachment__name">{att.name}</span>
                 <span className="dd-timeline-attachment__size">{att.size}</span>
               </div>
@@ -426,8 +436,8 @@ const PartyCard: React.FC<{
 }> = ({ party, role, onContact }) => (
   <div className={`dd-party-card dd-party-card--${role}`}>
     <div className="dd-party-card__header">
-      <div className="dd-party-card__role-badge">{role === 'complainant' ? '📣 Complainant' : '🎯 Respondent'}</div>
-      {party.verified && <span className="dd-party-card__verified" title="Verified">✓</span>}
+      <div className="dd-party-card__role-badge">{role === 'complainant' ? <><Megaphone size={14} /> Complainant</> : <><Target size={14} /> Respondent</>}</div>
+      {party.verified && <span className="dd-party-card__verified" title="Verified"><Check size={14} /></span>}
     </div>
 
     <div className="dd-party-card__main">
@@ -456,10 +466,10 @@ const PartyCard: React.FC<{
 
     <div className="dd-party-card__contact">
       <button className="dd-party-card__contact-btn" onClick={() => onContact('email')}>
-        <span>📧</span> Email
+        <span><Mail size={14} /></span> Email
       </button>
       <button className="dd-party-card__contact-btn" onClick={() => onContact('phone')}>
-        <span>📞</span> Call
+        <span><Phone size={14} /></span> Call
       </button>
     </div>
 
@@ -503,7 +513,7 @@ const ResolutionModal: React.FC<{
       <div className="dd-modal dd-modal--resolution" onClick={(e) => e.stopPropagation()}>
         <div className="dd-modal__header">
           <h2 className="dd-modal__title">Resolve Dispute</h2>
-          <button className="dd-modal__close" onClick={onClose}>✕</button>
+          <button className="dd-modal__close" onClick={onClose}><X size={16} /></button>
         </div>
 
         <div className="dd-modal__content">
@@ -526,10 +536,10 @@ const ResolutionModal: React.FC<{
             <label>Resolution Outcome</label>
             <div className="dd-outcome-options">
               {[
-                { value: 'full_refund', label: 'Full Refund', icon: '💰', desc: 'Refund entire order amount' },
-                { value: 'partial_refund', label: 'Partial Refund', icon: '💵', desc: 'Refund portion of order' },
-                { value: 'no_refund', label: 'No Refund', icon: '❌', desc: 'Reject refund request' },
-                { value: 'replacement', label: 'Replacement', icon: '🔄', desc: 'Send replacement items' },
+                { value: 'full_refund', label: 'Full Refund', icon: <DollarSign size={16} />, desc: 'Refund entire order amount' },
+                { value: 'partial_refund', label: 'Partial Refund', icon: <Banknote size={16} />, desc: 'Refund portion of order' },
+                { value: 'no_refund', label: 'No Refund', icon: <XCircle size={16} />, desc: 'Reject refund request' },
+                { value: 'replacement', label: 'Replacement', icon: <RefreshCw size={16} />, desc: 'Send replacement items' },
               ].map((opt) => (
                 <div
                   key={opt.value}
@@ -611,7 +621,7 @@ const ResolutionModal: React.FC<{
             Cancel
           </button>
           <button className="dd-btn dd-btn--success" onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? <><span className="dd-btn-spinner" /> Resolving...</> : '✅ Confirm Resolution'}
+            {isSubmitting ? <><span className="dd-btn-spinner" /> Resolving...</> : <><CheckCircle size={16} /> Confirm Resolution</>}
           </button>
         </div>
       </div>
@@ -640,13 +650,13 @@ const EscalationModal: React.FC<{
     <div className="dd-modal-overlay" onClick={onClose}>
       <div className="dd-modal dd-modal--escalation" onClick={(e) => e.stopPropagation()}>
         <div className="dd-modal__header">
-          <h2 className="dd-modal__title">⚠️ Escalate Dispute</h2>
-          <button className="dd-modal__close" onClick={onClose}>✕</button>
+          <h2 className="dd-modal__title"><AlertTriangle size={18} /> Escalate Dispute</h2>
+          <button className="dd-modal__close" onClick={onClose}><X size={16} /></button>
         </div>
 
         <div className="dd-modal__content">
           <div className="dd-escalation-warning">
-            <span className="dd-escalation-warning__icon">⚠️</span>
+            <span className="dd-escalation-warning__icon"><AlertTriangle size={18} /></span>
             <div>
               <strong>This action will escalate the dispute</strong>
               <p>The dispute will be flagged as high priority and assigned to senior staff for immediate attention.</p>
@@ -685,7 +695,7 @@ const EscalationModal: React.FC<{
             onClick={handleSubmit}
             disabled={isSubmitting || !reason.trim()}
           >
-            {isSubmitting ? <><span className="dd-btn-spinner" /> Escalating...</> : '⚠️ Confirm Escalation'}
+            {isSubmitting ? <><span className="dd-btn-spinner" /> Escalating...</> : <><AlertTriangle size={16} /> Confirm Escalation</>}
           </button>
         </div>
       </div>
@@ -708,7 +718,7 @@ const DisputeDetails: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
   const [showQuickActions, setShowQuickActions] = useState(false);
-  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<React.ReactNode | null>(null);
   const replyRef = useRef<HTMLTextAreaElement>(null);
 
   const addToast = useCallback((type: ToastNotification['type'], title: string, message: string) => {
@@ -828,11 +838,11 @@ const DisputeDetails: React.FC = () => {
   const canResolve = dispute.status !== 'resolved' && dispute.status !== 'closed';
   const canEscalate = dispute.status === 'open' || dispute.status === 'investigating' || dispute.status === 'awaiting_response';
 
-  const tabs: { key: ActiveTab; label: string; icon: string; count?: number }[] = [
-    { key: 'timeline', label: 'Timeline', icon: '📅', count: timeline.length },
-    { key: 'evidence', label: 'Evidence', icon: '📎', count: attachments.length },
-    { key: 'notes', label: 'Internal Notes', icon: '📝', count: notes.length },
-    { key: 'related', label: 'Related', icon: '🔗', count: relatedDisputes.length },
+  const tabs: { key: ActiveTab; label: string; icon: React.ReactNode; count?: number }[] = [
+    { key: 'timeline', label: 'Timeline', icon: <Calendar size={14} />, count: timeline.length },
+    { key: 'evidence', label: 'Evidence', icon: <Paperclip size={14} />, count: attachments.length },
+    { key: 'notes', label: 'Internal Notes', icon: <Pencil size={14} />, count: notes.length },
+    { key: 'related', label: 'Related', icon: <Link2 size={14} />, count: relatedDisputes.length },
   ];
 
   return (
@@ -844,7 +854,7 @@ const DisputeDetails: React.FC = () => {
 
       {/* Back Button */}
       <button className="dd-back-btn" onClick={() => window.history.back()}>
-        ← Back to Dispute Center
+        <ArrowLeft size={16} /> Back to Dispute Center
       </button>
 
       {/* Header */}
@@ -871,15 +881,15 @@ const DisputeDetails: React.FC = () => {
           </div>
 
           <div className="dd-header__meta">
-            <span>📦 Order: <strong>{dispute.orderId}</strong></span>
+            <span><Package size={14} /> Order: <strong>{dispute.orderId}</strong></span>
             <span className="dd-header__divider">•</span>
-            <span>💰 Amount: <strong>{formatCurrency(dispute.orderAmount)}</strong></span>
+            <span><DollarSign size={14} /> Amount: <strong>{formatCurrency(dispute.orderAmount)}</strong></span>
             <span className="dd-header__divider">•</span>
-            <span>📅 Filed: <strong>{formatRelativeTime(dispute.createdAt)}</strong></span>
+            <span><Calendar size={14} /> Filed: <strong>{formatRelativeTime(dispute.createdAt)}</strong></span>
             {dispute.assignedTo && (
               <>
                 <span className="dd-header__divider">•</span>
-                <span>👤 Assigned: <strong>{dispute.assignedTo}</strong></span>
+                <span><User size={14} /> Assigned: <strong>{dispute.assignedTo}</strong></span>
               </>
             )}
           </div>
@@ -896,16 +906,16 @@ const DisputeDetails: React.FC = () => {
             {showQuickActions && (
               <div className="dd-quick-actions-menu">
                 <button className="dd-quick-actions-menu__item" onClick={() => { handleStatusChange('awaiting_response'); setShowQuickActions(false); }}>
-                  <span>⏳</span> Mark Awaiting Response
+                  <span><Clock size={14} /></span> Mark Awaiting Response
                 </button>
                 <button className="dd-quick-actions-menu__item" onClick={() => { addToast('info', 'Copied', 'Dispute link copied to clipboard'); setShowQuickActions(false); }}>
-                  <span>🔗</span> Copy Link
+                  <span><Link2 size={14} /></span> Copy Link
                 </button>
                 <button className="dd-quick-actions-menu__item" onClick={() => { addToast('info', 'Downloading', 'Generating report...'); setShowQuickActions(false); }}>
-                  <span>📥</span> Export Report
+                  <span><Download size={14} /></span> Export Report
                 </button>
                 <button className="dd-quick-actions-menu__item dd-quick-actions-menu__item--danger" onClick={() => setShowQuickActions(false)}>
-                  <span>🗑️</span> Delete Dispute
+                  <span><Trash2 size={14} /></span> Delete Dispute
                 </button>
               </div>
             )}
@@ -913,7 +923,7 @@ const DisputeDetails: React.FC = () => {
 
           {canEscalate && (
             <button className="dd-btn dd-btn--warning" onClick={() => setShowEscalationModal(true)}>
-              ⚠️ Escalate
+              <AlertTriangle size={16} /> Escalate
             </button>
           )}
           <button
@@ -921,11 +931,11 @@ const DisputeDetails: React.FC = () => {
             onClick={() => handleStatusChange('closed')}
             disabled={dispute.status === 'closed'}
           >
-            ❌ Reject
+            <XCircle size={16} /> Reject
           </button>
           {canResolve && (
             <button className="dd-btn dd-btn--success" onClick={() => setShowResolutionModal(true)}>
-              ✅ Resolve
+              <CheckCircle size={16} /> Resolve
             </button>
           )}
         </div>
@@ -941,7 +951,7 @@ const DisputeDetails: React.FC = () => {
           {/* Description Card */}
           <div className="dd-description-card">
             <div className="dd-description-card__header">
-              <h3>📋 Dispute Description</h3>
+              <h3><ClipboardList size={16} /> Dispute Description</h3>
             </div>
             <div className="dd-description-card__content">
               <p>{dispute.description}</p>
@@ -955,7 +965,7 @@ const DisputeDetails: React.FC = () => {
             )}
             {dispute.refundRequested && (
               <div className="dd-description-card__refund">
-                <span>💰 Refund Requested:</span>
+                <span><DollarSign size={14} /> Refund Requested:</span>
                 <strong>{formatCurrency(dispute.refundRequested)}</strong>
               </div>
             )}
@@ -999,7 +1009,7 @@ const DisputeDetails: React.FC = () => {
                       <span className="dd-toggle__slider" />
                     </label>
                     <span className={isInternalReply ? 'dd-internal-label' : ''}>
-                      {isInternalReply ? '🔒 Internal Note' : '💬 Public Reply'}
+                      {isInternalReply ? <><Lock size={14} /> Internal Note</> : <><MessageSquare size={14} /> Public Reply</>}
                     </span>
                   </div>
                   <div className="dd-composer__input-wrapper">
@@ -1013,14 +1023,14 @@ const DisputeDetails: React.FC = () => {
                     />
                     <div className="dd-composer__actions">
                       <button className="dd-btn dd-btn--secondary dd-btn--sm">
-                        📎 Attach
+                        <Paperclip size={14} /> Attach
                       </button>
                       <button
                         className={`dd-btn dd-btn--sm ${isInternalReply ? 'dd-btn--warning' : 'dd-btn--primary'}`}
                         onClick={handleSendReply}
                         disabled={!replyText.trim() || isSending}
                       >
-                        {isSending ? <><span className="dd-btn-spinner dd-btn-spinner--small" /> Sending...</> : isInternalReply ? '📝 Add Note' : '📤 Send Reply'}
+                        {isSending ? <><span className="dd-btn-spinner dd-btn-spinner--small" /> Sending...</> : isInternalReply ? <><Pencil size={14} /> Add Note</> : <><Send size={14} /> Send Reply</>}
                       </button>
                     </div>
                   </div>
@@ -1033,16 +1043,16 @@ const DisputeDetails: React.FC = () => {
               <div className="dd-evidence-section">
                 <div className="dd-evidence-header">
                   <h3>Evidence & Attachments ({attachments.length})</h3>
-                  <button className="dd-btn dd-btn--secondary dd-btn--sm">📤 Upload</button>
+                  <button className="dd-btn dd-btn--secondary dd-btn--sm"><Upload size={14} /> Upload</button>
                 </div>
                 <div className="dd-evidence-grid">
                   {attachments.map((att) => (
-                    <div key={att.id} className="dd-evidence-card" onClick={() => att.type === 'image' && setLightboxImage(att.thumbnail || '📄')}>
+                    <div key={att.id} className="dd-evidence-card" onClick={() => att.type === 'image' && setLightboxImage(att.thumbnail || <FileText size={20} />)}>
                       <div className="dd-evidence-card__preview">
                         {att.type === 'image' ? (
                           <span className="dd-evidence-card__thumbnail">{att.thumbnail}</span>
                         ) : (
-                          <span className="dd-evidence-card__icon">📄</span>
+                          <span className="dd-evidence-card__icon"><FileText size={20} /></span>
                         )}
                       </div>
                       <div className="dd-evidence-card__info">
@@ -1051,15 +1061,15 @@ const DisputeDetails: React.FC = () => {
                         <span className="dd-evidence-card__uploader">by {att.uploadedBy}</span>
                       </div>
                       <div className="dd-evidence-card__actions">
-                        <button className="dd-icon-btn" title="Download">📥</button>
-                        <button className="dd-icon-btn" title="View">👁</button>
+                        <button className="dd-icon-btn" title="Download"><Download size={14} /></button>
+                        <button className="dd-icon-btn" title="View"><Eye size={14} /></button>
                       </div>
                     </div>
                   ))}
                 </div>
                 {attachments.length === 0 && (
                   <div className="dd-empty-state">
-                    <span className="dd-empty-state__icon">📎</span>
+                    <span className="dd-empty-state__icon"><Paperclip size={24} /></span>
                     <h4>No evidence uploaded</h4>
                     <p>Attachments and evidence files will appear here</p>
                   </div>
@@ -1083,7 +1093,7 @@ const DisputeDetails: React.FC = () => {
                     onClick={handleAddNote}
                     disabled={!replyText.trim()}
                   >
-                    📝 Add Note
+                    <Pencil size={14} /> Add Note
                   </button>
                 </div>
 
@@ -1100,7 +1110,7 @@ const DisputeDetails: React.FC = () => {
                               onClick={() => togglePinNote(note.id)}
                               title={note.isPinned ? 'Unpin' : 'Pin'}
                             >
-                              📌
+                              <Pin size={14} />
                             </button>
                             <span className="dd-note-card__time">{formatRelativeTime(note.timestamp)}</span>
                           </div>
@@ -1135,7 +1145,7 @@ const DisputeDetails: React.FC = () => {
                   </div>
                 ) : (
                   <div className="dd-empty-state">
-                    <span className="dd-empty-state__icon">🔗</span>
+                    <span className="dd-empty-state__icon"><Link2 size={24} /></span>
                     <h4>No related disputes</h4>
                     <p>Related disputes from same parties will appear here</p>
                   </div>
@@ -1150,7 +1160,7 @@ const DisputeDetails: React.FC = () => {
           {/* Quick Info */}
           <div className="dd-info-card">
             <div className="dd-info-card__header">
-              <h3>📊 Dispute Info</h3>
+              <h3><BarChart3 size={16} /> Dispute Info</h3>
               <select
                 className="dd-status-select"
                 value={dispute.status}
@@ -1158,7 +1168,7 @@ const DisputeDetails: React.FC = () => {
                 disabled={dispute.status === 'resolved' || dispute.status === 'closed'}
               >
                 {Object.entries(statusConfig).map(([key, cfg]) => (
-                  <option key={key} value={key}>{cfg.icon} {cfg.label}</option>
+                  <option key={key} value={key}>{cfg.label}</option>
                 ))}
               </select>
             </div>
@@ -1174,7 +1184,7 @@ const DisputeDetails: React.FC = () => {
               <div className="dd-info-row">
                 <span className="dd-info-row__label">SLA Status</span>
                 <span className={`dd-sla-badge dd-sla-badge--${slaStatus.status}`}>
-                  {slaStatus.status === 'breach' ? '🚨' : slaStatus.status === 'critical' ? '⏰' : '✓'} {slaStatus.timeLeft}
+                  {slaStatus.status === 'breach' ? <AlertOctagon size={14} /> : slaStatus.status === 'critical' ? <Clock size={14} /> : <Check size={14} />} {slaStatus.timeLeft}
                 </span>
               </div>
               <div className="dd-info-row">
@@ -1202,23 +1212,23 @@ const DisputeDetails: React.FC = () => {
           {/* Quick Actions */}
           <div className="dd-info-card">
             <div className="dd-info-card__header">
-              <h3>⚡ Quick Actions</h3>
+              <h3><Zap size={16} /> Quick Actions</h3>
             </div>
             <div className="dd-quick-action-grid">
               <button className="dd-quick-action-btn" onClick={() => addToast('info', 'Template', 'Loading response templates...')}>
-                <span>📄</span>
+                <span><FileText size={16} /></span>
                 <span>Templates</span>
               </button>
               <button className="dd-quick-action-btn" onClick={() => addToast('info', 'Scheduling', 'Opening scheduler...')}>
-                <span>📅</span>
+                <span><Calendar size={16} /></span>
                 <span>Schedule Call</span>
               </button>
               <button className="dd-quick-action-btn" onClick={() => addToast('info', 'Refund', 'Opening refund calculator...')}>
-                <span>💰</span>
+                <span><DollarSign size={16} /></span>
                 <span>Calculate Refund</span>
               </button>
               <button className="dd-quick-action-btn" onClick={() => addToast('info', 'History', 'Loading order history...')}>
-                <span>📦</span>
+                <span><Package size={16} /></span>
                 <span>Order Details</span>
               </button>
             </div>
@@ -1248,7 +1258,7 @@ const DisputeDetails: React.FC = () => {
         <div className="dd-lightbox" onClick={() => setLightboxImage(null)}>
           <div className="dd-lightbox__content">
             <span className="dd-lightbox__image">{lightboxImage}</span>
-            <button className="dd-lightbox__close">✕</button>
+            <button className="dd-lightbox__close"><X size={16} /></button>
           </div>
         </div>
       )}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Leaf, Sprout, Building2, Truck, ShoppingCart, Check, X } from 'lucide-react';
 import './AuthStyles.css';
 import { API_ENDPOINTS } from '../../../config/api';
 
@@ -194,21 +195,33 @@ const AuthPage: React.FC = () => {
           }),
         });
 
+        if (!loginResponse.ok) {
+          let errorMessage = 'Failed to login with Google';
+          try {
+            const loginData = await loginResponse.json();
+            errorMessage = loginData.detail || loginData.message || errorMessage;
+          } catch (e) {
+            if (loginResponse.status === 0) {
+              errorMessage = 'Unable to connect to server. Please check if the backend is running.';
+            } else {
+              errorMessage = `Server error (${loginResponse.status}). Please try again.`;
+            }
+          }
+          setError(errorMessage);
+          return;
+        }
+
         const loginData = await loginResponse.json();
         console.log('Login response:', loginData);
 
-        if (loginResponse.ok) {
-          const user: User = {
-            id: loginData.user.id,
-            name: loginData.user.name,
-            email: loginData.user.email,
-            role: loginData.user.role
-          };
-          localStorage.setItem('user', JSON.stringify(user));
-          navigate(getRedirectUrl(user.role));
-        } else {
-          setError(loginData.detail || 'Failed to login with Google');
-        }
+        const user: User = {
+          id: loginData.user.id,
+          name: loginData.user.name,
+          email: loginData.user.email,
+          role: loginData.user.role
+        };
+        localStorage.setItem('user', JSON.stringify(user));
+        navigate(getRedirectUrl(user.role));
       } else {
         // New user — always show role selection modal
         console.log('New user, showing role modal...');
@@ -223,7 +236,12 @@ const AuthPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Google auth error:', err);
-      setError(err.message || 'Google authentication failed');
+      const errorMsg = err.message || 'Google authentication failed';
+      if (errorMsg.includes('Failed to fetch')) {
+        setError('Unable to connect to server. Please check if the backend is running.');
+      } else {
+        setError(errorMsg);
+      }
     }
   };
 
@@ -268,23 +286,44 @@ const AuthPage: React.FC = () => {
         body: JSON.stringify(signupData),
       });
 
+      console.log('Google signup response status:', response.status);
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to create account';
+        try {
+          const data = await response.json();
+          errorMessage = data.detail || data.message || errorMessage;
+        } catch (e) {
+          // Response is not JSON, use generic error
+          if (response.status === 0) {
+            errorMessage = 'Unable to connect to server. Please check if the backend is running.';
+          } else {
+            errorMessage = `Server error (${response.status}). Please try again.`;
+          }
+        }
+        setError(errorMessage);
+        return;
+      }
+
       const data = await response.json();
       console.log('Google signup response:', data);
 
-      if (response.ok) {
-        const user: User = {
-          id: data.user.id,
-          name: data.user.name,
-          email: data.user.email,
-          role: data.user.role
-        };
-        localStorage.setItem('user', JSON.stringify(user));
-        navigate(getRedirectUrl());
-      } else {
-        setError(data.detail || 'Failed to create account');
-      }
+      const user: User = {
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        role: data.user.role
+      };
+      localStorage.setItem('user', JSON.stringify(user));
+      navigate(getRedirectUrl());
     } catch (err: any) {
-      setError(err.message || 'Failed to create account');
+      console.error('Google signup error:', err);
+      const errorMessage = err.message || 'Failed to create account';
+      if (errorMessage.includes('Failed to fetch')) {
+        setError('Unable to connect to server. Please check if the backend is running at ' + API_ENDPOINTS.googleAuth.signup);
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -378,11 +417,22 @@ const AuthPage: React.FC = () => {
         body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.detail || data.message || 'Something went wrong');
+        let errorMessage = 'Something went wrong';
+        try {
+          const data = await response.json();
+          errorMessage = data.detail || data.message || errorMessage;
+        } catch (e) {
+          if (response.status === 0) {
+            errorMessage = 'Unable to connect to server. Please check if the backend is running.';
+          } else {
+            errorMessage = `Server error (${response.status}). Please try again.`;
+          }
+        }
+        throw new Error(errorMessage);
       }
+
+      const data = await response.json();
 
       if (isLogin) {
         const user: User = {
@@ -410,18 +460,22 @@ const AuthPage: React.FC = () => {
       }
 
     } catch (err: any) {
-      setError(err.message);
+      const errorMsg = err.message || 'An error occurred';
+      if (errorMsg.includes('Failed to fetch')) {
+        setError('Unable to connect to server. Please check if the backend is running at ' + endpoint);
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const roles: { id: FormData['role']; icon: string; label: string; desc: string }[] = [
-    { id: 'farmer', icon: '🌱', label: 'Farmer', desc: 'Donate surplus food' },
-    { id: 'ngo', icon: '🏢', label: 'NGO', desc: 'Receive donations' },
-    { id: 'driver', icon: '🚚', label: 'Driver', desc: 'Deliver food' },
-    { id: 'customer', icon: '🛒', label: 'Customer', desc: 'Buy fresh food' },
-
+  const roles: { id: FormData['role']; icon: React.ReactNode; label: string; desc: string }[] = [
+    { id: 'farmer', icon: <Sprout size={16} />, label: 'Farmer', desc: 'Donate surplus food' },
+    { id: 'ngo', icon: <Building2 size={16} />, label: 'NGO', desc: 'Receive donations' },
+    { id: 'driver', icon: <Truck size={16} />, label: 'Driver', desc: 'Deliver food' },
+    { id: 'customer', icon: <ShoppingCart size={16} />, label: 'Customer', desc: 'Buy fresh food' },
   ];
 
   return (
@@ -439,7 +493,7 @@ const AuthPage: React.FC = () => {
       <div className="auth-card">
         {/* Logo */}
         <div className="auth-logo">
-          <span className="logo-icon">🍃</span>
+          <span className="logo-icon"><Leaf size={24} /></span>
         </div>
         
         <h1 className="auth-title" onClick={handleTitleClick} style={{ cursor: 'default', userSelect: 'none' }}>ANNAM</h1>
@@ -618,7 +672,7 @@ const AuthPage: React.FC = () => {
                     <span className="role-icon">{r.icon}</span>
                     <span className="role-label">{r.label}</span>
                     {formData.role === r.id && (
-                      <span className="role-check">✓</span>
+                      <span className="role-check"><Check size={14} /></span>
                     )}
                   </div>
                 ))}
@@ -715,7 +769,7 @@ const AuthPage: React.FC = () => {
                 className="modal-close-btn"
                 onClick={() => setShowRoleModal(false)}
               >
-                ✕
+                <X size={14} />
               </button>
             </div>
 
@@ -765,7 +819,7 @@ const AuthPage: React.FC = () => {
                       <span className="role-icon">{r.icon}</span>
                       <span className="role-label">{r.label}</span>
                       {selectedRole === r.id && (
-                        <span className="role-check">✓</span>
+                        <span className="role-check"><Check size={14} /></span>
                       )}
                     </div>
                   ))}

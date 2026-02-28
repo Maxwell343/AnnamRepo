@@ -57,6 +57,9 @@
 
 .admin-sidebar__brand-icon {
   font-size: 28px;
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .admin-sidebar__brand-text {
@@ -124,6 +127,18 @@
   font-size: 18px;
   width: 24px;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.admin-sidebar__link-icon svg {
+  stroke: currentColor;
+}
+
+.admin-sidebar__link:hover .admin-sidebar__link-icon svg {
+  opacity: 1;
 }
 
 .admin-sidebar__link-badge {

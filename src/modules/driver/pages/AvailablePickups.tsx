@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AvailablePickups.css';
+import { API_ENDPOINTS } from '../../../config/api';
+import { Salad, Apple, Wheat, Package, Flame, Zap, Truck, Circle, AlertTriangle, MapPin, Wallet, Search, X, RefreshCw, MailOpen, Ruler, Flag, Clock, Eye, CheckCircle, Timer, MapPinned, Phone, Map, FileText, MessageSquare, Check, Info, XCircle } from 'lucide-react';
 
 // --- Types ---
 interface User {
@@ -418,21 +420,21 @@ const AvailablePickups: React.FC = () => {
     totalEarnings: pickups.reduce((sum, p) => sum + p.earnings, 0)
   };
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string): React.ReactNode => {
     switch (type) {
-      case 'Vegetable': return '🥦';
-      case 'Fruit': return '🍎';
-      case 'Grain': return '🌾';
-      default: return '🍱';
+      case 'Vegetable': return <Salad size={16} />;
+      case 'Fruit': return <Apple size={16} />;
+      case 'Grain': return <Wheat size={16} />;
+      default: return <Package size={16} />;
     }
   };
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return <span className="priority-badge urgent">🔥 Urgent</span>;
+        return <span className="priority-badge urgent"><Flame size={14} /> Urgent</span>;
       case 'high':
-        return <span className="priority-badge high">⚡ High Priority</span>;
+        return <span className="priority-badge high"><Zap size={14} /> High Priority</span>;
       default:
         return null;
     }
@@ -488,7 +490,7 @@ const AvailablePickups: React.FC = () => {
       {/* Header */}
       <header className="top-header">
           <div className="header-left">
-            <h1 className="page-title">🚚 Available Pickups</h1>
+            <h1 className="page-title"><Truck size={22} /> Available Pickups</h1>
             <p className="page-subtitle">Accept deliveries and start earning</p>
           </div>
           
@@ -496,7 +498,7 @@ const AvailablePickups: React.FC = () => {
             <div className={`online-toggle-card ${isOnline ? 'online' : 'offline'}`}>
               <div className="toggle-info">
                 <span className="toggle-status">
-                  {isOnline ? '🟢 Online' : '🔴 Offline'}
+                  {isOnline ? <><Circle size={10} /> Online</> : <><Circle size={10} /> Offline</>}
                 </span>
                 <span className="toggle-hint">
                   {isOnline ? 'Accepting pickups' : 'Not accepting'}
@@ -520,7 +522,7 @@ const AvailablePickups: React.FC = () => {
         {/* Offline Warning */}
         {!isOnline && (
           <div className="offline-warning">
-            <span className="warning-icon">⚠️</span>
+            <span className="warning-icon"><AlertTriangle size={16} /></span>
             <span className="warning-text">
               You are currently offline. Go online to accept pickup requests.
             </span>
@@ -534,7 +536,7 @@ const AvailablePickups: React.FC = () => {
         <section className="pickup-stats">
           <div className="pickup-stat-card">
             <div className="stat-icon-circle">
-              <span>📦</span>
+              <span><Package size={16} /></span>
             </div>
             <div className="stat-details">
               <span className="stat-number">{stats.total}</span>
@@ -544,7 +546,7 @@ const AvailablePickups: React.FC = () => {
           
           <div className="pickup-stat-card urgent">
             <div className="stat-icon-circle urgent">
-              <span>🔥</span>
+              <span><Flame size={16} /></span>
             </div>
             <div className="stat-details">
               <span className="stat-number">{stats.urgent}</span>
@@ -555,7 +557,7 @@ const AvailablePickups: React.FC = () => {
           
           <div className="pickup-stat-card nearby">
             <div className="stat-icon-circle nearby">
-              <span>📍</span>
+              <span><MapPin size={16} /></span>
             </div>
             <div className="stat-details">
               <span className="stat-number">{stats.nearby}</span>
@@ -565,7 +567,7 @@ const AvailablePickups: React.FC = () => {
           
           <div className="pickup-stat-card earnings">
             <div className="stat-icon-circle earnings">
-              <span>💰</span>
+              <span><Wallet size={16} /></span>
             </div>
             <div className="stat-details">
               <span className="stat-number">₹{stats.totalEarnings}</span>
@@ -577,7 +579,7 @@ const AvailablePickups: React.FC = () => {
         {/* Filters */}
         <section className="pickups-filters">
           <div className="search-box">
-            <span className="search-icon">🔍</span>
+            <span className="search-icon"><Search size={16} /></span>
             <input
               type="text"
               placeholder="Search by item, farmer, NGO, or location..."
@@ -586,7 +588,7 @@ const AvailablePickups: React.FC = () => {
             />
             {searchQuery && (
               <button className="clear-search" onClick={() => setSearchQuery('')}>
-                ✕
+                <X size={16} />
               </button>
             )}
           </div>
@@ -599,10 +601,10 @@ const AvailablePickups: React.FC = () => {
                 onChange={(e) => setFilterType(e.target.value as FilterType)}
               >
                 <option value="all">All Types</option>
-                <option value="Vegetable">🥦 Vegetables</option>
-                <option value="Fruit">🍎 Fruits</option>
-                <option value="Grain">🌾 Grains</option>
-                <option value="Other">🍱 Other</option>
+                <option value="Vegetable">Vegetables</option>
+                <option value="Fruit">Fruits</option>
+                <option value="Grain">Grains</option>
+                <option value="Other">Other</option>
               </select>
             </div>
 
@@ -638,7 +640,7 @@ const AvailablePickups: React.FC = () => {
               onClick={fetchPickups}
               title="Refresh"
             >
-              🔄
+              <RefreshCw size={16} />
             </button>
           </div>
         </section>
@@ -665,7 +667,7 @@ const AvailablePickups: React.FC = () => {
         {/* Pickups Grid */}
         {filteredPickups.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">📭</div>
+            <div className="empty-icon"><MailOpen size={40} /></div>
             <h3>
               {pickups.length === 0 
                 ? "No pickups available right now" 
@@ -677,7 +679,7 @@ const AvailablePickups: React.FC = () => {
                 : "Try adjusting your search or filter criteria"}
             </p>
             <button className="refresh-action-btn" onClick={fetchPickups}>
-              🔄 Refresh
+              <RefreshCw size={14} /> Refresh
             </button>
           </div>
         ) : (
@@ -695,7 +697,7 @@ const AvailablePickups: React.FC = () => {
                   
                   {/* Expiry Timer */}
                   <div className={`expiry-timer ${expiryInfo.urgent ? 'urgent' : ''}`}>
-                    ⏰ {expiryInfo.text}
+                    <Clock size={14} /> {expiryInfo.text}
                   </div>
 
                   {/* Card Header */}
@@ -714,15 +716,15 @@ const AvailablePickups: React.FC = () => {
                       <h3 className="pickup-title">{pickup.title}</h3>
                       <div className="pickup-meta">
                         <span className="meta-item">
-                          <span className="meta-icon">📦</span>
+                          <span className="meta-icon"><Package size={14} /></span>
                           {pickup.quantity}
                         </span>
                         <span className="meta-item">
-                          <span className="meta-icon">📏</span>
+                          <span className="meta-icon"><Ruler size={14} /></span>
                           {pickup.distance} km
                         </span>
                         <span className="meta-item earnings-highlight">
-                          <span className="meta-icon">💰</span>
+                          <span className="meta-icon"><Wallet size={14} /></span>
                           ₹{pickup.earnings}
                         </span>
                       </div>
@@ -733,7 +735,7 @@ const AvailablePickups: React.FC = () => {
                   <div className="route-preview">
                     <div className="route-point">
                       <div className="point-marker pickup">
-                        <span>📍</span>
+                        <span><MapPin size={14} /></span>
                       </div>
                       <div className="point-info">
                         <span className="point-label">PICKUP</span>
@@ -748,7 +750,7 @@ const AvailablePickups: React.FC = () => {
                     
                     <div className="route-point">
                       <div className="point-marker delivery">
-                        <span>🏁</span>
+                        <span><Flag size={14} /></span>
                       </div>
                       <div className="point-info">
                         <span className="point-label">DELIVER</span>
@@ -760,7 +762,7 @@ const AvailablePickups: React.FC = () => {
 
                   {/* Pickup Window */}
                   <div className="pickup-window">
-                    <span className="window-icon">🕐</span>
+                    <span className="window-icon"><Clock size={14} /></span>
                     <span className="window-text">
                       Pickup: {formatTime(pickup.pickup_window_start)} - {formatTime(pickup.pickup_window_end)}
                     </span>
@@ -769,7 +771,7 @@ const AvailablePickups: React.FC = () => {
                   {/* Special Instructions */}
                   {pickup.special_instructions && (
                     <div className="special-instructions">
-                      <span className="instruction-icon">⚠️</span>
+                      <span className="instruction-icon"><AlertTriangle size={14} /></span>
                       <span className="instruction-text">{pickup.special_instructions}</span>
                     </div>
                   )}
@@ -783,7 +785,7 @@ const AvailablePickups: React.FC = () => {
                         setShowDetailsModal(true);
                       }}
                     >
-                      👁️ Details
+                      <Eye size={14} /> Details
                     </button>
                     <button 
                       className="action-btn accept"
@@ -799,7 +801,7 @@ const AvailablePickups: React.FC = () => {
                           Accepting...
                         </>
                       ) : (
-                        <>✅ Accept Pickup</>
+                        <><CheckCircle size={14} /> Accept Pickup</>
                       )}
                     </button>
                   </div>
@@ -814,9 +816,9 @@ const AvailablePickups: React.FC = () => {
           <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
             <div className="modal-content details-modal" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>📦 Pickup Details</h2>
+                <h2><Package size={18} /> Pickup Details</h2>
                 <button className="modal-close" onClick={() => setShowDetailsModal(false)}>
-                  ✕
+                  <X size={18} />
                 </button>
               </div>
               
@@ -840,17 +842,17 @@ const AvailablePickups: React.FC = () => {
                 {/* Trip Stats */}
                 <div className="modal-section trip-stats">
                   <div className="trip-stat">
-                    <span className="stat-icon">📏</span>
+                    <span className="stat-icon"><Ruler size={16} /></span>
                     <span className="stat-value">{selectedPickup.distance} km</span>
                     <span className="stat-label">Distance</span>
                   </div>
                   <div className="trip-stat">
-                    <span className="stat-icon">⏱️</span>
+                    <span className="stat-icon"><Timer size={16} /></span>
                     <span className="stat-value">{selectedPickup.estimated_time}</span>
                     <span className="stat-label">Est. Time</span>
                   </div>
                   <div className="trip-stat">
-                    <span className="stat-icon">💰</span>
+                    <span className="stat-icon"><Wallet size={16} /></span>
                     <span className="stat-value">₹{selectedPickup.earnings}</span>
                     <span className="stat-label">Earnings</span>
                   </div>
@@ -858,14 +860,14 @@ const AvailablePickups: React.FC = () => {
 
                 {/* Pickup Location */}
                 <div className="modal-section">
-                  <h4>📍 Pickup Location (Farmer)</h4>
+                  <h4><MapPin size={16} /> Pickup Location (Farmer)</h4>
                   <div className="contact-card">
                     <div className="contact-details">
                       <span className="contact-name">{selectedPickup.farmer.name}</span>
                       <span className="contact-phone">{selectedPickup.farmer.phone}</span>
                       <span className="contact-address">{selectedPickup.farmer.address}</span>
                       {selectedPickup.farmer.landmark && (
-                        <span className="contact-landmark">📌 {selectedPickup.farmer.landmark}</span>
+                        <span className="contact-landmark"><MapPinned size={14} /> {selectedPickup.farmer.landmark}</span>
                       )}
                     </div>
                     <div className="contact-actions">
@@ -873,24 +875,24 @@ const AvailablePickups: React.FC = () => {
                         className="contact-btn call"
                         onClick={() => openPhoneDialer(selectedPickup.farmer.phone)}
                       >
-                        📞
+                        <Phone size={14} />
                       </button>
                       <button 
                         className="contact-btn map"
                         onClick={() => openMaps(selectedPickup.farmer.address)}
                       >
-                        🗺️
+                        <Map size={14} />
                       </button>
                     </div>
                   </div>
                   <div className="pickup-time">
-                    🕐 Pickup Window: {formatTime(selectedPickup.pickup_window_start)} - {formatTime(selectedPickup.pickup_window_end)}
+                    <Clock size={14} /> Pickup Window: {formatTime(selectedPickup.pickup_window_start)} - {formatTime(selectedPickup.pickup_window_end)}
                   </div>
                 </div>
 
                 {/* Delivery Location */}
                 <div className="modal-section">
-                  <h4>🏁 Delivery Location (NGO)</h4>
+                  <h4><Flag size={16} /> Delivery Location (NGO)</h4>
                   <div className="contact-card">
                     <div className="contact-details">
                       <span className="contact-org">{selectedPickup.ngo.organization}</span>
@@ -903,13 +905,13 @@ const AvailablePickups: React.FC = () => {
                         className="contact-btn call"
                         onClick={() => openPhoneDialer(selectedPickup.ngo.phone)}
                       >
-                        📞
+                        <Phone size={14} />
                       </button>
                       <button 
                         className="contact-btn map"
                         onClick={() => openMaps(selectedPickup.ngo.address)}
                       >
-                        🗺️
+                        <Map size={14} />
                       </button>
                     </div>
                   </div>
@@ -918,16 +920,16 @@ const AvailablePickups: React.FC = () => {
                 {/* Notes */}
                 {(selectedPickup.notes || selectedPickup.special_instructions) && (
                   <div className="modal-section">
-                    <h4>📝 Notes & Instructions</h4>
+                    <h4><FileText size={16} /> Notes & Instructions</h4>
                     {selectedPickup.notes && (
                       <div className="note-item">
-                        <span className="note-icon">💬</span>
+                        <span className="note-icon"><MessageSquare size={14} /></span>
                         <span>{selectedPickup.notes}</span>
                       </div>
                     )}
                     {selectedPickup.special_instructions && (
                       <div className="note-item warning">
-                        <span className="note-icon">⚠️</span>
+                        <span className="note-icon"><AlertTriangle size={14} /></span>
                         <span>{selectedPickup.special_instructions}</span>
                       </div>
                     )}
@@ -950,7 +952,7 @@ const AvailablePickups: React.FC = () => {
                   }}
                   disabled={!isOnline}
                 >
-                  ✅ Accept Pickup
+                  <CheckCircle size={14} /> Accept Pickup
                 </button>
               </div>
             </div>
@@ -962,9 +964,9 @@ const AvailablePickups: React.FC = () => {
           <div className="modal-overlay" onClick={() => setShowAcceptModal(false)}>
             <div className="modal-content accept-modal" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>✅ Accept Pickup</h2>
+                <h2><CheckCircle size={18} /> Accept Pickup</h2>
                 <button className="modal-close" onClick={() => setShowAcceptModal(false)}>
-                  ✕
+                  <X size={18} />
                 </button>
               </div>
               
@@ -988,7 +990,7 @@ const AvailablePickups: React.FC = () => {
                       <span className="summary-value">{selectedPickup.estimated_time}</span>
                     </div>
                     <div className="summary-row highlight">
-                      <span className="summary-label">💰 Earnings</span>
+                      <span className="summary-label"><Wallet size={14} /> Earnings</span>
                       <span className="summary-value earnings">₹{selectedPickup.earnings}</span>
                     </div>
                   </div>
@@ -997,14 +999,14 @@ const AvailablePickups: React.FC = () => {
                 <div className="accept-checklist">
                   <h4>Before accepting, please ensure:</h4>
                   <ul>
-                    <li>✓ You can reach the pickup location on time</li>
-                    <li>✓ Your vehicle can carry {selectedPickup.quantity}</li>
-                    <li>✓ You have enough fuel for the trip</li>
+                    <li><Check size={14} /> You can reach the pickup location on time</li>
+                    <li><Check size={14} /> Your vehicle can carry {selectedPickup.quantity}</li>
+                    <li><Check size={14} /> You have enough fuel for the trip</li>
                   </ul>
                 </div>
 
                 <div className="accept-notice">
-                  <span className="notice-icon">ℹ️</span>
+                  <span className="notice-icon"><Info size={14} /></span>
                   <span>Once accepted, you'll have 30 minutes to reach the pickup location.</span>
                 </div>
               </div>
@@ -1027,7 +1029,7 @@ const AvailablePickups: React.FC = () => {
                       Accepting...
                     </>
                   ) : (
-                    <>✅ Confirm & Accept</>
+                    <><CheckCircle size={14} /> Confirm & Accept</>
                   )}
                 </button>
               </div>
@@ -1039,7 +1041,7 @@ const AvailablePickups: React.FC = () => {
         {showToast && (
           <div className={`toast-notification ${toastType}`}>
             <span className="toast-icon">
-              {toastType === 'success' ? '✅' : toastType === 'error' ? '❌' : '⚠️'}
+              {toastType === 'success' ? <CheckCircle size={16} /> : toastType === 'error' ? <XCircle size={16} /> : <AlertTriangle size={16} />}
             </span>
             <span className="toast-message">{toastMessage}</span>
           </div>

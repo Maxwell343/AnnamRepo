@@ -1,4 +1,14 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import {
+  Leaf, Apple, Citrus, Grape, Cherry, Banana, Sprout, Flower2, Flower, Carrot,
+  Wheat, TreePine, Flame, Milk, Egg, Beef, Fish, Ham, Drumstick, Bone,
+  Soup, Salad, Sandwich, Pizza, Cookie, Cake, Croissant, Candy, IceCreamCone, Nut,
+  Bean, Coffee, Wine, CupSoda, GlassWater, Beer, UtensilsCrossed, Package,
+  ShoppingBasket, Store, Warehouse, Sun, Droplets, Heart, Star, Zap, CircleDot,
+  Tag, Box, Sparkles, ChevronUp, ChevronDown, ChevronRight, Lock, Unlock,
+  Clipboard, Trash2, FolderOpen, Circle, AlertTriangle, HelpCircle, Info,
+  Check, X, Download, Upload, Search, Maximize2, Minimize2, LayoutGrid, Pencil,
+} from 'lucide-react';
 import './CategoryManager.css';
 
 // ============ Types ============
@@ -10,7 +20,7 @@ interface Category {
   id: string;
   name: string;
   slug: string;
-  icon: string;
+  icon: React.ReactNode;
   color: string;
   parent: string | null;
   listingCount: number;
@@ -32,7 +42,7 @@ interface Category {
 interface CategoryFormData {
   name: string;
   slug: string;
-  icon: string;
+  icon: React.ReactNode;
   color: string;
   parent: string | null;
   active: boolean;
@@ -60,12 +70,57 @@ interface DragState {
 }
 
 // ============ Constants ============
-const ICON_OPTIONS = [
-  '🥬', '🍎', '🍊', '🍋', '🍇', '🍓', '🫐', '🍒', '🍑', '🥭',
-  '🍍', '🥥', '🥝', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑',
-  '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠', '🌾', '🥛', '🧀',
-  '🥚', '🍗', '🥩', '🍖', '🦐', '🐟', '🍲', '🍜', '🥗', '🌿',
-  '🍯', '🥜', '🫘', '🍞', '🥖', '🧈', '🍶', '🧃', '☕', '🍵',
+const ICON_OPTIONS: React.ReactNode[] = [
+  <Leaf size={16} />,
+  <Apple size={16} />,
+  <Citrus size={16} />,
+  <Grape size={16} />,
+  <Cherry size={16} />,
+  <Banana size={16} />,
+  <Sprout size={16} />,
+  <Flower2 size={16} />,
+  <Flower size={16} />,
+  <Carrot size={16} />,
+  <Wheat size={16} />,
+  <TreePine size={16} />,
+  <Flame size={16} />,
+  <Milk size={16} />,
+  <Egg size={16} />,
+  <Beef size={16} />,
+  <Fish size={16} />,
+  <Ham size={16} />,
+  <Drumstick size={16} />,
+  <Bone size={16} />,
+  <Soup size={16} />,
+  <Salad size={16} />,
+  <Sandwich size={16} />,
+  <Pizza size={16} />,
+  <Cookie size={16} />,
+  <Cake size={16} />,
+  <Croissant size={16} />,
+  <Candy size={16} />,
+  <IceCreamCone size={16} />,
+  <Nut size={16} />,
+  <Bean size={16} />,
+  <Coffee size={16} />,
+  <Wine size={16} />,
+  <CupSoda size={16} />,
+  <GlassWater size={16} />,
+  <Beer size={16} />,
+  <UtensilsCrossed size={16} />,
+  <Package size={16} />,
+  <ShoppingBasket size={16} />,
+  <Store size={16} />,
+  <Warehouse size={16} />,
+  <Sun size={16} />,
+  <Droplets size={16} />,
+  <Heart size={16} />,
+  <Star size={16} />,
+  <Zap size={16} />,
+  <CircleDot size={16} />,
+  <Tag size={16} />,
+  <Box size={16} />,
+  <Sparkles size={16} />,
 ];
 
 const COLOR_OPTIONS = [
@@ -80,7 +135,7 @@ const DEFAULT_CATEGORIES: Category[] = [
     id: '1',
     name: 'Vegetables',
     slug: 'vegetables',
-    icon: '🥬',
+    icon: <Leaf size={16} />,
     color: '#22c55e',
     parent: null,
     listingCount: 48,
@@ -96,7 +151,7 @@ const DEFAULT_CATEGORIES: Category[] = [
     id: '1-1',
     name: 'Leafy Greens',
     slug: 'leafy-greens',
-    icon: '🥗',
+    icon: <Salad size={16} />,
     color: '#16a34a',
     parent: '1',
     listingCount: 15,
@@ -111,7 +166,7 @@ const DEFAULT_CATEGORIES: Category[] = [
     id: '1-2',
     name: 'Root Vegetables',
     slug: 'root-vegetables',
-    icon: '🥕',
+    icon: <Carrot size={16} />,
     color: '#ea580c',
     parent: '1',
     listingCount: 12,
@@ -126,7 +181,7 @@ const DEFAULT_CATEGORIES: Category[] = [
     id: '2',
     name: 'Fruits',
     slug: 'fruits',
-    icon: '🍎',
+    icon: <Apple size={16} />,
     color: '#ef4444',
     parent: null,
     listingCount: 35,
@@ -142,7 +197,7 @@ const DEFAULT_CATEGORIES: Category[] = [
     id: '2-1',
     name: 'Citrus Fruits',
     slug: 'citrus-fruits',
-    icon: '🍊',
+    icon: <Citrus size={16} />,
     color: '#f97316',
     parent: '2',
     listingCount: 10,
@@ -157,7 +212,7 @@ const DEFAULT_CATEGORIES: Category[] = [
     id: '2-2',
     name: 'Tropical Fruits',
     slug: 'tropical-fruits',
-    icon: '🥭',
+    icon: <Banana size={16} />,
     color: '#eab308',
     parent: '2',
     listingCount: 8,
@@ -172,7 +227,7 @@ const DEFAULT_CATEGORIES: Category[] = [
     id: '3',
     name: 'Grains & Cereals',
     slug: 'grains-cereals',
-    icon: '🌾',
+    icon: <Wheat size={16} />,
     color: '#d97706',
     parent: null,
     listingCount: 22,
@@ -187,7 +242,7 @@ const DEFAULT_CATEGORIES: Category[] = [
     id: '4',
     name: 'Dairy',
     slug: 'dairy',
-    icon: '🥛',
+    icon: <Milk size={16} />,
     color: '#3b82f6',
     parent: null,
     listingCount: 18,
@@ -202,7 +257,7 @@ const DEFAULT_CATEGORIES: Category[] = [
     id: '5',
     name: 'Prepared Food',
     slug: 'prepared-food',
-    icon: '🍲',
+    icon: <Soup size={16} />,
     color: '#8b5cf6',
     parent: null,
     listingCount: 12,
@@ -217,7 +272,7 @@ const DEFAULT_CATEGORIES: Category[] = [
     id: '6',
     name: 'Spices & Herbs',
     slug: 'spices-herbs',
-    icon: '🌿',
+    icon: <Sprout size={16} />,
     color: '#14b8a6',
     parent: null,
     listingCount: 15,
@@ -233,7 +288,7 @@ const DEFAULT_CATEGORIES: Category[] = [
 const EMPTY_FORM: CategoryFormData = {
   name: '',
   slug: '',
-  icon: '📦',
+  icon: <Package size={16} />,
   color: '#3b82f6',
   parent: null,
   active: true,
@@ -259,49 +314,26 @@ const generateSlug = (name: string): string => {
 
 // ============ Sub Components ============
 const IconPicker: React.FC<{
-  value: string;
-  onChange: (icon: string) => void;
+  value: React.ReactNode;
+  onChange: (icon: React.ReactNode) => void;
   isOpen: boolean;
   onToggle: () => void;
 }> = ({ value, onChange, isOpen, onToggle }) => {
-  const [customIcon, setCustomIcon] = useState('');
-
   return (
     <div className="cm-icon-picker">
       <button className="cm-icon-picker__trigger" onClick={onToggle} type="button">
         <span className="cm-icon-picker__current">{value}</span>
-        <span className="cm-icon-picker__arrow">{isOpen ? '▲' : '▼'}</span>
+        <span className="cm-icon-picker__arrow">{isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
       </button>
       
       {isOpen && (
         <div className="cm-icon-picker__dropdown">
-          <div className="cm-icon-picker__custom">
-            <input
-              type="text"
-              placeholder="Type emoji..."
-              value={customIcon}
-              onChange={(e) => setCustomIcon(e.target.value)}
-              maxLength={4}
-            />
-            {customIcon && (
-              <button
-                type="button"
-                onClick={() => {
-                  onChange(customIcon);
-                  setCustomIcon('');
-                  onToggle();
-                }}
-              >
-                Use
-              </button>
-            )}
-          </div>
           <div className="cm-icon-picker__grid">
-            {ICON_OPTIONS.map((icon) => (
+            {ICON_OPTIONS.map((icon, index) => (
               <button
-                key={icon}
+                key={index}
                 type="button"
-                className={`cm-icon-picker__option ${value === icon ? 'active' : ''}`}
+                className="cm-icon-picker__option"
                 onClick={() => {
                   onChange(icon);
                   onToggle();
@@ -330,7 +362,7 @@ const ColorPicker: React.FC<{
       <button className="cm-color-picker__trigger" onClick={onToggle} type="button">
         <span className="cm-color-picker__swatch" style={{ backgroundColor: value }} />
         <span className="cm-color-picker__value">{value}</span>
-        <span className="cm-color-picker__arrow">{isOpen ? '▲' : '▼'}</span>
+        <span className="cm-color-picker__arrow">{isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
       </button>
       
       {isOpen && (
@@ -462,7 +494,7 @@ const CategoryTreeItem: React.FC<{
             if (hasChildren) onToggleExpand(category.id);
           }}
         >
-          {hasChildren ? (isExpanded ? '▼' : '▶') : '•'}
+          {hasChildren ? (isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />) : '•'}
         </button>
 
         {/* Category info */}
@@ -477,7 +509,7 @@ const CategoryTreeItem: React.FC<{
             <span className="cm-tree-item__name">{category.name}</span>
             <span className="cm-tree-item__meta">
               {category.listingCount} listings
-              {category.featured && <span className="cm-tree-item__featured">★ Featured</span>}
+              {category.featured && <span className="cm-tree-item__featured"><Star size={12} /> Featured</span>}
             </span>
           </div>
         </div>
@@ -497,7 +529,7 @@ const CategoryTreeItem: React.FC<{
             }}
             title={category.active ? 'Deactivate' : 'Activate'}
           >
-            {category.active ? '🔒' : '🔓'}
+            {category.active ? <Lock size={14} /> : <Unlock size={14} />}
           </button>
           <button
             className="cm-tree-item__action"
@@ -507,7 +539,7 @@ const CategoryTreeItem: React.FC<{
             }}
             title={category.featured ? 'Unfeature' : 'Feature'}
           >
-            {category.featured ? '⭐' : '☆'}
+            {category.featured ? <Star size={14} fill="currentColor" /> : <Star size={14} />}
           </button>
           <button
             className="cm-tree-item__action"
@@ -517,7 +549,7 @@ const CategoryTreeItem: React.FC<{
             }}
             title="Duplicate"
           >
-            📋
+            <Clipboard size={14} />
           </button>
           <button
             className="cm-tree-item__action danger"
@@ -527,7 +559,7 @@ const CategoryTreeItem: React.FC<{
             }}
             title="Delete"
           >
-            🗑️
+            <Trash2 size={14} />
           </button>
         </div>
       </div>
@@ -583,19 +615,19 @@ const CategoryCard: React.FC<{
       >
         {category.icon}
       </div>
-      {category.featured && <span className="cm-card__featured">⭐</span>}
+      {category.featured && <span className="cm-card__featured"><Star size={14} /></span>}
     </div>
     <div className="cm-card__body">
       <h3 className="cm-card__name">{category.name}</h3>
       <p className="cm-card__description">{category.description || 'No description'}</p>
       <div className="cm-card__stats">
         <span className="cm-card__stat">
-          <span className="cm-card__stat-icon">📦</span>
+          <span className="cm-card__stat-icon"><Package size={14} /></span>
           {category.listingCount} listings
         </span>
         {childCount > 0 && (
           <span className="cm-card__stat">
-            <span className="cm-card__stat-icon">📂</span>
+            <span className="cm-card__stat-icon"><FolderOpen size={14} /></span>
             {childCount} subcategories
           </span>
         )}
@@ -603,7 +635,7 @@ const CategoryCard: React.FC<{
     </div>
     <div className="cm-card__footer">
       <span className={`cm-card__status ${category.active ? 'active' : 'inactive'}`}>
-        {category.active ? '● Active' : '○ Inactive'}
+        {category.active ? <><Circle size={8} fill="currentColor" /> Active</> : <><Circle size={8} /> Inactive</>}
       </span>
       <div className="cm-card__actions">
         <button
@@ -614,7 +646,7 @@ const CategoryCard: React.FC<{
           }}
           title={category.active ? 'Deactivate' : 'Activate'}
         >
-          {category.active ? '🔒' : '🔓'}
+          {category.active ? <Lock size={14} /> : <Unlock size={14} />}
         </button>
         <button
           className="cm-card__action danger"
@@ -624,7 +656,7 @@ const CategoryCard: React.FC<{
           }}
           title="Delete"
         >
-          🗑️
+          <Trash2 size={14} />
         </button>
       </div>
     </div>
@@ -647,7 +679,7 @@ const ConfirmDialog: React.FC<{
     <div className="cm-confirm-overlay" onClick={onCancel}>
       <div className="cm-confirm-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="cm-confirm-dialog__icon" data-variant={confirmVariant}>
-          {confirmVariant === 'danger' ? '⚠️' : confirmVariant === 'warning' ? '❓' : 'ℹ️'}
+          {confirmVariant === 'danger' ? <AlertTriangle size={20} /> : confirmVariant === 'warning' ? <HelpCircle size={20} /> : <Info size={20} />}
         </div>
         <h3 className="cm-confirm-dialog__title">{title}</h3>
         <p className="cm-confirm-dialog__message">{message}</p>
@@ -680,10 +712,10 @@ const ToastContainer: React.FC<{ toasts: Toast[]; onDismiss: (id: string) => voi
     {toasts.map((toast) => (
       <div key={toast.id} className={`cm-toast cm-toast--${toast.type}`}>
         <span className="cm-toast__icon">
-          {toast.type === 'success' && '✓'}
-          {toast.type === 'error' && '✕'}
-          {toast.type === 'warning' && '⚠'}
-          {toast.type === 'info' && 'ℹ'}
+          {toast.type === 'success' && <Check size={14} />}
+          {toast.type === 'error' && <X size={14} />}
+          {toast.type === 'warning' && <AlertTriangle size={14} />}
+          {toast.type === 'info' && <Info size={14} />}
         </span>
         <span className="cm-toast__message">{toast.message}</span>
         <button className="cm-toast__close" onClick={() => onDismiss(toast.id)}>
@@ -720,9 +752,9 @@ const CategoryPreview: React.FC<{
         {category.description || 'Category description will appear here...'}
       </p>
       <div className="cm-preview__badges">
-        {category.featured && <span className="cm-preview__badge featured">⭐ Featured</span>}
+        {category.featured && <span className="cm-preview__badge featured"><Star size={12} /> Featured</span>}
         <span className={`cm-preview__badge ${category.active ? 'active' : 'inactive'}`}>
-          {category.active ? '● Active' : '○ Inactive'}
+          {category.active ? <><Circle size={8} fill="currentColor" /> Active</> : <><Circle size={8} /> Inactive</>}
         </span>
       </div>
     </div>
@@ -1242,28 +1274,28 @@ const CategoryManager: React.FC = () => {
       {/* Statistics */}
       <div className="cm-stats">
         <div className="cm-stat-card">
-          <div className="cm-stat-card__icon">📂</div>
+          <div className="cm-stat-card__icon"><FolderOpen size={20} /></div>
           <div className="cm-stat-card__content">
             <span className="cm-stat-card__value">{statistics.total}</span>
             <span className="cm-stat-card__label">Total Categories</span>
           </div>
         </div>
         <div className="cm-stat-card">
-          <div className="cm-stat-card__icon">✓</div>
+          <div className="cm-stat-card__icon"><Check size={20} /></div>
           <div className="cm-stat-card__content">
             <span className="cm-stat-card__value">{statistics.active}</span>
             <span className="cm-stat-card__label">Active</span>
           </div>
         </div>
         <div className="cm-stat-card">
-          <div className="cm-stat-card__icon">⭐</div>
+          <div className="cm-stat-card__icon"><Star size={20} /></div>
           <div className="cm-stat-card__content">
             <span className="cm-stat-card__value">{statistics.featured}</span>
             <span className="cm-stat-card__label">Featured</span>
           </div>
         </div>
         <div className="cm-stat-card">
-          <div className="cm-stat-card__icon">📦</div>
+          <div className="cm-stat-card__icon"><Package size={20} /></div>
           <div className="cm-stat-card__content">
             <span className="cm-stat-card__value">{statistics.listings}</span>
             <span className="cm-stat-card__label">Total Listings</span>
@@ -1282,10 +1314,10 @@ const CategoryManager: React.FC = () => {
         <div className="cm-header__right">
           <label className="cm-header__import-btn">
             <input type="file" accept=".json" onChange={handleImport} hidden />
-            <span>📥 Import</span>
+            <span><Download size={14} /> Import</span>
           </label>
           <button className="cm-btn cm-btn--secondary" onClick={handleExport}>
-            📤 Export
+            <Upload size={14} /> Export
           </button>
           <button className="cm-btn cm-btn--primary" onClick={() => handleNew()}>
             + Add Category
@@ -1297,7 +1329,7 @@ const CategoryManager: React.FC = () => {
       <div className="cm-toolbar">
         <div className="cm-toolbar__left">
           <div className="cm-search">
-            <span className="cm-search__icon">🔍</span>
+            <span className="cm-search__icon"><Search size={14} /></span>
             <input
               type="text"
               className="cm-search__input"
@@ -1338,10 +1370,10 @@ const CategoryManager: React.FC = () => {
           {viewMode === 'tree' && (
             <>
               <button className="cm-toolbar__btn" onClick={handleExpandAll} title="Expand All">
-                ⊞
+                <Maximize2 size={14} />
               </button>
               <button className="cm-toolbar__btn" onClick={handleCollapseAll} title="Collapse All">
-                ⊟
+                <Minimize2 size={14} />
               </button>
             </>
           )}
@@ -1351,14 +1383,14 @@ const CategoryManager: React.FC = () => {
               onClick={() => setViewMode('tree')}
               title="Tree View"
             >
-              🌳
+              <TreePine size={14} />
             </button>
             <button
               className={`cm-view-btn ${viewMode === 'grid' ? 'active' : ''}`}
               onClick={() => setViewMode('grid')}
               title="Grid View"
             >
-              ▦
+              <LayoutGrid size={14} />
             </button>
           </div>
         </div>
@@ -1372,13 +1404,13 @@ const CategoryManager: React.FC = () => {
           </span>
           <div className="cm-bulk-actions__buttons">
             <button className="cm-bulk-btn" onClick={handleBulkActivate}>
-              ✓ Activate
+              <Check size={14} /> Activate
             </button>
             <button className="cm-bulk-btn" onClick={handleBulkDeactivate}>
-              ○ Deactivate
+              <Circle size={12} /> Deactivate
             </button>
             <button className="cm-bulk-btn cm-bulk-btn--danger" onClick={handleBulkDelete}>
-              🗑️ Delete
+              <Trash2 size={14} /> Delete
             </button>
             <button className="cm-bulk-btn" onClick={() => setSelectedIds(new Set())}>
               Clear
@@ -1399,7 +1431,7 @@ const CategoryManager: React.FC = () => {
 
           {filteredCategories.length === 0 ? (
             <div className="cm-empty-state">
-              <span className="cm-empty-state__icon">📂</span>
+              <span className="cm-empty-state__icon"><FolderOpen size={24} /></span>
               <h3>No categories found</h3>
               <p>
                 {searchQuery
@@ -1569,7 +1601,7 @@ const CategoryManager: React.FC = () => {
                       .filter((c) => c.id !== selectedId && !c.parent)
                       .map((c) => (
                         <option key={c.id} value={c.id}>
-                          {c.icon} {c.name}
+                          {c.name}
                         </option>
                       ))}
                   </select>
@@ -1620,7 +1652,7 @@ const CategoryManager: React.FC = () => {
                   className="cm-form__advanced-toggle"
                   onClick={() => setShowAdvanced(!showAdvanced)}
                 >
-                  <span>{showAdvanced ? '▼' : '▶'} Advanced Settings</span>
+                  <span>{showAdvanced ? <ChevronDown size={14} /> : <ChevronRight size={14} />} Advanced Settings</span>
                 </button>
 
                 {showAdvanced && (
@@ -1700,7 +1732,7 @@ const CategoryManager: React.FC = () => {
             </div>
           ) : (
             <div className="cm-form__placeholder">
-              <span className="cm-form__placeholder-icon">📝</span>
+              <span className="cm-form__placeholder-icon"><Pencil size={24} /></span>
               <p>Select a category to edit or create a new one</p>
               <button className="cm-btn cm-btn--primary" onClick={() => handleNew()}>
                 + Create Category

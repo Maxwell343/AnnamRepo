@@ -5,6 +5,20 @@
 // User Roles
 export type UserRole = 'farmer' | 'customer' | 'ngo' | 'food_bank' | 'processor' | 'driver' | 'admin';
 
+// User Profile
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: UserRole;
+  avatar?: string;
+  location?: {
+    city: string;
+    state: string;
+  };
+}
+
 // Listing Categories
 export type ListingCategory = 
   | 'fresh_produce'
@@ -33,6 +47,9 @@ export type ListingStatus =
 
 // Selling Mode
 export type SellingMode = 'sell' | 'donate' | 'auto_donate' | 'flexible';
+
+// Rescue Priority
+export type RescuePriority = 'critical' | 'high' | 'medium' | 'low';
 
 // ============================================
 // CORE INTERFACES

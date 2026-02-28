@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CheckCircle, Package, Flag, Wheat, Home, MapPin, Truck, Map, Wallet, ScrollText, Trophy, Settings, LogOut, ClipboardList, Ruler, Timer, Clock, Globe, Circle, Check, FileText, Phone, Compass, Hourglass } from 'lucide-react';
 import './RouteMap.css';
 
 interface User {
@@ -189,10 +190,10 @@ const RouteMap: React.FC = () => {
     window.open(`tel:${phone}`, '_self');
   };
 
-  const getStopIcon = (type: string, status: string) => {
-    if (status === 'completed') return '✅';
-    if (type === 'pickup') return '📦';
-    return '🏁';
+  const getStopIcon = (type: string, status: string): React.ReactNode => {
+    if (status === 'completed') return <CheckCircle size={14} />;
+    if (type === 'pickup') return <Package size={14} />;
+    return <Flag size={14} />;
   };
 
   const getStatusClass = (status: string) => {
@@ -218,7 +219,7 @@ const RouteMap: React.FC = () => {
       <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-header">
           <div className="logo-section">
-            <span className="logo-icon">🌾</span>
+            <span className="logo-icon"><Wheat size={20} /></span>
             {!sidebarCollapsed && <span className="logo-text">Annam</span>}
           </div>
           <button 
@@ -231,42 +232,42 @@ const RouteMap: React.FC = () => {
         
         <nav className="sidebar-nav">
           <div className="nav-item" onClick={() => navigate('/home')}>
-            <span className="nav-icon">🏠</span>
+            <span className="nav-icon"><Home size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">Dashboard</span>}
           </div>
           <div className="nav-item" onClick={() => navigate('/my-deliveries')}>
-            <span className="nav-icon">📍</span>
+            <span className="nav-icon"><MapPin size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">My Deliveries</span>}
           </div>
           <div className="nav-item" onClick={() => navigate('/available-pickups')}>
-            <span className="nav-icon">🚚</span>
+            <span className="nav-icon"><Truck size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">Available Pickups</span>}
           </div>
           <div className="nav-item active">
-            <span className="nav-icon">🗺️</span>
+            <span className="nav-icon"><Map size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">Route Map</span>}
           </div>
           <div className="nav-item" onClick={() => navigate('/earnings')}>
-            <span className="nav-icon">💰</span>
+            <span className="nav-icon"><Wallet size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">Earnings</span>}
           </div>
           <div className="nav-item" onClick={() => navigate('/history')}>
-            <span className="nav-icon">📜</span>
+            <span className="nav-icon"><ScrollText size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">History</span>}
           </div>
           <div className="nav-item" onClick={() => navigate('/leaderboards')}>
-            <span className="nav-icon">🏆</span>
+            <span className="nav-icon"><Trophy size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">Leaderboards</span>}
           </div>
           <div className="nav-item" onClick={() => navigate('/driver-settings')}>
-            <span className="nav-icon">⚙️</span>
+            <span className="nav-icon"><Settings size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">Settings</span>}
           </div>
         </nav>
 
         <div className="sidebar-footer">
           <div className="nav-item logout-item" onClick={handleLogout}>
-            <span className="nav-icon">🚪</span>
+            <span className="nav-icon"><LogOut size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">Logout</span>}
           </div>
         </div>
@@ -277,7 +278,7 @@ const RouteMap: React.FC = () => {
         {/* Header */}
         <header className="top-header">
           <div className="header-left">
-            <h1 className="page-title">🗺️ Route Map</h1>
+            <h1 className="page-title"><Map size={22} /> Route Map</h1>
             <p className="page-subtitle">Navigate your delivery route efficiently</p>
           </div>
           <div className="header-right">
@@ -285,7 +286,7 @@ const RouteMap: React.FC = () => {
               className={`view-toggle ${showDirections ? 'active' : ''}`}
               onClick={() => setShowDirections(!showDirections)}
             >
-              {showDirections ? '📋 List View' : '🗺️ Map View'}
+              {showDirections ? <><ClipboardList size={14} /> List View</> : <><Map size={14} /> Map View</>}
             </button>
             <div className="user-profile">
               <div className="user-avatar">
@@ -299,28 +300,28 @@ const RouteMap: React.FC = () => {
         {activeRoute && (
           <div className="route-summary">
             <div className="summary-card">
-              <span className="summary-icon">📍</span>
+              <span className="summary-icon"><MapPin size={16} /></span>
               <div className="summary-content">
                 <span className="summary-value">{activeRoute.completedStops}/{activeRoute.totalStops}</span>
                 <span className="summary-label">Stops</span>
               </div>
             </div>
             <div className="summary-card">
-              <span className="summary-icon">📏</span>
+              <span className="summary-icon"><Ruler size={16} /></span>
               <div className="summary-content">
                 <span className="summary-value">{activeRoute.totalDistance}</span>
                 <span className="summary-label">Total Distance</span>
               </div>
             </div>
             <div className="summary-card">
-              <span className="summary-icon">⏱️</span>
+              <span className="summary-icon"><Timer size={16} /></span>
               <div className="summary-content">
                 <span className="summary-value">{activeRoute.estimatedTime}</span>
                 <span className="summary-label">Est. Time</span>
               </div>
             </div>
             <div className="summary-card">
-              <span className="summary-icon">🕐</span>
+              <span className="summary-icon"><Clock size={16} /></span>
               <div className="summary-content">
                 <span className="summary-value">{activeRoute.startTime}</span>
                 <span className="summary-label">Started</span>
@@ -352,21 +353,21 @@ const RouteMap: React.FC = () => {
           <div className="map-section enlarged">
             <div className="map-placeholder">
               <div className="map-overlay">
-                <span className="map-icon">🗺️</span>
+                <span className="map-icon"><Map size={40} /></span>
                 <h3>Interactive Map</h3>
                 <p>Map integration coming soon</p>
                 <button 
                   className="open-maps-btn"
                   onClick={() => window.open('https://www.google.com/maps', '_blank')}
                 >
-                  🌐 Open in Google Maps
+                  <Globe size={14} /> Open in Google Maps
                 </button>
               </div>
             </div>
             
             {/* Quick stops overview in map view */}
             <div className="map-stops-overview">
-              <h3>📍 Stops Overview</h3>
+              <h3><MapPin size={16} /> Stops Overview</h3>
               <div className="quick-stops-list">
                 {activeRoute?.stops.map((stop, index) => (
                   <div 
@@ -377,12 +378,12 @@ const RouteMap: React.FC = () => {
                     <span className="quick-stop-number">{index + 1}</span>
                     <div className="quick-stop-info">
                       <span className="quick-stop-name">{stop.name}</span>
-                      <span className="quick-stop-type">{stop.type === 'pickup' ? '📦 Pickup' : '🏁 Dropoff'}</span>
+                      <span className="quick-stop-type">{stop.type === 'pickup' ? <><Package size={12} /> Pickup</> : <><Flag size={12} /> Dropoff</>}</span>
                     </div>
                     <span className="quick-stop-status">
-                      {stop.status === 'completed' && '✅'}
-                      {stop.status === 'current' && '🔵'}
-                      {stop.status === 'pending' && '⏳'}
+                      {stop.status === 'completed' && <CheckCircle size={12} />}
+                      {stop.status === 'current' && <Circle size={12} />}
+                      {stop.status === 'pending' && <Hourglass size={12} />}
                     </span>
                   </div>
                 ))}
@@ -395,7 +396,7 @@ const RouteMap: React.FC = () => {
         {showDirections && (
           <div className="stops-section">
           <div className="section-header">
-            <h2>📋 Route Stops</h2>
+            <h2><ClipboardList size={18} /> Route Stops</h2>
             <span className="stop-count">{activeRoute?.stops.length} stops</span>
           </div>
 
@@ -418,32 +419,32 @@ const RouteMap: React.FC = () => {
                 <div className="stop-content">
                   <div className="stop-header">
                     <div className="stop-type-badge">
-                      {stop.type === 'pickup' ? '📦 Pickup' : '🏁 Dropoff'}
+                      {stop.type === 'pickup' ? <><Package size={14} /> Pickup</> : <><Flag size={14} /> Dropoff</>}
                     </div>
                     <div className={`stop-status-badge ${stop.status}`}>
-                      {stop.status === 'completed' && '✓ Completed'}
-                      {stop.status === 'current' && '🔵 Current'}
-                      {stop.status === 'pending' && '⏳ Pending'}
+                      {stop.status === 'completed' && <><Check size={12} /> Completed</>}
+                      {stop.status === 'current' && <><Circle size={12} /> Current</>}
+                      {stop.status === 'pending' && <><Hourglass size={12} /> Pending</>}
                     </div>
                   </div>
 
                   <h3 className="stop-name">{stop.name}</h3>
-                  <p className="stop-address">📍 {stop.address}</p>
+                  <p className="stop-address"><MapPin size={12} /> {stop.address}</p>
                   
                   <div className="stop-details">
                     <span className="detail-item">
-                      <span className="detail-icon">📦</span>
+                      <span className="detail-icon"><Package size={14} /></span>
                       {stop.items} ({stop.quantity})
                     </span>
                     <span className="detail-item">
-                      <span className="detail-icon">🕐</span>
+                      <span className="detail-icon"><Clock size={14} /></span>
                       {stop.time}
                     </span>
                   </div>
 
                   {stop.notes && (
                     <div className="stop-notes">
-                      <span className="notes-icon">📝</span>
+                      <span className="notes-icon"><FileText size={14} /></span>
                       {stop.notes}
                     </div>
                   )}
@@ -453,20 +454,20 @@ const RouteMap: React.FC = () => {
                       className="action-btn call"
                       onClick={(e) => { e.stopPropagation(); handleCall(stop.phone); }}
                     >
-                      📞 Call
+                      <Phone size={12} /> Call
                     </button>
                     <button 
                       className="action-btn navigate"
                       onClick={(e) => { e.stopPropagation(); handleStartNavigation(stop); }}
                     >
-                      🧭 Navigate
+                      <Compass size={12} /> Navigate
                     </button>
                     {stop.status === 'current' && (
                       <button 
                         className="action-btn complete"
                         onClick={(e) => { e.stopPropagation(); handleMarkComplete(stop.id); }}
                       >
-                        ✅ Mark Complete
+                        <CheckCircle size={14} /> Mark Complete
                       </button>
                     )}
                   </div>
@@ -480,14 +481,14 @@ const RouteMap: React.FC = () => {
         {/* No Route State */}
         {!activeRoute && (
           <div className="no-route">
-            <span className="no-route-icon">🗺️</span>
+            <span className="no-route-icon"><Map size={40} /></span>
             <h3>No Active Route</h3>
             <p>Accept deliveries to start your route</p>
             <button 
               className="find-pickups-btn"
               onClick={() => navigate('/available-pickups')}
             >
-              🚚 Find Available Pickups
+              <Truck size={14} /> Find Available Pickups
             </button>
           </div>
         )}

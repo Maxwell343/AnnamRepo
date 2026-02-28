@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './FarmerListingForm.css';
+import { API_ENDPOINTS } from '../../../config/api';
 import type { ProductType, SellingMode, SmartPriceSuggestion, Location } from '../../../types/marketplace';
 
 // ============================================
@@ -402,7 +403,7 @@ const FarmerListingForm: React.FC = () => {
         status: 'active'
       };
       
-      const response = await fetch('http://localhost:8000/api/marketplace/listings', {
+      const response = await fetch(API_ENDPOINTS.marketplace.listings, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(listingData)

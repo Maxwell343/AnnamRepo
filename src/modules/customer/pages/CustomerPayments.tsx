@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CustomerPayments.css';
+import { CreditCard, Smartphone, Check, X, Info, AlertTriangle, Wheat, Gem, Gift, Wallet, ScrollText, Landmark, Star, Pencil, Trash2, ShoppingCart, Undo2, Plus, Minus, Hourglass, Clock, ClipboardList, Lock, ArrowLeft, ArrowRight, Circle, FileText, HelpCircle, Zap, Lightbulb } from 'lucide-react';
 
 // ============================================
 // TYPES
@@ -11,7 +12,7 @@ interface PaymentMethod {
   type: 'card' | 'upi' | 'netbanking' | 'wallet';
   name: string;
   details: string;
-  icon: string;
+  icon: React.ReactNode;
   isDefault: boolean;
   isVerified: boolean;
   lastUsed?: string;
@@ -68,17 +69,17 @@ interface User {
 // ============================================
 
 const CARD_BRANDS = {
-  visa: { name: 'Visa', color: '#1A1F71', icon: '💳' },
-  mastercard: { name: 'Mastercard', color: '#EB001B', icon: '💳' },
-  rupay: { name: 'RuPay', color: '#097969', icon: '💳' },
-  amex: { name: 'American Express', color: '#006FCF', icon: '💳' }
+  visa: { name: 'Visa', color: '#1A1F71', icon: <CreditCard size={16} /> },
+  mastercard: { name: 'Mastercard', color: '#EB001B', icon: <CreditCard size={16} /> },
+  rupay: { name: 'RuPay', color: '#097969', icon: <CreditCard size={16} /> },
+  amex: { name: 'American Express', color: '#006FCF', icon: <CreditCard size={16} /> }
 };
 
 const WALLET_PROVIDERS = {
-  paytm: { name: 'Paytm', color: '#00BAF2', icon: '📱' },
-  phonepe: { name: 'PhonePe', color: '#5F259F', icon: '📱' },
-  googlepay: { name: 'Google Pay', color: '#4285F4', icon: '📱' },
-  amazonpay: { name: 'Amazon Pay', color: '#FF9900', icon: '📱' }
+  paytm: { name: 'Paytm', color: '#00BAF2', icon: <Smartphone size={16} /> },
+  phonepe: { name: 'PhonePe', color: '#5F259F', icon: <Smartphone size={16} /> },
+  googlepay: { name: 'Google Pay', color: '#4285F4', icon: <Smartphone size={16} /> },
+  amazonpay: { name: 'Amazon Pay', color: '#FF9900', icon: <Smartphone size={16} /> }
 };
 
 const BANKS = [
@@ -149,7 +150,7 @@ const getRelativeTime = (dateString: string): string => {
 
 // Toast notification
 const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
-  const icons = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠' };
+  const icons: Record<string, React.ReactNode> = { success: <Check size={14} />, error: <X size={14} />, info: <Info size={14} />, warning: <AlertTriangle size={14} /> };
   
   const toast = document.createElement('div');
   toast.className = `payment-toast toast-${type}`;
@@ -211,7 +212,7 @@ const generateMockPaymentMethods = (): PaymentMethod[] => [
     type: 'card',
     name: 'HDFC Bank Debit Card',
     details: '4532',
-    icon: '💳',
+    icon: <CreditCard size={16} />,
     isDefault: true,
     isVerified: true,
     lastUsed: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
@@ -224,7 +225,7 @@ const generateMockPaymentMethods = (): PaymentMethod[] => [
     type: 'upi',
     name: 'UPI',
     details: 'user@okaxis',
-    icon: '📱',
+    icon: <Smartphone size={16} />,
     isDefault: false,
     isVerified: true,
     lastUsed: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
@@ -235,7 +236,7 @@ const generateMockPaymentMethods = (): PaymentMethod[] => [
     type: 'card',
     name: 'ICICI Bank Credit Card',
     details: '8901',
-    icon: '💳',
+    icon: <CreditCard size={16} />,
     isDefault: false,
     isVerified: true,
     expiryDate: '08/25',
@@ -247,7 +248,7 @@ const generateMockPaymentMethods = (): PaymentMethod[] => [
     type: 'wallet',
     name: 'Paytm Wallet',
     details: 'Linked',
-    icon: '📱',
+    icon: <Smartphone size={16} />,
     isDefault: false,
     isVerified: true,
     walletProvider: 'paytm',
@@ -429,10 +430,10 @@ const WalletCard: React.FC<{
       <div className="wallet-content">
         <div className="wallet-header">
           <div className="wallet-logo">
-            <span className="logo-icon">🌾</span>
+            <span className="logo-icon"><Wheat size={20} /></span>
             <span className="logo-text">Annam Wallet</span>
           </div>
-          <span className="wallet-badge">💎 Premium</span>
+          <span className="wallet-badge"><Gem size={14} /> Premium</span>
         </div>
         
         <div className="wallet-balance">
@@ -442,14 +443,14 @@ const WalletCard: React.FC<{
         
         <div className="wallet-stats">
           <div className="wallet-stat">
-            <span className="stat-icon">🎁</span>
+            <span className="stat-icon"><Gift size={16} /></span>
             <div className="stat-content">
               <span className="stat-value">{formatCurrency(wallet.pendingCashback)}</span>
               <span className="stat-label">Pending Cashback</span>
             </div>
           </div>
           <div className="wallet-stat">
-            <span className="stat-icon">💰</span>
+            <span className="stat-icon"><Wallet size={16} /></span>
             <div className="stat-content">
               <span className="stat-value">{formatCurrency(wallet.lifetimeCashback)}</span>
               <span className="stat-label">Lifetime Earnings</span>
@@ -463,7 +464,7 @@ const WalletCard: React.FC<{
             <span>Add Money</span>
           </MagneticButton>
           <button className="btn-history" onClick={onViewHistory}>
-            <span className="btn-icon">📜</span>
+            <span className="btn-icon"><ScrollText size={14} /></span>
             <span>History</span>
           </button>
         </div>
@@ -483,14 +484,14 @@ const PaymentMethodCard: React.FC<{
   const [showActions, setShowActions] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const getMethodIcon = () => {
+  const getMethodIcon = (): React.ReactNode => {
     if (method.type === 'card' && method.cardBrand) {
-      return CARD_BRANDS[method.cardBrand]?.icon || '💳';
+      return CARD_BRANDS[method.cardBrand]?.icon || <CreditCard size={16} />;
     }
-    if (method.type === 'upi') return '📲';
-    if (method.type === 'netbanking') return '🏦';
-    if (method.type === 'wallet') return '📱';
-    return '💳';
+    if (method.type === 'upi') return <Smartphone size={16} />;
+    if (method.type === 'netbanking') return <Landmark size={16} />;
+    if (method.type === 'wallet') return <Smartphone size={16} />;
+    return <CreditCard size={16} />;
   };
 
   const getMethodColor = () => {
@@ -524,7 +525,7 @@ const PaymentMethodCard: React.FC<{
     >
       {method.isDefault && (
         <div className="default-ribbon">
-          <span>⭐ Default</span>
+          <span><Star size={12} /> Default</span>
         </div>
       )}
       
@@ -537,7 +538,7 @@ const PaymentMethodCard: React.FC<{
       <div className="method-info">
         <div className="method-name">
           {method.name}
-          {method.isVerified && <span className="verified-icon" title="Verified">✓</span>}
+          {method.isVerified && <span className="verified-icon" title="Verified"><Check size={12} /></span>}
         </div>
         <div className="method-details">{getDisplayDetails()}</div>
         {method.expiryDate && (
@@ -555,7 +556,7 @@ const PaymentMethodCard: React.FC<{
             onClick={() => onSetDefault(method.id)}
             title="Set as default"
           >
-            ⭐
+            <Star size={14} />
           </button>
         )}
         <button 
@@ -563,14 +564,14 @@ const PaymentMethodCard: React.FC<{
           onClick={() => onEdit(method)}
           title="Edit"
         >
-          ✏️
+          <Pencil size={14} />
         </button>
         <button 
           className="action-btn delete"
           onClick={() => setShowDeleteConfirm(true)}
           title="Remove"
         >
-          🗑️
+          <Trash2 size={14} />
         </button>
       </div>
 
@@ -602,14 +603,14 @@ const TransactionItem: React.FC<{
   onClick: (transaction: Transaction) => void;
   index: number;
 }> = ({ transaction, onClick, index }) => {
-  const getTypeIcon = () => {
+  const getTypeIcon = (): React.ReactNode => {
     switch (transaction.type) {
-      case 'payment': return '🛒';
-      case 'refund': return '↩️';
-      case 'cashback': return '🎁';
-      case 'wallet_credit': return '➕';
-      case 'wallet_debit': return '➖';
-      default: return '💰';
+      case 'payment': return <ShoppingCart size={16} />;
+      case 'refund': return <Undo2 size={16} />;
+      case 'cashback': return <Gift size={16} />;
+      case 'wallet_credit': return <Plus size={16} />;
+      case 'wallet_debit': return <Minus size={16} />;
+      default: return <Wallet size={16} />;
     }
   };
 
@@ -667,9 +668,9 @@ const TransactionItem: React.FC<{
           className="txn-status"
           style={{ color: getStatusColor(), backgroundColor: `${getStatusColor()}15` }}
         >
-          {transaction.status === 'success' ? '✓' : 
-           transaction.status === 'processing' ? '⏳' :
-           transaction.status === 'pending' ? '⏰' : '✕'}
+          {transaction.status === 'success' ? <Check size={12} /> : 
+           transaction.status === 'processing' ? <Hourglass size={12} /> :
+           transaction.status === 'pending' ? <Clock size={12} /> : <X size={12} />}
           {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
         </span>
       </div>
@@ -707,14 +708,14 @@ const OfferCard: React.FC<{
     return `Valid till ${formatDate(offer.validTill)}`;
   };
 
-  const getPaymentIcons = () => {
-    const icons: { [key: string]: string } = {
-      card: '💳',
-      upi: '📲',
-      wallet: '📱',
-      netbanking: '🏦'
+  const getPaymentIcons = (): React.ReactNode => {
+    const icons: Record<string, React.ReactNode> = {
+      card: <CreditCard size={14} />,
+      upi: <Smartphone size={14} />,
+      wallet: <Smartphone size={14} />,
+      netbanking: <Landmark size={14} />
     };
-    return offer.paymentMethods.map(m => icons[m] || '💰').join(' ');
+    return <>{offer.paymentMethods.map((m, i) => <span key={i} style={{ marginRight: 4, display: 'inline-flex' }}>{icons[m] || <Wallet size={14} />}</span>)}</>;
   };
 
   return (
@@ -732,7 +733,7 @@ const OfferCard: React.FC<{
         
         <div className="offer-meta">
           <span className="offer-methods">{getPaymentIcons()}</span>
-          <span className="offer-validity">⏰ {getDaysRemaining()}</span>
+          <span className="offer-validity"><Clock size={14} /> {getDaysRemaining()}</span>
         </div>
         
         {offer.minOrder && (
@@ -749,7 +750,7 @@ const OfferCard: React.FC<{
             onClick={copyCode}
           >
             <span className="code-text">{offer.code}</span>
-            <span className="copy-icon">{copied ? '✓' : '📋'}</span>
+            <span className="copy-icon">{copied ? <Check size={14} /> : <ClipboardList size={14} />}</span>
           </button>
         ) : (
           <MagneticButton 
@@ -881,7 +882,7 @@ const AddPaymentMethodModal: React.FC<{
         : step === 'upi'
         ? formData.upiId
         : 'Net Banking',
-      icon: step === 'card' ? '💳' : step === 'upi' ? '📲' : '🏦',
+      icon: step === 'card' ? <CreditCard size={16} /> : step === 'upi' ? <Smartphone size={16} /> : <Landmark size={16} />,
       isDefault: formData.setAsDefault,
       isVerified: true,
       cardBrand: step === 'card' ? 'visa' : undefined,
@@ -904,7 +905,7 @@ const AddPaymentMethodModal: React.FC<{
             className="back-btn"
             onClick={() => step === 'select' ? onClose() : setStep('select')}
           >
-            {step === 'select' ? '✕' : '←'}
+            {step === 'select' ? <X size={18} /> : <ArrowLeft size={18} />}
           </button>
           <h2>
             {step === 'select' ? 'Add Payment Method' :
@@ -917,7 +918,7 @@ const AddPaymentMethodModal: React.FC<{
           {step === 'select' && (
             <div className="method-options">
               <button className="method-option" onClick={() => setStep('card')}>
-                <span className="option-icon">💳</span>
+                <span className="option-icon"><CreditCard size={18} /></span>
                 <div className="option-info">
                   <span className="option-title">Credit / Debit Card</span>
                   <span className="option-desc">Visa, Mastercard, RuPay</span>
@@ -926,7 +927,7 @@ const AddPaymentMethodModal: React.FC<{
               </button>
               
               <button className="method-option" onClick={() => setStep('upi')}>
-                <span className="option-icon">📲</span>
+                <span className="option-icon"><Smartphone size={18} /></span>
                 <div className="option-info">
                   <span className="option-title">UPI</span>
                   <span className="option-desc">GPay, PhonePe, Paytm & more</span>
@@ -935,7 +936,7 @@ const AddPaymentMethodModal: React.FC<{
               </button>
               
               <button className="method-option" onClick={() => setStep('netbanking')}>
-                <span className="option-icon">🏦</span>
+                <span className="option-icon"><Landmark size={18} /></span>
                 <div className="option-info">
                   <span className="option-title">Net Banking</span>
                   <span className="option-desc">All major banks supported</span>
@@ -1079,7 +1080,7 @@ const AddPaymentMethodModal: React.FC<{
                       className={`bank-option ${formData.bankName === bank ? 'selected' : ''}`}
                       onClick={() => setFormData(prev => ({ ...prev, bankName: bank }))}
                     >
-                      <span className="bank-icon">🏦</span>
+                      <span className="bank-icon"><Landmark size={16} /></span>
                       <span className="bank-name">{bank}</span>
                     </button>
                   ))}
@@ -1128,14 +1129,14 @@ const AddPaymentMethodModal: React.FC<{
                 </>
               ) : (
                 <>
-                  <span className="btn-icon">✓</span>
+                  <span className="btn-icon"><Check size={14} /></span>
                   <span>Add Payment Method</span>
                 </>
               )}
             </MagneticButton>
             
             <div className="security-note">
-              <span className="security-icon">🔒</span>
+              <span className="security-icon"><Lock size={14} /></span>
               <span>Your payment information is encrypted and secure</span>
             </div>
           </div>
@@ -1191,7 +1192,7 @@ const AddMoneyModal: React.FC<{
       <div className="add-money-modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h2>Add Money to Wallet</h2>
-          <button className="close-btn" onClick={onClose}>✕</button>
+          <button className="close-btn" onClick={onClose}><X size={18} /></button>
         </div>
 
         <div className="modal-content">
@@ -1240,7 +1241,7 @@ const AddMoneyModal: React.FC<{
                     </span>
                   </div>
                   {selectedMethod === method.id && (
-                    <span className="selected-check">✓</span>
+                    <span className="selected-check"><Check size={14} /></span>
                   )}
                 </button>
               ))}
@@ -1278,16 +1279,16 @@ const TransactionDetailModal: React.FC<{
 }> = ({ transaction, onClose }) => {
   if (!transaction) return null;
 
-  const getStatusDetails = () => {
+  const getStatusDetails = (): { icon: React.ReactNode; color: string; text: string } => {
     switch (transaction.status) {
       case 'success':
-        return { icon: '✓', color: '#22c55e', text: 'Successful' };
+        return { icon: <Check size={14} />, color: '#22c55e', text: 'Successful' };
       case 'pending':
-        return { icon: '⏰', color: '#f59e0b', text: 'Pending' };
+        return { icon: <Clock size={14} />, color: '#f59e0b', text: 'Pending' };
       case 'processing':
-        return { icon: '⏳', color: '#3b82f6', text: 'Processing' };
+        return { icon: <Hourglass size={14} />, color: '#3b82f6', text: 'Processing' };
       case 'failed':
-        return { icon: '✕', color: '#ef4444', text: 'Failed' };
+        return { icon: <X size={14} />, color: '#ef4444', text: 'Failed' };
       default:
         return { icon: '?', color: '#6b7280', text: 'Unknown' };
     }
@@ -1300,7 +1301,7 @@ const TransactionDetailModal: React.FC<{
       <div className="transaction-detail-modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h2>Transaction Details</h2>
-          <button className="close-btn" onClick={onClose}>✕</button>
+          <button className="close-btn" onClick={onClose}><X size={18} /></button>
         </div>
 
         <div className="modal-content">
@@ -1356,15 +1357,15 @@ const TransactionDetailModal: React.FC<{
               <h4>Refund Timeline</h4>
               <div className="timeline-steps">
                 <div className="timeline-step completed">
-                  <span className="step-icon">✓</span>
+                  <span className="step-icon"><Check size={14} /></span>
                   <span className="step-text">Refund Initiated</span>
                 </div>
                 <div className="timeline-step active">
-                  <span className="step-icon">⏳</span>
+                  <span className="step-icon"><Hourglass size={14} /></span>
                   <span className="step-text">Processing by Bank</span>
                 </div>
                 <div className="timeline-step">
-                  <span className="step-icon">○</span>
+                  <span className="step-icon"><Circle size={14} /></span>
                   <span className="step-text">Credited to Account</span>
                 </div>
               </div>
@@ -1375,11 +1376,11 @@ const TransactionDetailModal: React.FC<{
 
         <div className="modal-footer">
           <button className="btn-download">
-            <span>📄</span>
+            <span><FileText size={14} /></span>
             Download Receipt
           </button>
           <button className="btn-help">
-            <span>❓</span>
+            <span><HelpCircle size={14} /></span>
             Need Help?
           </button>
         </div>
@@ -1495,7 +1496,7 @@ const CustomerPayments: React.FC = () => {
     return (
       <div className="payments-loading">
         <div className="loader">
-          <span className="loader-icon">💳</span>
+          <span className="loader-icon"><CreditCard size={20} /></span>
           <p>Loading...</p>
         </div>
       </div>
@@ -1515,13 +1516,13 @@ const CustomerPayments: React.FC = () => {
       <header className="payments-header">
         <div className="header-content">
           <button className="back-btn" onClick={() => navigate('/customer-home')}>
-            <span>←</span>
+            <span><ArrowLeft size={16} /></span>
             <span className="back-text">Back</span>
           </button>
           
           <div className="header-title">
             <h1>
-              <span className="title-icon">💳</span>
+              <span className="title-icon"><CreditCard size={20} /></span>
               Payments
             </h1>
             <p>Manage your payment methods & wallet</p>
@@ -1529,7 +1530,7 @@ const CustomerPayments: React.FC = () => {
 
           <div className="header-actions">
             <button className="security-btn" title="Security Settings">
-              🔒
+              <Lock size={16} />
             </button>
           </div>
         </div>
@@ -1539,10 +1540,10 @@ const CustomerPayments: React.FC = () => {
       <nav className="payments-tabs">
         <div className="tabs-container">
           {[
-            { id: 'wallet', label: 'Wallet', icon: '👛', badge: formatCurrency(wallet.balance) },
-            { id: 'methods', label: 'Payment Methods', icon: '💳', badge: String(paymentMethods.length) },
-            { id: 'transactions', label: 'Transactions', icon: '📜' },
-            { id: 'offers', label: 'Offers', icon: '🎁', badge: String(offers.length) }
+            { id: 'wallet', label: 'Wallet', icon: <Wallet size={16} />, badge: formatCurrency(wallet.balance) },
+            { id: 'methods', label: 'Payment Methods', icon: <CreditCard size={16} />, badge: String(paymentMethods.length) },
+            { id: 'transactions', label: 'Transactions', icon: <ScrollText size={16} /> },
+            { id: 'offers', label: 'Offers', icon: <Gift size={16} />, badge: String(offers.length) }
           ].map(tab => (
             <button
               key={tab.id}
@@ -1583,28 +1584,28 @@ const CustomerPayments: React.FC = () => {
                   <h3>Wallet Features</h3>
                   <div className="features-grid">
                     <div className="feature-card">
-                      <span className="feature-icon">⚡</span>
+                      <span className="feature-icon"><Zap size={16} /></span>
                       <div className="feature-info">
                         <h4>Instant Checkout</h4>
                         <p>Pay with one tap using wallet balance</p>
                       </div>
                     </div>
                     <div className="feature-card">
-                      <span className="feature-icon">🎁</span>
+                      <span className="feature-icon"><Gift size={16} /></span>
                       <div className="feature-info">
                         <h4>Cashback Rewards</h4>
                         <p>Earn cashback on every wallet payment</p>
                       </div>
                     </div>
                     <div className="feature-card">
-                      <span className="feature-icon">↩️</span>
+                      <span className="feature-icon"><Undo2 size={16} /></span>
                       <div className="feature-info">
                         <h4>Instant Refunds</h4>
                         <p>Get refunds directly to your wallet</p>
                       </div>
                     </div>
                     <div className="feature-card">
-                      <span className="feature-icon">🔒</span>
+                      <span className="feature-icon"><Lock size={16} /></span>
                       <div className="feature-info">
                         <h4>Secure & Protected</h4>
                         <p>Bank-grade security for your money</p>
@@ -1616,7 +1617,7 @@ const CustomerPayments: React.FC = () => {
                 <div className="recent-wallet-activity">
                   <div className="section-header">
                     <h3>Recent Activity</h3>
-                    <button onClick={() => setActiveTab('transactions')}>View All →</button>
+                    <button onClick={() => setActiveTab('transactions')}>View All <ArrowRight size={14} /></button>
                   </div>
                   <div className="activity-list">
                     {transactions.slice(0, 3).map((txn, idx) => (
@@ -1648,7 +1649,7 @@ const CustomerPayments: React.FC = () => {
 
                 {paymentMethods.length === 0 ? (
                   <div className="empty-state">
-                    <div className="empty-icon">💳</div>
+                    <div className="empty-icon"><CreditCard size={40} /></div>
                     <h3>No payment methods saved</h3>
                     <p>Add a payment method for faster checkout</p>
                     <MagneticButton
@@ -1683,20 +1684,20 @@ const CustomerPayments: React.FC = () => {
 
                 <div className="payment-security">
                   <div className="security-header">
-                    <span className="security-icon">🔒</span>
+                    <span className="security-icon"><Lock size={14} /></span>
                     <h4>Your payments are secure</h4>
                   </div>
                   <div className="security-features">
                     <div className="security-feature">
-                      <span>✓</span>
+                      <span><Check size={12} /></span>
                       <span>256-bit encryption</span>
                     </div>
                     <div className="security-feature">
-                      <span>✓</span>
+                      <span><Check size={12} /></span>
                       <span>PCI DSS compliant</span>
                     </div>
                     <div className="security-feature">
-                      <span>✓</span>
+                      <span><Check size={12} /></span>
                       <span>3D Secure authentication</span>
                     </div>
                   </div>
@@ -1729,7 +1730,7 @@ const CustomerPayments: React.FC = () => {
 
                 {filteredTransactions.length === 0 ? (
                   <div className="empty-state">
-                    <div className="empty-icon">📜</div>
+                    <div className="empty-icon"><ScrollText size={40} /></div>
                     <h3>No transactions found</h3>
                     <p>Your transaction history will appear here</p>
                   </div>
@@ -1748,7 +1749,7 @@ const CustomerPayments: React.FC = () => {
 
                 <div className="download-statement">
                   <button className="btn-download-statement">
-                    <span>📄</span>
+                    <span><FileText size={14} /></span>
                     <span>Download Statement</span>
                   </button>
                 </div>
@@ -1775,7 +1776,7 @@ const CustomerPayments: React.FC = () => {
                 </div>
 
                 <div className="offers-note">
-                  <span className="note-icon">💡</span>
+                  <span className="note-icon"><Lightbulb size={14} /></span>
                   <p>Offers are automatically applied at checkout when eligible</p>
                 </div>
               </div>

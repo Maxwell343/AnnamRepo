@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { User, Check, Car, FileText, ClipboardList, Shield, CreditCard, Smartphone, Wallet, Banknote, Truck, BarChart3, Target, Bell, Volume2, Globe, Package, Settings, Save, CheckCircle, Circle, Bike, Star, AlertTriangle, IdCard } from 'lucide-react';
 import './DriverSettings.css';
+import { API_ENDPOINTS } from '../../../config/api';
 
 interface DriverStats {
   totalDeliveries: number;
@@ -74,7 +76,7 @@ const DriverSettings: React.FC = () => {
       // Fetch settings from API
       const fetchSettings = async () => {
         try {
-          const response = await fetch(`http://localhost:8000/api/settings/driver/${parsedUser.id}`);
+          const response = await fetch(API_ENDPOINTS.driverSettings(parsedUser.id.toString()));
           const data = await response.json();
           
           if (response.ok && data) {
@@ -125,7 +127,7 @@ const DriverSettings: React.FC = () => {
           }
           
           // Fetch stats from API
-          const statsResponse = await fetch(`http://localhost:8000/api/stats/driver/${parsedUser.id}`);
+          const statsResponse = await fetch(API_ENDPOINTS.driverStats(parsedUser.id.toString()));
           const statsData = await statsResponse.json();
           
           if (statsResponse.ok && statsData) {
@@ -184,7 +186,7 @@ const DriverSettings: React.FC = () => {
   const handleSave = async () => {
     // Save to API
     try {
-      const response = await fetch(`http://localhost:8000/api/settings/driver/${user.id}`, {
+      const response = await fetch(API_ENDPOINTS.driverSettings(user?.id?.toString() || ''), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -264,7 +266,7 @@ const DriverSettings: React.FC = () => {
         return (
           <>
             {/* Personal Details */}
-            <div className="section-title">👤 Personal Details</div>
+            <div className="section-title"><User size={16} /> Personal Details</div>
             
             <div className="input-row">
               <div className="input-group">
@@ -289,7 +291,7 @@ const DriverSettings: React.FC = () => {
                     onChange={handleChange}
                     placeholder="+91 98765 43210"
                   />
-                  {formData.phone && <span className="input-badge verified">✓</span>}
+                  {formData.phone && <span className="input-badge verified"><Check size={12} /></span>}
                 </div>
               </div>
             </div>
@@ -307,7 +309,7 @@ const DriverSettings: React.FC = () => {
             </div>
 
             {/* Emergency Contact */}
-            <div className="section-title" style={{marginTop: '2rem'}}>🆘 Emergency Contact</div>
+            <div className="section-title" style={{marginTop: '2rem'}}><AlertTriangle size={16} /> Emergency Contact</div>
             
             <div className="input-row">
               <div className="input-group">
@@ -357,7 +359,7 @@ const DriverSettings: React.FC = () => {
         return (
           <>
             {/* Vehicle Details */}
-            <div className="section-title">🚗 Vehicle Information</div>
+            <div className="section-title"><Car size={16} /> Vehicle Information</div>
             
             <div className="input-row">
               <div className="input-group">
@@ -368,11 +370,11 @@ const DriverSettings: React.FC = () => {
                   value={formData.vehicleType}
                   onChange={handleChange}
                 >
-                  <option value="Two Wheeler">🏍️ Two Wheeler</option>
-                  <option value="Three Wheeler">🛺 Three Wheeler</option>
-                  <option value="Car">🚗 Car</option>
-                  <option value="Van">🚐 Van</option>
-                  <option value="Truck">🚚 Truck</option>
+                  <option value="Two Wheeler">Two Wheeler</option>
+                  <option value="Three Wheeler">Three Wheeler</option>
+                  <option value="Car">Car</option>
+                  <option value="Van">Van</option>
+                  <option value="Truck">Truck</option>
                 </select>
               </div>
               <div className="input-group">
@@ -415,7 +417,7 @@ const DriverSettings: React.FC = () => {
             </div>
 
             {/* Documents Section */}
-            <div className="section-title" style={{marginTop: '2rem'}}>📄 Documents</div>
+            <div className="section-title" style={{marginTop: '2rem'}}><FileText size={16} /> Documents</div>
             
             <div className="documents-grid">
               {Object.entries(documents).map(([key, doc]) => {
@@ -427,12 +429,12 @@ const DriverSettings: React.FC = () => {
                   aadhar: 'Aadhar Card',
                   pan: 'PAN Card'
                 };
-                const icons: { [key: string]: string } = {
-                  license: '🪪',
-                  vehicleRC: '📋',
-                  insurance: '🛡️',
-                  aadhar: '🆔',
-                  pan: '💳'
+                const icons: { [key: string]: React.ReactNode } = {
+                  license: <IdCard size={16} />,
+                  vehicleRC: <ClipboardList size={16} />,
+                  insurance: <Shield size={16} />,
+                  aadhar: <IdCard size={16} />,
+                  pan: <CreditCard size={16} />
                 };
                 
                 return (
@@ -486,7 +488,7 @@ const DriverSettings: React.FC = () => {
         return (
           <>
             {/* Payment Details */}
-            <div className="section-title">💳 Bank Account</div>
+            <div className="section-title"><CreditCard size={16} /> Bank Account</div>
             
             <div className="input-group">
               <label>Account Holder Name</label>
@@ -527,7 +529,7 @@ const DriverSettings: React.FC = () => {
             </div>
 
             {/* UPI */}
-            <div className="section-title" style={{marginTop: '2rem'}}>📱 UPI Payment</div>
+            <div className="section-title" style={{marginTop: '2rem'}}><Smartphone size={16} /> UPI Payment</div>
             
             <div className="input-group">
               <label>UPI ID</label>
@@ -542,25 +544,25 @@ const DriverSettings: React.FC = () => {
             </div>
 
             {/* Earnings Summary */}
-            <div className="section-title" style={{marginTop: '2rem'}}>💰 Earnings Summary</div>
+            <div className="section-title" style={{marginTop: '2rem'}}><Wallet size={16} /> Earnings Summary</div>
             
             <div className="earnings-summary">
               <div className="earnings-card">
-                <span className="earnings-icon">💵</span>
+                <span className="earnings-icon"><Banknote size={16} /></span>
                 <div className="earnings-details">
                   <span className="earnings-value">₹{stats.totalEarnings.toLocaleString()}</span>
                   <span className="earnings-label">Total Earnings</span>
                 </div>
               </div>
               <div className="earnings-card">
-                <span className="earnings-icon">🚚</span>
+                <span className="earnings-icon"><Truck size={16} /></span>
                 <div className="earnings-details">
                   <span className="earnings-value">{stats.totalDeliveries}</span>
                   <span className="earnings-label">Deliveries</span>
                 </div>
               </div>
               <div className="earnings-card">
-                <span className="earnings-icon">⭐</span>
+                <span className="earnings-icon"><Star size={16} /></span>
                 <div className="earnings-details">
                   <span className="earnings-value">{stats.rating}</span>
                   <span className="earnings-label">Rating</span>
@@ -572,7 +574,7 @@ const DriverSettings: React.FC = () => {
               className="view-earnings-btn"
               onClick={() => navigate('/earnings')}
             >
-              📊 View Detailed Earnings
+              <BarChart3 size={14} /> View Detailed Earnings
             </button>
           </>
         );
@@ -581,7 +583,7 @@ const DriverSettings: React.FC = () => {
         return (
           <>
             {/* Work Preferences */}
-            <div className="section-title">🎯 Work Preferences</div>
+            <div className="section-title"><Target size={16} /> Work Preferences</div>
 
             <div className="input-row">
               <div className="input-group">
@@ -592,12 +594,12 @@ const DriverSettings: React.FC = () => {
                   value={formData.preferredZone}
                   onChange={handleChange}
                 >
-                  <option value="Any">🌐 Any Zone</option>
-                  <option value="North">⬆️ North</option>
-                  <option value="South">⬇️ South</option>
-                  <option value="East">➡️ East</option>
-                  <option value="West">⬅️ West</option>
-                  <option value="Central">🎯 Central</option>
+                  <option value="Any">Any Zone</option>
+                  <option value="North">North</option>
+                  <option value="South">South</option>
+                  <option value="East">East</option>
+                  <option value="West">West</option>
+                  <option value="Central">Central</option>
                 </select>
               </div>
               <div className="input-group">
@@ -634,7 +636,7 @@ const DriverSettings: React.FC = () => {
             </div>
 
             {/* Notifications */}
-            <div className="section-title" style={{marginTop: '2rem'}}>🔔 Notifications</div>
+            <div className="section-title" style={{marginTop: '2rem'}}><Bell size={16} /> Notifications</div>
 
             <div className="pref-row">
               <div className="pref-info">
@@ -697,7 +699,7 @@ const DriverSettings: React.FC = () => {
             </div>
 
             {/* Sound & Vibration */}
-            <div className="section-title" style={{marginTop: '2rem'}}>🔊 Sound & Vibration</div>
+            <div className="section-title" style={{marginTop: '2rem'}}><Volume2 size={16} /> Sound & Vibration</div>
 
             <div className="pref-row">
               <div className="pref-info">
@@ -730,7 +732,7 @@ const DriverSettings: React.FC = () => {
             </div>
 
             {/* Language */}
-            <div className="section-title" style={{marginTop: '2rem'}}>🌐 Language</div>
+            <div className="section-title" style={{marginTop: '2rem'}}><Globe size={16} /> Language</div>
 
             <div className="input-group">
               <label>App Language</label>
@@ -740,12 +742,12 @@ const DriverSettings: React.FC = () => {
                 value={formData.language}
                 onChange={handleChange}
               >
-                <option value="English">🇬🇧 English</option>
-                <option value="Hindi">🇮🇳 Hindi (हिंदी)</option>
-                <option value="Marathi">🇮🇳 Marathi (मराठी)</option>
-                <option value="Tamil">🇮🇳 Tamil (தமிழ்)</option>
-                <option value="Telugu">🇮🇳 Telugu (తెలుగు)</option>
-                <option value="Kannada">🇮🇳 Kannada (ಕನ್ನಡ)</option>
+                <option value="English">English</option>
+                <option value="Hindi">Hindi (हिन्दी)</option>
+                <option value="Marathi">Marathi (मराठी)</option>
+                <option value="Tamil">Tamil (தமிழ்)</option>
+                <option value="Telugu">Telugu (తెలుగు)</option>
+                <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
               </select>
             </div>
           </>
@@ -765,7 +767,7 @@ const DriverSettings: React.FC = () => {
           <button className="back-btn" onClick={() => navigate('/home')}>
             ←
           </button>
-          <h2>🚚 Driver Settings</h2>
+          <h2><Truck size={20} /> Driver Settings</h2>
           <div className={`online-status ${isOnline ? 'online' : 'offline'}`}>
             <span className="status-dot"></span>
             <span className="status-text">{isOnline ? 'Online' : 'Offline'}</span>
@@ -775,21 +777,21 @@ const DriverSettings: React.FC = () => {
         {/* Driver Profile Card */}
         <div className="driver-profile-card">
           <div className="driver-avatar">
-            {formData.fullName ? formData.fullName.charAt(0).toUpperCase() : '🚚'}
+            {formData.fullName ? formData.fullName.charAt(0).toUpperCase() : 'D'}
           </div>
           <div className="driver-info">
             <h3>{formData.fullName || 'Driver'}</h3>
             <p>{formData.vehicleNumber || 'No vehicle registered'}</p>
             <div className="driver-badges">
               <span className="badge vehicle-type">
-                {formData.vehicleType === 'Two Wheeler' ? '🏍️' : 
-                 formData.vehicleType === 'Three Wheeler' ? '🛺' : 
-                 formData.vehicleType === 'Car' ? '🚗' : 
-                 formData.vehicleType === 'Van' ? '🚐' : '🚚'}
+                {formData.vehicleType === 'Two Wheeler' ? <Bike size={14} /> : 
+                 formData.vehicleType === 'Three Wheeler' ? <Truck size={14} /> : 
+                 formData.vehicleType === 'Car' ? <Car size={14} /> : 
+                 formData.vehicleType === 'Van' ? <Truck size={14} /> : <Truck size={14} />}
                 {formData.vehicleType}
               </span>
-              <span className="badge rating">⭐ {stats.rating}</span>
-              <span className="badge deliveries">📦 {stats.totalDeliveries} deliveries</span>
+              <span className="badge rating"><Star size={12} /> {stats.rating}</span>
+              <span className="badge deliveries"><Package size={12} /> {stats.totalDeliveries} deliveries</span>
             </div>
           </div>
           <div className="online-toggle">
@@ -823,7 +825,7 @@ const DriverSettings: React.FC = () => {
           </div>
           <div className="stat-divider"></div>
           <div className="stat-item">
-            <span className="stat-value">⭐ {stats.rating}</span>
+            <span className="stat-value"><Star size={12} /> {stats.rating}</span>
             <span className="stat-label">Rating</span>
           </div>
         </div>
@@ -834,28 +836,28 @@ const DriverSettings: React.FC = () => {
             className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => setActiveTab('profile')}
           >
-            <span className="tab-icon">👤</span>
+            <span className="tab-icon"><User size={16} /></span>
             <span className="tab-label">Profile</span>
           </button>
           <button 
             className={`tab-btn ${activeTab === 'vehicle' ? 'active' : ''}`}
             onClick={() => setActiveTab('vehicle')}
           >
-            <span className="tab-icon">🚗</span>
+            <span className="tab-icon"><Car size={16} /></span>
             <span className="tab-label">Vehicle</span>
           </button>
           <button 
             className={`tab-btn ${activeTab === 'payment' ? 'active' : ''}`}
             onClick={() => setActiveTab('payment')}
           >
-            <span className="tab-icon">💳</span>
+            <span className="tab-icon"><CreditCard size={16} /></span>
             <span className="tab-label">Payment</span>
           </button>
           <button 
             className={`tab-btn ${activeTab === 'preferences' ? 'active' : ''}`}
             onClick={() => setActiveTab('preferences')}
           >
-            <span className="tab-icon">⚙️</span>
+            <span className="tab-icon"><Settings size={16} /></span>
             <span className="tab-label">Preferences</span>
           </button>
         </div>
@@ -871,7 +873,7 @@ const DriverSettings: React.FC = () => {
             Cancel
           </button>
           <button className="btn-save" onClick={handleSave}>
-            💾 Save Changes
+            <Save size={14} /> Save Changes
           </button>
         </div>
 
@@ -881,7 +883,7 @@ const DriverSettings: React.FC = () => {
       {showToast && (
         <div className={`toast-notification ${toastMessage.includes('offline') ? 'warning' : 'success'}`}>
           <span className="toast-icon">
-            {toastMessage.includes('offline') ? '🔴' : '✅'}
+            {toastMessage.includes('offline') ? <Circle size={14} /> : <CheckCircle size={14} />}
           </span>
           <span className="toast-message">{toastMessage}</span>
         </div>

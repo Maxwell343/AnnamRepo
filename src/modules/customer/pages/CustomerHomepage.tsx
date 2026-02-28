@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CustomerHomePage.css';
+import { API_ENDPOINTS } from '../../../config/api';
+import { ShoppingCart, Leaf, Apple, Wheat, Milk, Sprout, Home, Package, Heart, Tag, MapPin, CreditCard, Settings, Star, LogOut, Search, Truck, Bell, X, Trash2, PartyPopper, Carrot, Cherry, Check, Clock, Bike, Phone, ArrowRight, User, Wallet, Frown, CheckCircle, Hourglass, Flame } from 'lucide-react';
 
 // --- Types ---
 interface Product {
@@ -64,7 +66,7 @@ interface User {
 interface Category {
   id: string;
   name: string;
-  icon: string;
+  icon: React.ReactNode;
   color: string;
   count: number;
 }
@@ -120,19 +122,19 @@ const CustomerHomePage: React.FC = () => {
 
   // Categories
   const categories: Category[] = [
-    { id: 'all', name: 'All Items', icon: '🛒', color: '#10b981', count: products.length },
-    { id: 'vegetable', name: 'Vegetables', icon: '🥦', color: '#22c55e', count: products.filter(p => p.type === 'Vegetable').length },
-    { id: 'fruit', name: 'Fruits', icon: '🍎', color: '#ef4444', count: products.filter(p => p.type === 'Fruit').length },
-    { id: 'grain', name: 'Grains', icon: '🌾', color: '#f59e0b', count: products.filter(p => p.type === 'Grain').length },
-    { id: 'dairy', name: 'Dairy', icon: '🥛', color: '#3b82f6', count: products.filter(p => p.type === 'Dairy').length },
-    { id: 'organic', name: 'Organic', icon: '🌿', color: '#059669', count: products.filter(p => p.organic).length },
+    { id: 'all', name: 'All Items', icon: <ShoppingCart size={16} />, color: '#10b981', count: products.length },
+    { id: 'vegetable', name: 'Vegetables', icon: <Leaf size={16} />, color: '#22c55e', count: products.filter(p => p.type === 'Vegetable').length },
+    { id: 'fruit', name: 'Fruits', icon: <Apple size={16} />, color: '#ef4444', count: products.filter(p => p.type === 'Fruit').length },
+    { id: 'grain', name: 'Grains', icon: <Wheat size={16} />, color: '#f59e0b', count: products.filter(p => p.type === 'Grain').length },
+    { id: 'dairy', name: 'Dairy', icon: <Milk size={16} />, color: '#3b82f6', count: products.filter(p => p.type === 'Dairy').length },
+    { id: 'organic', name: 'Organic', icon: <Sprout size={16} />, color: '#059669', count: products.filter(p => p.organic).length },
   ];
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
       // Fetch farmer listings from the main listings endpoint
-      const response = await fetch('http://localhost:8000/api/listings');
+      const response = await fetch(API_ENDPOINTS.listings);
       const data = await response.json();
       
       if (response.ok && data.listings && data.listings.length > 0) {
@@ -316,7 +318,7 @@ const CustomerHomePage: React.FC = () => {
   // Fetch orders
   const fetchOrders = async (userId: number) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/customers/${userId}/orders`);
+      const response = await fetch(`${API_ENDPOINTS.marketplace.listings}?user_id=${userId}`);
       const data = await response.json();
       
       if (response.ok) {
@@ -590,7 +592,7 @@ const CustomerHomePage: React.FC = () => {
     <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
         <div className="brand" onClick={() => navigate('/')}>
-          <span className="brand-icon">🌾</span>
+          <span className="brand-icon"><Wheat size={20} /></span>
           {!sidebarCollapsed && <span className="brand-text">Annam</span>}
         </div>
         <button
@@ -607,7 +609,7 @@ const CustomerHomePage: React.FC = () => {
           className={`nav-item ${activeTab === 'home' ? 'active' : ''}`}
           onClick={() => setActiveTab('home')}
         >
-          <span className="nav-icon">🏠</span>
+          <span className="nav-icon"><Home size={18} /></span>
           {!sidebarCollapsed && <span className="nav-label">Home</span>}
         </div>
 
@@ -615,7 +617,7 @@ const CustomerHomePage: React.FC = () => {
           className={`nav-item ${activeTab === 'browse' ? 'active' : ''}`}
           onClick={() => setActiveTab('browse')}
         >
-          <span className="nav-icon">🛒</span>
+          <span className="nav-icon"><ShoppingCart size={18} /></span>
           {!sidebarCollapsed && <span className="nav-label">Browse</span>}
         </div>
 
@@ -623,7 +625,7 @@ const CustomerHomePage: React.FC = () => {
           className={`nav-item ${activeTab === 'orders' ? 'active' : ''}`}
           onClick={() => setActiveTab('orders')}
         >
-          <span className="nav-icon">📦</span>
+          <span className="nav-icon"><Package size={18} /></span>
           {!sidebarCollapsed && <span className="nav-label">My Orders</span>}
           {orders.filter(o => o.status !== 'delivered').length > 0 && (
             <span className="nav-badge">{orders.filter(o => o.status !== 'delivered').length}</span>
@@ -634,7 +636,7 @@ const CustomerHomePage: React.FC = () => {
           className={`nav-item ${activeTab === 'wishlist' ? 'active' : ''}`}
           onClick={() => setActiveTab('wishlist')}
         >
-          <span className="nav-icon">❤️</span>
+          <span className="nav-icon"><Heart size={18} /></span>
           {!sidebarCollapsed && <span className="nav-label">Wishlist</span>}
           {wishlist.length > 0 && (
             <span className="nav-badge">{wishlist.length}</span>
@@ -645,7 +647,7 @@ const CustomerHomePage: React.FC = () => {
           className={`nav-item ${activeTab === 'farmers' ? 'active' : ''}`}
           onClick={() => setActiveTab('farmers')}
         >
-          <span className="nav-icon">🌱</span>
+          <span className="nav-icon"><Sprout size={18} /></span>
           {!sidebarCollapsed && <span className="nav-label">Farmers</span>}
         </div>
 
@@ -653,7 +655,7 @@ const CustomerHomePage: React.FC = () => {
           className={`nav-item ${activeTab === 'deals' ? 'active' : ''}`}
           onClick={() => setActiveTab('deals')}
         >
-          <span className="nav-icon">🏷️</span>
+          <span className="nav-icon"><Tag size={18} /></span>
           {!sidebarCollapsed && <span className="nav-label">Deals</span>}
           <span className="nav-badge hot">Hot</span>
         </div>
@@ -664,7 +666,7 @@ const CustomerHomePage: React.FC = () => {
           className={`nav-item ${activeTab === 'addresses' ? 'active' : ''}`}
           onClick={() => navigate('/addresses')}
         >
-          <span className="nav-icon">📍</span>
+          <span className="nav-icon"><MapPin size={18} /></span>
           {!sidebarCollapsed && <span className="nav-label">Addresses</span>}
         </div>
 
@@ -672,7 +674,7 @@ const CustomerHomePage: React.FC = () => {
           className={`nav-item ${activeTab === 'payments' ? 'active' : ''}`}
           onClick={() => navigate('/payments')}
         >
-          <span className="nav-icon">💳</span>
+          <span className="nav-icon"><CreditCard size={18} /></span>
           {!sidebarCollapsed && <span className="nav-label">Payments</span>}
         </div>
 
@@ -680,7 +682,7 @@ const CustomerHomePage: React.FC = () => {
           className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
           onClick={() => navigate('/customer-settings')}
         >
-          <span className="nav-icon">⚙️</span>
+          <span className="nav-icon"><Settings size={18} /></span>
           {!sidebarCollapsed && <span className="nav-label">Settings</span>}
         </div>
       </nav>
@@ -690,18 +692,18 @@ const CustomerHomePage: React.FC = () => {
           {!sidebarCollapsed && (
             <>
               <div className="loyalty-header">
-                <span className="loyalty-icon">⭐</span>
+                <span className="loyalty-icon"><Star size={16} /></span>
                 <span className="loyalty-title">Loyalty Points</span>
               </div>
               <div className="loyalty-points">{user?.loyalty_points || 250}</div>
               <div className="loyalty-subtitle">Redeem for discounts</div>
             </>
           )}
-          {sidebarCollapsed && <span className="loyalty-icon">⭐</span>}
+          {sidebarCollapsed && <span className="loyalty-icon"><Star size={16} /></span>}
         </div>
 
         <div className="nav-item logout-item" onClick={handleLogout}>
-          <span className="nav-icon">🚪</span>
+          <span className="nav-icon"><LogOut size={18} /></span>
           {!sidebarCollapsed && <span className="nav-label">Logout</span>}
         </div>
       </div>
@@ -713,7 +715,7 @@ const CustomerHomePage: React.FC = () => {
     <header className="customer-header">
       <div className="header-left">
         <div className="search-bar" onClick={() => setShowSearch(true)}>
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"><Search size={18} /></span>
           <span className="search-placeholder">Search for products, farmers...</span>
           <span className="search-shortcut">⌘K</span>
         </div>
@@ -722,7 +724,7 @@ const CustomerHomePage: React.FC = () => {
       <div className="header-center">
         {orders.filter(o => o.status === 'out_for_delivery').length > 0 && (
           <div className="delivery-tracker-mini" onClick={() => setActiveTab('orders')}>
-            <span className="tracker-icon">🚚</span>
+            <span className="tracker-icon"><Truck size={16} /></span>
             <span className="tracker-text">Order on the way</span>
             <span className="tracker-dot pulse" />
           </div>
@@ -734,7 +736,7 @@ const CustomerHomePage: React.FC = () => {
           className="header-btn notification-btn"
           onClick={() => setShowNotifications(!showNotifications)}
         >
-          <span>🔔</span>
+          <span><Bell size={18} /></span>
           {notifications.length > 0 && (
             <span className="notification-dot">{notifications.length}</span>
           )}
@@ -744,7 +746,7 @@ const CustomerHomePage: React.FC = () => {
           className="header-btn cart-btn"
           onClick={() => setShowCart(true)}
         >
-          <span>🛒</span>
+          <span><ShoppingCart size={18} /></span>
           {getCartItemsCount() > 0 && (
             <span className="cart-count">{getCartItemsCount()}</span>
           )}
@@ -761,7 +763,7 @@ const CustomerHomePage: React.FC = () => {
           <div className="user-info">
             <span className="user-name">{user?.name}</span>
             <span className="user-address">
-              📍 {user?.address?.split(',')[0] || 'Add address'}
+              <MapPin size={14} /> {user?.address?.split(',')[0] || 'Add address'}
             </span>
           </div>
         </div>
@@ -774,7 +776,7 @@ const CustomerHomePage: React.FC = () => {
     <div className={`search-modal-overlay ${showSearch ? 'show' : ''}`} onClick={() => setShowSearch(false)}>
       <div className="search-modal" onClick={e => e.stopPropagation()}>
         <div className="search-modal-header">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"><Search size={18} /></span>
           <input
             ref={searchInputRef}
             type="text"
@@ -808,7 +810,7 @@ const CustomerHomePage: React.FC = () => {
             ))}
             {getFilteredProducts().length === 0 && (
               <div className="no-results">
-                <span>😕</span>
+                <span><Frown size={20} /></span>
                 <p>No products found for "{searchQuery}"</p>
               </div>
             )}
@@ -864,12 +866,12 @@ const CustomerHomePage: React.FC = () => {
         <div className="cart-header">
           <h2>Your Cart</h2>
           <span className="cart-item-count">{getCartItemsCount()} items</span>
-          <button className="cart-close" onClick={() => setShowCart(false)}>✕</button>
+          <button className="cart-close" onClick={() => setShowCart(false)}><X size={18} /></button>
         </div>
 
         {cart.length === 0 ? (
           <div className="cart-empty">
-            <span className="empty-icon">🛒</span>
+            <span className="empty-icon"><ShoppingCart size={40} /></span>
             <h3>Your cart is empty</h3>
             <p>Add some fresh products to get started!</p>
             <button className="btn-primary" onClick={() => { setShowCart(false); setActiveTab('browse'); }}>
@@ -896,7 +898,7 @@ const CustomerHomePage: React.FC = () => {
                       <button onClick={() => updateCartQuantity(item.product.id, item.quantity + 1)}>+</button>
                     </div>
                     <span className="cart-item-total">{formatPrice(item.product.price * item.quantity)}</span>
-                    <button className="remove-btn" onClick={() => removeFromCart(item.product.id)}>🗑️</button>
+                    <button className="remove-btn" onClick={() => removeFromCart(item.product.id)}><Trash2 size={14} /></button>
                   </div>
                 </div>
               ))}
@@ -912,7 +914,7 @@ const CustomerHomePage: React.FC = () => {
                 <span className="free-delivery">FREE</span>
               </div>
               <div className="summary-row discount">
-                <span>🎉 First order discount</span>
+                <span><PartyPopper size={14} /> First order discount</span>
                 <span>-{formatPrice(getCartTotal() * 0.1)}</span>
               </div>
               <div className="summary-row total">
@@ -922,11 +924,11 @@ const CustomerHomePage: React.FC = () => {
 
               <button className="checkout-btn" onClick={handleCheckout}>
                 <span>Proceed to Checkout</span>
-                <span className="checkout-arrow">→</span>
+                <span className="checkout-arrow"><ArrowRight size={14} /></span>
               </button>
 
               <div className="cart-footer-note">
-                <span>🌿</span>
+                <span><Sprout size={14} /></span>
                 <span>You're supporting local farmers with this purchase!</span>
               </div>
             </div>
@@ -942,7 +944,7 @@ const CustomerHomePage: React.FC = () => {
       {/* Welcome Banner */}
       <section className="welcome-banner">
         <div className="welcome-content">
-          <span className="welcome-badge">🌾 Fresh from Farm</span>
+          <span className="welcome-badge"><Wheat size={14} /> Fresh from Farm</span>
           <h1>
             Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}, 
             <span className="gradient-text"> {user?.name?.split(' ')[0]}!</span>
@@ -951,20 +953,20 @@ const CustomerHomePage: React.FC = () => {
           <div className="welcome-actions">
             <button className="btn-primary" onClick={() => setActiveTab('browse')}>
               <span>Start Shopping</span>
-              <span>→</span>
+              <span><ArrowRight size={14} /></span>
             </button>
             <button className="btn-secondary" onClick={() => setActiveTab('deals')}>
-              <span>🏷️</span>
+              <span><Tag size={14} /></span>
               <span>View Today's Deals</span>
             </button>
           </div>
         </div>
         <div className="welcome-visual">
           <div className="floating-items">
-            <span className="floating-item" style={{ animationDelay: '0s' }}>🥕</span>
-            <span className="floating-item" style={{ animationDelay: '0.5s' }}>🍎</span>
-            <span className="floating-item" style={{ animationDelay: '1s' }}>🥬</span>
-            <span className="floating-item" style={{ animationDelay: '1.5s' }}>🍇</span>
+            <span className="floating-item" style={{ animationDelay: '0s' }}><Carrot size={20} /></span>
+            <span className="floating-item" style={{ animationDelay: '0.5s' }}><Apple size={20} /></span>
+            <span className="floating-item" style={{ animationDelay: '1s' }}><Leaf size={20} /></span>
+            <span className="floating-item" style={{ animationDelay: '1.5s' }}><Cherry size={20} /></span>
           </div>
         </div>
       </section>
@@ -973,26 +975,26 @@ const CustomerHomePage: React.FC = () => {
       {orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled').length > 0 && (
         <section className="active-order-section">
           <div className="section-header">
-            <h2>📦 Active Orders</h2>
+            <h2><Package size={18} /> Active Orders</h2>
           </div>
           <div className="active-orders">
             {orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled').map(order => (
               <div key={order.id} className="order-tracker-card">
                 <div className="order-status-visual">
                   <div className={`status-step ${['pending', 'confirmed', 'preparing', 'out_for_delivery', 'delivered'].indexOf(order.status) >= 0 ? 'active' : ''}`}>
-                    <span className="step-icon">✓</span>
+                    <span className="step-icon"><Check size={14} /></span>
                     <span className="step-label">Confirmed</span>
                   </div>
                   <div className={`status-step ${['preparing', 'out_for_delivery', 'delivered'].indexOf(order.status) >= 0 ? 'active' : ''}`}>
-                    <span className="step-icon">📦</span>
+                    <span className="step-icon"><Package size={14} /></span>
                     <span className="step-label">Preparing</span>
                   </div>
                   <div className={`status-step ${['out_for_delivery', 'delivered'].indexOf(order.status) >= 0 ? 'active' : ''}`}>
-                    <span className="step-icon">🚚</span>
+                    <span className="step-icon"><Truck size={14} /></span>
                     <span className="step-label">On the way</span>
                   </div>
                   <div className={`status-step ${order.status === 'delivered' ? 'active' : ''}`}>
-                    <span className="step-icon">🏠</span>
+                    <span className="step-icon"><Home size={14} /></span>
                     <span className="step-label">Delivered</span>
                   </div>
                 </div>
@@ -1001,7 +1003,7 @@ const CustomerHomePage: React.FC = () => {
                   <div className="order-eta">
                     {order.status === 'out_for_delivery' ? (
                       <>
-                        <span className="eta-icon">🕐</span>
+                        <span className="eta-icon"><Clock size={14} /></span>
                         <span>{order.estimated_delivery}</span>
                       </>
                     ) : (
@@ -1010,14 +1012,14 @@ const CustomerHomePage: React.FC = () => {
                   </div>
                   {order.driver_name && (
                     <div className="driver-info">
-                      <span className="driver-avatar">🚴</span>
+                      <span className="driver-avatar"><Bike size={16} /></span>
                       <span>{order.driver_name}</span>
-                      <button className="call-btn">📞</button>
+                      <button className="call-btn"><Phone size={14} /></button>
                     </div>
                   )}
                 </div>
                 <button className="track-btn" onClick={() => navigate(`/track-order/${order.id}`)}>
-                  Track Order →
+                  Track Order <ArrowRight size={14} />
                 </button>
               </div>
             ))}
@@ -1029,7 +1031,7 @@ const CustomerHomePage: React.FC = () => {
       <section className="categories-section">
         <div className="section-header">
           <h2>Shop by Category</h2>
-          <button className="see-all-btn" onClick={() => setActiveTab('browse')}>See All →</button>
+          <button className="see-all-btn" onClick={() => setActiveTab('browse')}>See All <ArrowRight size={14} /></button>
         </div>
         <div className="categories-grid">
           {categories.map(category => (
@@ -1053,8 +1055,8 @@ const CustomerHomePage: React.FC = () => {
       {/* Featured Products */}
       <section className="featured-section">
         <div className="section-header">
-          <h2>🌟 Featured Products</h2>
-          <button className="see-all-btn" onClick={() => setActiveTab('browse')}>See All →</button>
+          <h2><Star size={18} /> Featured Products</h2>
+          <button className="see-all-btn" onClick={() => setActiveTab('browse')}>See All <ArrowRight size={14} /></button>
         </div>
         <div className="products-carousel">
           {featuredProducts.map(product => (
@@ -1064,23 +1066,23 @@ const CustomerHomePage: React.FC = () => {
                 {product.discount_percentage && (
                   <span className="discount-badge">-{product.discount_percentage}%</span>
                 )}
-                {product.organic && <span className="organic-badge">🌿 Organic</span>}
+                {product.organic && <span className="organic-badge"><Sprout size={12} /> Organic</span>}
                 <button
                   className={`wishlist-btn ${wishlist.includes(product.id) ? 'active' : ''}`}
                   onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
                 >
-                  {wishlist.includes(product.id) ? '❤️' : '🤍'}
+                  <Heart size={16} fill={wishlist.includes(product.id) ? 'currentColor' : 'none'} />
                 </button>
               </div>
               <div className="product-info">
                 <div className="product-farmer">
-                  <span className="farmer-avatar">👨‍🌾</span>
+                  <span className="farmer-avatar"><User size={14} /></span>
                   <span>{product.farmer_name}</span>
-                  <span className="farmer-rating">⭐ {product.farmer_rating}</span>
+                  <span className="farmer-rating"><Star size={12} /> {product.farmer_rating}</span>
                 </div>
                 <h3 className="product-title">{product.title}</h3>
                 <div className="product-meta">
-                  <span className="product-location">📍 {product.location}</span>
+                  <span className="product-location"><MapPin size={12} /> {product.location}</span>
                   <span className="product-distance">{product.distance}</span>
                 </div>
                 <div className="product-rating">
@@ -1117,7 +1119,7 @@ const CustomerHomePage: React.FC = () => {
             <p>Get 20% off on your first order!</p>
             <span className="offer-code">Use code: FRESH20</span>
           </div>
-          <div className="offer-visual">🎉</div>
+          <div className="offer-visual"><PartyPopper size={24} /></div>
         </div>
         <div className="offer-card secondary">
           <div className="offer-content">
@@ -1125,7 +1127,7 @@ const CustomerHomePage: React.FC = () => {
             <h3>Orders above ₹500</h3>
             <p>No delivery charges on bulk orders</p>
           </div>
-          <div className="offer-visual">🚚</div>
+          <div className="offer-visual"><Truck size={24} /></div>
         </div>
       </section>
 
@@ -1133,7 +1135,7 @@ const CustomerHomePage: React.FC = () => {
       {recentlyViewed.length > 0 && (
         <section className="recently-viewed-section">
           <div className="section-header">
-            <h2>🕐 Recently Viewed</h2>
+            <h2><Clock size={18} /> Recently Viewed</h2>
             <button className="clear-btn" onClick={() => setRecentlyViewed([])}>Clear</button>
           </div>
           <div className="products-row">
@@ -1157,22 +1159,22 @@ const CustomerHomePage: React.FC = () => {
         </div>
         <div className="features-grid">
           <div className="feature-card">
-            <span className="feature-icon">🌱</span>
+            <span className="feature-icon"><Sprout size={16} /></span>
             <h4>Farm Fresh</h4>
             <p>Directly sourced from local farmers, delivered within 24 hours</p>
           </div>
           <div className="feature-card">
-            <span className="feature-icon">✓</span>
+            <span className="feature-icon"><Check size={16} /></span>
             <h4>Quality Assured</h4>
             <p>Every product is checked for freshness and quality</p>
           </div>
           <div className="feature-card">
-            <span className="feature-icon">💰</span>
+            <span className="feature-icon"><Wallet size={16} /></span>
             <h4>Best Prices</h4>
             <p>No middlemen means better prices for you and farmers</p>
           </div>
           <div className="feature-card">
-            <span className="feature-icon">🚚</span>
+            <span className="feature-icon"><Truck size={16} /></span>
             <h4>Quick Delivery</h4>
             <p>Same day or next day delivery to your doorstep</p>
           </div>
@@ -1228,7 +1230,7 @@ const CustomerHomePage: React.FC = () => {
               className="clear-filters-btn"
               onClick={() => { setActiveCategory('all'); setSearchQuery(''); }}
             >
-              Clear Filters ✕
+              Clear Filters <X size={14} />
             </button>
           )}
         </div>
@@ -1241,7 +1243,7 @@ const CustomerHomePage: React.FC = () => {
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="empty-state">
-            <span className="empty-icon">🔍</span>
+            <span className="empty-icon"><Search size={40} /></span>
             <h3>No products found</h3>
             <p>Try adjusting your filters or search terms</p>
             <button className="btn-primary" onClick={() => { setActiveCategory('all'); setSearchQuery(''); }}>
@@ -1262,12 +1264,12 @@ const CustomerHomePage: React.FC = () => {
                   {product.discount_percentage && (
                     <span className="discount-badge">-{product.discount_percentage}%</span>
                   )}
-                  {product.organic && <span className="organic-badge">🌿</span>}
+                  {product.organic && <span className="organic-badge"><Sprout size={12} /></span>}
                   <button
                     className={`wishlist-btn ${wishlist.includes(product.id) ? 'active' : ''}`}
                     onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
                   >
-                    {wishlist.includes(product.id) ? '❤️' : '🤍'}
+                    <Heart size={16} fill={wishlist.includes(product.id) ? 'currentColor' : 'none'} />
                   </button>
                   <div className="quick-add-overlay">
                     <button
@@ -1281,7 +1283,7 @@ const CustomerHomePage: React.FC = () => {
                 <div className="product-info">
                   <div className="product-farmer">
                     <span>{product.farmer_name}</span>
-                    {product.farmer_rating && <span className="rating">⭐ {product.farmer_rating}</span>}
+                    {product.farmer_rating && <span className="rating"><Star size={12} /> {product.farmer_rating}</span>}
                   </div>
                   <h3 className="product-title">{product.title}</h3>
                   {product.tags && (
@@ -1301,7 +1303,7 @@ const CustomerHomePage: React.FC = () => {
                     </div>
                     <div className="product-stats">
                       {product.rating && (
-                        <span className="rating">⭐ {product.rating}</span>
+                        <span className="rating"><Star size={12} /> {product.rating}</span>
                       )}
                       {product.sold_count && (
                         <span className="sold">{product.sold_count}+ sold</span>
@@ -1326,7 +1328,7 @@ const CustomerHomePage: React.FC = () => {
 
       {orders.length === 0 ? (
         <div className="empty-state">
-          <span className="empty-icon">📦</span>
+          <span className="empty-icon"><Package size={40} /></span>
           <h3>No orders yet</h3>
           <p>Start shopping to see your orders here!</p>
           <button className="btn-primary" onClick={() => setActiveTab('browse')}>
@@ -1343,12 +1345,12 @@ const CustomerHomePage: React.FC = () => {
                   <span className="order-date">{getTimeAgo(order.created_at)}</span>
                 </div>
                 <span className={`order-status ${order.status}`}>
-                  {order.status === 'out_for_delivery' ? '🚚 On the way' :
-                   order.status === 'delivered' ? '✅ Delivered' :
-                   order.status === 'preparing' ? '📦 Preparing' :
-                   order.status === 'confirmed' ? '✓ Confirmed' :
-                   order.status === 'cancelled' ? '✕ Cancelled' :
-                   '⏳ Pending'}
+                  {order.status === 'out_for_delivery' ? <><Truck size={14} /> On the way</> :
+                   order.status === 'delivered' ? <><CheckCircle size={14} /> Delivered</> :
+                   order.status === 'preparing' ? <><Package size={14} /> Preparing</> :
+                   order.status === 'confirmed' ? <><Check size={14} /> Confirmed</> :
+                   order.status === 'cancelled' ? <><X size={14} /> Cancelled</> :
+                   <><Hourglass size={14} /> Pending</>}
                 </span>
               </div>
 
@@ -1398,13 +1400,13 @@ const CustomerHomePage: React.FC = () => {
     return (
       <div className="wishlist-content">
         <div className="section-header">
-          <h2>❤️ My Wishlist</h2>
+          <h2><Heart size={18} /> My Wishlist</h2>
           <span className="wishlist-count">{wishlistProducts.length} items</span>
         </div>
 
         {wishlistProducts.length === 0 ? (
           <div className="empty-state">
-            <span className="empty-icon">❤️</span>
+            <span className="empty-icon"><Heart size={40} /></span>
             <h3>Your wishlist is empty</h3>
             <p>Save products you love for later!</p>
             <button className="btn-primary" onClick={() => setActiveTab('browse')}>
@@ -1421,7 +1423,7 @@ const CustomerHomePage: React.FC = () => {
                     className="wishlist-btn active"
                     onClick={() => toggleWishlist(product.id)}
                   >
-                    ❤️
+                    <Heart size={16} fill="currentColor" />
                   </button>
                 </div>
                 <div className="product-info">
@@ -1453,7 +1455,7 @@ const CustomerHomePage: React.FC = () => {
       <div className="deals-content">
         <div className="deals-banner">
           <div className="banner-content">
-            <span className="banner-badge">🔥 Hot Deals</span>
+            <span className="banner-badge"><Flame size={14} /> Hot Deals</span>
             <h1>Today's Best Offers</h1>
             <p>Fresh savings on farm-fresh products!</p>
           </div>
@@ -1471,7 +1473,7 @@ const CustomerHomePage: React.FC = () => {
 
         {dealProducts.length === 0 ? (
           <div className="empty-state">
-            <span className="empty-icon">🏷️</span>
+            <span className="empty-icon"><Tag size={40} /></span>
             <h3>No deals available right now</h3>
             <p>Check back later for amazing offers!</p>
           </div>
@@ -1492,7 +1494,7 @@ const CustomerHomePage: React.FC = () => {
                     <span className="savings">Save {formatPrice((product.original_price || 0) - product.price)}</span>
                   </div>
                   <button className="add-btn" onClick={() => addToCart(product)}>
-                    🛒 Add to Cart
+                    <ShoppingCart size={14} /> Add to Cart
                   </button>
                 </div>
               </div>

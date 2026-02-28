@@ -1,4 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  Clock, Check, X, AlertTriangle, Leaf, Apple, Wheat, Milk, Flame, Package,
+  ClipboardList, Flag, Star, Eye, Search, CheckCircle, XCircle, DollarSign,
+  MapPin, Calendar, MessageCircle, ArrowUp, ArrowDown, RefreshCw, Download,
+  Tag, SlidersHorizontal, LayoutGrid, List, CheckSquare, Info, Circle
+} from 'lucide-react';
 import ListingReviewModal from './ListingReviewModal';
 import './ListingModeration.css';
 
@@ -38,7 +44,7 @@ interface ModerationListing {
   submittedAt: string;
   expiresAt?: string;
   images: ListingImage[];
-  icon: string;
+  icon: React.ReactNode;
   location: string;
   isOrganic: boolean;
   isFeatured: boolean;
@@ -74,29 +80,29 @@ interface FilterState {
 const ITEMS_PER_PAGE_OPTIONS = [12, 24, 48, 96];
 
 const STATUS_CONFIG: Record<Exclude<ModerationStatus, 'all'>, { 
-  icon: string; 
+  icon: React.ReactNode; 
   color: string; 
   bgColor: string; 
   label: string;
 }> = {
-  pending: { icon: '⏳', color: '#d97706', bgColor: '#fef3c7', label: 'Pending Review' },
-  approved: { icon: '✓', color: '#16a34a', bgColor: '#dcfce7', label: 'Approved' },
-  rejected: { icon: '✕', color: '#dc2626', bgColor: '#fee2e2', label: 'Rejected' },
-  flagged: { icon: '⚠', color: '#ea580c', bgColor: '#ffedd5', label: 'Flagged' },
-  expired: { icon: '⏰', color: '#6b7280', bgColor: '#f3f4f6', label: 'Expired' },
+  pending: { icon: <Clock size={16} />, color: '#d97706', bgColor: '#fef3c7', label: 'Pending Review' },
+  approved: { icon: <Check size={16} />, color: '#16a34a', bgColor: '#dcfce7', label: 'Approved' },
+  rejected: { icon: <X size={16} />, color: '#dc2626', bgColor: '#fee2e2', label: 'Rejected' },
+  flagged: { icon: <AlertTriangle size={16} />, color: '#ea580c', bgColor: '#ffedd5', label: 'Flagged' },
+  expired: { icon: <Clock size={16} />, color: '#6b7280', bgColor: '#f3f4f6', label: 'Expired' },
 };
 
 const CATEGORY_CONFIG: Record<Exclude<ListingCategory, 'all'>, { 
-  icon: string; 
+  icon: React.ReactNode; 
   color: string; 
   label: string;
 }> = {
-  vegetable: { icon: '🥬', color: '#16a34a', label: 'Vegetables' },
-  fruit: { icon: '🍎', color: '#dc2626', label: 'Fruits' },
-  grain: { icon: '🌾', color: '#d97706', label: 'Grains' },
-  dairy: { icon: '🥛', color: '#3b82f6', label: 'Dairy' },
-  spices: { icon: '🌶️', color: '#ea580c', label: 'Spices' },
-  other: { icon: '📦', color: '#6b7280', label: 'Other' },
+  vegetable: { icon: <Leaf size={16} />, color: '#16a34a', label: 'Vegetables' },
+  fruit: { icon: <Apple size={16} />, color: '#dc2626', label: 'Fruits' },
+  grain: { icon: <Wheat size={16} />, color: '#d97706', label: 'Grains' },
+  dairy: { icon: <Milk size={16} />, color: '#3b82f6', label: 'Dairy' },
+  spices: { icon: <Flame size={16} />, color: '#ea580c', label: 'Spices' },
+  other: { icon: <Package size={16} />, color: '#6b7280', label: 'Other' },
 };
 
 const REJECTION_REASONS = [
@@ -190,7 +196,7 @@ const EmptyState: React.FC<{
 }> = ({ filter, searchQuery, onClearFilters }) => (
   <div className="lm-empty-state">
     <div className="lm-empty-state__icon">
-      {filter === 'pending' ? '📋' : filter === 'flagged' ? '🚩' : '📦'}
+      {filter === 'pending' ? <ClipboardList size={48} /> : filter === 'flagged' ? <Flag size={48} /> : <Package size={48} />}
     </div>
     <h3 className="lm-empty-state__title">No listings found</h3>
     <p className="lm-empty-state__description">
@@ -209,7 +215,7 @@ const EmptyState: React.FC<{
 );
 
 const StatCard: React.FC<{
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   value: number;
   trend?: { value: number; isPositive: boolean };
@@ -231,7 +237,7 @@ const StatCard: React.FC<{
     </div>
     {trend && (
       <div className={`lm-stat-card__trend ${trend.isPositive ? 'positive' : 'negative'}`}>
-        {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
+        {trend.isPositive ? <ArrowUp size={14} /> : <ArrowDown size={14} />} {Math.abs(trend.value)}%
       </div>
     )}
   </div>
@@ -281,24 +287,24 @@ const ListingCard: React.FC<{
             {statusConfig.icon} {listing.status}
           </span>
           {listing.isOrganic && (
-            <span className="lm-card__organic-badge">🌱 Organic</span>
+            <span className="lm-card__organic-badge"><Leaf size={14} /> Organic</span>
           )}
           {listing.isFeatured && (
-            <span className="lm-card__featured-badge">⭐ Featured</span>
+            <span className="lm-card__featured-badge"><Star size={14} /> Featured</span>
           )}
         </div>
 
         {listing.flags && listing.flags.length > 0 && (
           <div className="lm-card__flags">
             <span className="lm-card__flag-count">
-              🚩 {listing.flags.length} flag{listing.flags.length > 1 ? 's' : ''}
+              <Flag size={14} /> {listing.flags.length} flag{listing.flags.length > 1 ? 's' : ''}
             </span>
           </div>
         )}
 
         <div className="lm-card__overlay">
           <button className="lm-card__view-btn" onClick={() => onView(listing)}>
-            👁️ View Details
+            <Eye size={14} /> View Details
           </button>
         </div>
       </div>
@@ -321,36 +327,36 @@ const ListingCard: React.FC<{
           <div className="lm-card__farmer-info">
             <span className="lm-card__farmer-name">
               {listing.farmer.name}
-              {listing.farmer.verified && <span className="verified-badge">✓</span>}
+              {listing.farmer.verified && <span className="verified-badge"><Check size={12} /></span>}
             </span>
             <span className="lm-card__farmer-rating">
-              ⭐ {listing.farmer.rating.toFixed(1)}
+              <Star size={14} /> {listing.farmer.rating.toFixed(1)}
             </span>
           </div>
         </div>
 
         <div className="lm-card__details">
           <div className="lm-card__detail">
-            <span className="lm-card__detail-icon">📦</span>
+            <span className="lm-card__detail-icon"><Package size={14} /></span>
             <span>{listing.quantity} {listing.unit}</span>
           </div>
           <div className="lm-card__detail">
-            <span className="lm-card__detail-icon">💰</span>
+            <span className="lm-card__detail-icon"><DollarSign size={14} /></span>
             <span>{formatCurrency(listing.price)}/{listing.unit}</span>
           </div>
           <div className="lm-card__detail">
-            <span className="lm-card__detail-icon">📍</span>
+            <span className="lm-card__detail-icon"><MapPin size={14} /></span>
             <span>{listing.location}</span>
           </div>
           <div className="lm-card__detail">
-            <span className="lm-card__detail-icon">📅</span>
+            <span className="lm-card__detail-icon"><Calendar size={14} /></span>
             <span>{getTimeAgo(listing.submittedAt)}</span>
           </div>
         </div>
 
         <div className="lm-card__stats">
-          <span title="Views">👁️ {listing.viewCount}</span>
-          <span title="Inquiries">💬 {listing.inquiryCount}</span>
+          <span title="Views"><Eye size={14} /> {listing.viewCount}</span>
+          <span title="Inquiries"><MessageCircle size={14} /> {listing.inquiryCount}</span>
         </div>
 
         <div className="lm-card__actions">
@@ -361,14 +367,14 @@ const ListingCard: React.FC<{
                 onClick={() => onApprove(listing.id)}
                 title="Approve listing"
               >
-                ✓ Approve
+                <Check size={14} /> Approve
               </button>
               <button 
                 className="lm-card__action-btn lm-card__action-btn--reject"
                 onClick={() => onReject(listing.id)}
                 title="Reject listing"
               >
-                ✕ Reject
+                <X size={14} /> Reject
               </button>
               {listing.status !== 'flagged' && (
                 <button 
@@ -376,7 +382,7 @@ const ListingCard: React.FC<{
                   onClick={() => onFlag(listing.id)}
                   title="Flag for review"
                 >
-                  🚩
+                  <Flag size={14} />
                 </button>
               )}
             </>
@@ -421,20 +427,20 @@ const ListingRow: React.FC<{
 
       <div className="lm-row__image" onClick={() => onView(listing)}>
         <span className="lm-row__icon">{listing.icon}</span>
-        {listing.isOrganic && <span className="lm-row__organic">🌱</span>}
+        {listing.isOrganic && <span className="lm-row__organic"><Leaf size={12} /></span>}
       </div>
 
       <div className="lm-row__info" onClick={() => onView(listing)}>
         <div className="lm-row__title-row">
           <span className="lm-row__title">{listing.title}</span>
           {listing.flags && listing.flags.length > 0 && (
-            <span className="lm-row__flag-badge">🚩 {listing.flags.length}</span>
+            <span className="lm-row__flag-badge"><Flag size={12} /> {listing.flags.length}</span>
           )}
         </div>
         <div className="lm-row__meta">
           <span className="lm-row__farmer">
             {listing.farmer.name}
-            {listing.farmer.verified && <span className="verified-badge">✓</span>}
+            {listing.farmer.verified && <span className="verified-badge"><Check size={12} /></span>}
           </span>
           <span className="lm-row__dot">•</span>
           <span className="lm-row__location">{listing.location}</span>
@@ -474,14 +480,14 @@ const ListingRow: React.FC<{
               onClick={() => onApprove(listing.id)}
               title="Approve"
             >
-              ✓
+              <Check size={14} />
             </button>
             <button 
               className="lm-row__action-btn reject"
               onClick={() => onReject(listing.id)}
               title="Reject"
             >
-              ✕
+              <X size={14} />
             </button>
             {listing.status !== 'flagged' && (
               <button 
@@ -489,7 +495,7 @@ const ListingRow: React.FC<{
                 onClick={() => onFlag(listing.id)}
                 title="Flag"
               >
-                🚩
+                <Flag size={14} />
               </button>
             )}
           </>
@@ -499,7 +505,7 @@ const ListingRow: React.FC<{
             onClick={() => onView(listing)}
             title="View Details"
           >
-            👁️
+            <Eye size={14} />
           </button>
         )}
       </div>
@@ -544,9 +550,9 @@ const ConfirmDialog: React.FC<{
     <div className="lm-confirm-overlay" onClick={onCancel}>
       <div className="lm-confirm-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="lm-confirm-dialog__icon" data-variant={confirmVariant}>
-          {confirmVariant === 'danger' ? '⚠️' : 
-           confirmVariant === 'warning' ? '🚩' : 
-           confirmVariant === 'success' ? '✓' : 'ℹ️'}
+          {confirmVariant === 'danger' ? <AlertTriangle size={24} /> : 
+           confirmVariant === 'warning' ? <Flag size={24} /> : 
+           confirmVariant === 'success' ? <Check size={24} /> : <Info size={24} />}
         </div>
         <h3 className="lm-confirm-dialog__title">{title}</h3>
         <p className="lm-confirm-dialog__message">{message}</p>
@@ -564,7 +570,7 @@ const ConfirmDialog: React.FC<{
                   onChange={() => onToggleReason(reason.id)}
                 />
                 <span className="reason-checkbox">
-                  {selectedReasons.has(reason.id) ? '✓' : ''}
+                  {selectedReasons.has(reason.id) ? <Check size={14} /> : ''}
                 </span>
                 <span className="reason-label">{reason.label}</span>
               </label>
@@ -610,10 +616,10 @@ const ToastContainer: React.FC<{ toasts: Toast[]; onDismiss: (id: string) => voi
     {toasts.map((toast) => (
       <div key={toast.id} className={`lm-toast lm-toast--${toast.type}`}>
         <span className="lm-toast__icon">
-          {toast.type === 'success' && '✓'}
-          {toast.type === 'error' && '✕'}
-          {toast.type === 'warning' && '⚠'}
-          {toast.type === 'info' && 'ℹ'}
+          {toast.type === 'success' && <Check size={16} />}
+          {toast.type === 'error' && <X size={16} />}
+          {toast.type === 'warning' && <AlertTriangle size={16} />}
+          {toast.type === 'info' && <Info size={16} />}
         </span>
         <span className="lm-toast__message">{toast.message}</span>
         <button className="lm-toast__close" onClick={() => onDismiss(toast.id)}>
@@ -694,8 +700,8 @@ const ListingModeration: React.FC = () => {
           currency: 'INR',
           status: 'pending',
           submittedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img1', url: 'https://via.placeholder.com/400x300/ef4444/ffffff?text=🍅+Tomatoes', isPrimary: true }],
-          icon: '🍅',
+          images: [{ id: 'img1', url: 'https://via.placeholder.com/400x300/ef4444/ffffff?text=Tomatoes', isPrimary: true }],
+          icon: <Leaf size={16} />,
           location: 'Pune, Maharashtra',
           isOrganic: true,
           isFeatured: false,
@@ -715,8 +721,8 @@ const ListingModeration: React.FC = () => {
           currency: 'INR',
           status: 'approved',
           submittedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img2', url: 'https://via.placeholder.com/400x300/fbbf24/ffffff?text=🌾+Rice', isPrimary: true }],
-          icon: '🌾',
+          images: [{ id: 'img2', url: 'https://via.placeholder.com/400x300/fbbf24/ffffff?text=Rice', isPrimary: true }],
+          icon: <Wheat size={16} />,
           location: 'Dehradun, Uttarakhand',
           isOrganic: false,
           isFeatured: true,
@@ -738,8 +744,8 @@ const ListingModeration: React.FC = () => {
           currency: 'INR',
           status: 'flagged',
           submittedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img3', url: 'https://via.placeholder.com/400x300/3b82f6/ffffff?text=🥛+Milk', isPrimary: true }],
-          icon: '🥛',
+          images: [{ id: 'img3', url: 'https://via.placeholder.com/400x300/3b82f6/ffffff?text=Milk', isPrimary: true }],
+          icon: <Milk size={16} />,
           location: 'Jaipur, Rajasthan',
           isOrganic: true,
           isFeatured: false,
@@ -760,8 +766,8 @@ const ListingModeration: React.FC = () => {
           currency: 'INR',
           status: 'pending',
           submittedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img4', url: 'https://via.placeholder.com/400x300/dc2626/ffffff?text=🌶️+Chillies', isPrimary: true }],
-          icon: '🌶️',
+          images: [{ id: 'img4', url: 'https://via.placeholder.com/400x300/dc2626/ffffff?text=Chillies', isPrimary: true }],
+          icon: <Flame size={16} />,
           location: 'Srinagar, Kashmir',
           isOrganic: true,
           isFeatured: false,
@@ -781,8 +787,8 @@ const ListingModeration: React.FC = () => {
           currency: 'INR',
           status: 'pending',
           submittedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img5', url: 'https://via.placeholder.com/400x300/f59e0b/ffffff?text=🥭+Mangoes', isPrimary: true }],
-          icon: '🥭',
+          images: [{ id: 'img5', url: 'https://via.placeholder.com/400x300/f59e0b/ffffff?text=Mangoes', isPrimary: true }],
+          icon: <Apple size={16} />,
           location: 'Ratnagiri, Maharashtra',
           isOrganic: false,
           isFeatured: true,
@@ -802,8 +808,8 @@ const ListingModeration: React.FC = () => {
           currency: 'INR',
           status: 'rejected',
           submittedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img6', url: 'https://via.placeholder.com/400x300/22c55e/ffffff?text=🥬+Spinach', isPrimary: true }],
-          icon: '🥬',
+          images: [{ id: 'img6', url: 'https://via.placeholder.com/400x300/22c55e/ffffff?text=Spinach', isPrimary: true }],
+          icon: <Leaf size={16} />,
           location: 'Bangalore, Karnataka',
           isOrganic: true,
           isFeatured: false,
@@ -827,7 +833,7 @@ const ListingModeration: React.FC = () => {
           status: 'approved',
           submittedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
           images: [{ id: 'img7', url: 'https://via.placeholder.com/400x300/eab308/ffffff?text=Turmeric', isPrimary: true }],
-          icon: '🟡',
+          icon: <Circle size={16} />,
           location: 'Erode, Tamil Nadu',
           isOrganic: true,
           isFeatured: false,
@@ -849,8 +855,8 @@ const ListingModeration: React.FC = () => {
           currency: 'INR',
           status: 'pending',
           submittedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img8', url: 'https://via.placeholder.com/400x300/f3f4f6/6b7280?text=🧀+Paneer', isPrimary: true }],
-          icon: '🧀',
+          images: [{ id: 'img8', url: 'https://via.placeholder.com/400x300/f3f4f6/6b7280?text=Paneer', isPrimary: true }],
+          icon: <Milk size={16} />,
           location: 'Lucknow, UP',
           isOrganic: false,
           isFeatured: false,
@@ -1201,16 +1207,16 @@ const ListingModeration: React.FC = () => {
   };
 
   // Filter chips
-  const statusFilters: { key: ModerationStatus; label: string; icon: string }[] = [
-    { key: 'all', label: 'All', icon: '📋' },
-    { key: 'pending', label: 'Pending', icon: '⏳' },
-    { key: 'approved', label: 'Approved', icon: '✅' },
-    { key: 'rejected', label: 'Rejected', icon: '❌' },
-    { key: 'flagged', label: 'Flagged', icon: '🚩' },
+  const statusFilters: { key: ModerationStatus; label: string; icon: React.ReactNode }[] = [
+    { key: 'all', label: 'All', icon: <ClipboardList size={16} /> },
+    { key: 'pending', label: 'Pending', icon: <Clock size={16} /> },
+    { key: 'approved', label: 'Approved', icon: <CheckCircle size={16} /> },
+    { key: 'rejected', label: 'Rejected', icon: <XCircle size={16} /> },
+    { key: 'flagged', label: 'Flagged', icon: <Flag size={16} /> },
   ];
 
-  const categoryFilters: { key: ListingCategory; label: string; icon: string }[] = [
-    { key: 'all', label: 'All', icon: '🏷️' },
+  const categoryFilters: { key: ListingCategory; label: string; icon: React.ReactNode }[] = [
+    { key: 'all', label: 'All', icon: <Tag size={16} /> },
     ...Object.entries(CATEGORY_CONFIG).map(([key, config]) => ({
       key: key as ListingCategory,
       label: config.label,
@@ -1223,13 +1229,13 @@ const ListingModeration: React.FC = () => {
       {/* Statistics Dashboard */}
       <div className="lm-stats">
         <StatCard
-          icon="📋"
+          icon={<ClipboardList size={20} />}
           label="Total Listings"
           value={statistics.total}
           color="#3b82f6"
         />
         <StatCard
-          icon="⏳"
+          icon={<Clock size={20} />}
           label="Pending Review"
           value={statistics.pending}
           color="#d97706"
@@ -1237,7 +1243,7 @@ const ListingModeration: React.FC = () => {
           isActive={filters.status === 'pending'}
         />
         <StatCard
-          icon="✅"
+          icon={<CheckCircle size={20} />}
           label="Approved"
           value={statistics.approved}
           color="#16a34a"
@@ -1245,7 +1251,7 @@ const ListingModeration: React.FC = () => {
           isActive={filters.status === 'approved'}
         />
         <StatCard
-          icon="🚩"
+          icon={<Flag size={20} />}
           label="Flagged"
           value={statistics.flagged}
           color="#ea580c"
@@ -1253,7 +1259,7 @@ const ListingModeration: React.FC = () => {
           isActive={filters.status === 'flagged'}
         />
         <StatCard
-          icon="🌱"
+          icon={<Leaf size={20} />}
           label="Organic"
           value={statistics.organic}
           color="#22c55e"
@@ -1274,14 +1280,14 @@ const ListingModeration: React.FC = () => {
             onClick={loadListings}
             disabled={isLoading}
           >
-            <span className={`btn-icon ${isLoading ? 'spinning' : ''}`}>🔄</span>
+            <span className={`btn-icon ${isLoading ? 'spinning' : ''}`}><RefreshCw size={16} /></span>
             Refresh
           </button>
           <button
             className="lm-header__btn lm-header__btn--secondary"
             onClick={handleExport}
           >
-            <span className="btn-icon">📥</span>
+            <span className="btn-icon"><Download size={16} /></span>
             Export
           </button>
         </div>
@@ -1290,7 +1296,7 @@ const ListingModeration: React.FC = () => {
       {/* Search and Filters Bar */}
       <div className="lm-filters-bar">
         <div className="lm-search">
-          <span className="lm-search__icon">🔍</span>
+          <span className="lm-search__icon"><Search size={16} /></span>
           <input
             type="text"
             className="lm-search__input"
@@ -1313,7 +1319,7 @@ const ListingModeration: React.FC = () => {
             className={`lm-filter-toggle ${showFilters ? 'active' : ''}`}
             onClick={() => setShowFilters(!showFilters)}
           >
-            <span>🎛️</span>
+            <span><SlidersHorizontal size={16} /></span>
             Filters
             {(filters.category !== 'all' || filters.isOrganic !== null || filters.dateRange !== 'all') && (
               <span className="lm-filter-badge">!</span>
@@ -1326,14 +1332,14 @@ const ListingModeration: React.FC = () => {
               onClick={() => setViewMode('grid')}
               title="Grid view"
             >
-              ▦
+              <LayoutGrid size={16} />
             </button>
             <button
               className={`lm-view-btn ${viewMode === 'list' ? 'active' : ''}`}
               onClick={() => setViewMode('list')}
               title="List view"
             >
-              ☰
+              <List size={16} />
             </button>
           </div>
 
@@ -1344,7 +1350,7 @@ const ListingModeration: React.FC = () => {
               setSelectedIds(new Set());
             }}
           >
-            ☑️ {selectionMode ? 'Exit Selection' : 'Select'}
+            <CheckSquare size={16} /> {selectionMode ? 'Exit Selection' : 'Select'}
           </button>
         </div>
       </div>
@@ -1410,7 +1416,7 @@ const ListingModeration: React.FC = () => {
                 className={`lm-filter-chip ${filters.isOrganic === true ? 'active' : ''}`}
                 onClick={() => setFilters((prev) => ({ ...prev, isOrganic: true }))}
               >
-                🌱 Organic Only
+                <Leaf size={14} /> Organic Only
               </button>
               <button
                 className={`lm-filter-chip ${filters.isOrganic === false ? 'active' : ''}`}
@@ -1457,13 +1463,13 @@ const ListingModeration: React.FC = () => {
               className="lm-bulk-btn lm-bulk-btn--approve"
               onClick={handleBulkApprove}
             >
-              ✓ Approve Selected
+              <Check size={14} /> Approve Selected
             </button>
             <button
               className="lm-bulk-btn lm-bulk-btn--reject"
               onClick={handleBulkReject}
             >
-              ✕ Reject Selected
+              <X size={14} /> Reject Selected
             </button>
             <button
               className="lm-bulk-btn lm-bulk-btn--secondary"
@@ -1496,7 +1502,7 @@ const ListingModeration: React.FC = () => {
             >
               Listing
               {sortField === 'title' && (
-                <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                <span className="sort-indicator">{sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>
               )}
             </div>
             <div className="lm-list-header__category">Category</div>
@@ -1506,7 +1512,7 @@ const ListingModeration: React.FC = () => {
             >
               Quantity
               {sortField === 'quantity' && (
-                <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                <span className="sort-indicator">{sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>
               )}
             </div>
             <div 
@@ -1515,7 +1521,7 @@ const ListingModeration: React.FC = () => {
             >
               Price
               {sortField === 'price' && (
-                <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                <span className="sort-indicator">{sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>
               )}
             </div>
             <div className="lm-list-header__status">Status</div>

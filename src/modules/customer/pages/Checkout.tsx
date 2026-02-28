@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Checkout.css';
 import type { CartItem } from '../../../types/marketplace';
+import { Smartphone, CreditCard, Landmark, Wallet, Banknote, CheckCircle, Truck, Globe, MapPin, ArrowLeft, Lock, Phone, ArrowRight, ShoppingCart, Leaf, User, Sprout } from 'lucide-react';
 
 // ============================================
 // TYPES
@@ -20,7 +21,7 @@ interface DeliveryAddress {
 interface PaymentMethod {
   type: 'upi' | 'card' | 'netbanking' | 'cod' | 'wallet';
   label: string;
-  icon: string;
+  icon: React.ReactNode;
 }
 
 // ============================================
@@ -28,11 +29,11 @@ interface PaymentMethod {
 // ============================================
 
 const paymentMethods: PaymentMethod[] = [
-  { type: 'upi', label: 'UPI', icon: '📱' },
-  { type: 'card', label: 'Credit/Debit Card', icon: '💳' },
-  { type: 'netbanking', label: 'Net Banking', icon: '🏦' },
-  { type: 'wallet', label: 'Wallet', icon: '👛' },
-  { type: 'cod', label: 'Cash on Delivery', icon: '💵' }
+  { type: 'upi', label: 'UPI', icon: <Smartphone size={16} /> },
+  { type: 'card', label: 'Credit/Debit Card', icon: <CreditCard size={16} /> },
+  { type: 'netbanking', label: 'Net Banking', icon: <Landmark size={16} /> },
+  { type: 'wallet', label: 'Wallet', icon: <Wallet size={16} /> },
+  { type: 'cod', label: 'Cash on Delivery', icon: <Banknote size={16} /> }
 ];
 
 // ============================================
@@ -126,7 +127,7 @@ const Checkout: React.FC = () => {
       <div className="checkout-page">
         <div className="confirmation-container">
           <div className="confirmation-card">
-            <div className="success-icon">✅</div>
+            <div className="success-icon"><CheckCircle size={40} /></div>
             <h1>Order Placed Successfully!</h1>
             <p className="order-id">Order ID: <strong>{orderId}</strong></p>
             
@@ -146,7 +147,7 @@ const Checkout: React.FC = () => {
             </div>
             
             <div className="delivery-estimate">
-              <div className="estimate-icon">🚚</div>
+              <div className="estimate-icon"><Truck size={24} /></div>
               <div className="estimate-info">
                 <h4>Estimated Delivery</h4>
                 <p>{new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', {
@@ -158,7 +159,7 @@ const Checkout: React.FC = () => {
             </div>
             
             <div className="impact-summary">
-              <h4>🌍 Your Impact</h4>
+              <h4><Globe size={16} /> Your Impact</h4>
               <div className="impact-stats">
                 <div className="impact-stat">
                   <span className="value">{cartItems.reduce((sum, item) => sum + item.quantity, 0)} kg</span>
@@ -177,7 +178,7 @@ const Checkout: React.FC = () => {
             
             <div className="confirmation-actions">
               <button className="track-btn" onClick={() => navigate('/tracking')}>
-                📍 Track Order
+                <MapPin size={14} /> Track Order
               </button>
               <button className="continue-btn" onClick={() => navigate('/marketplace')}>
                 Continue Shopping
@@ -195,11 +196,11 @@ const Checkout: React.FC = () => {
       <header className="checkout-header">
         <div className="header-content">
           <button className="back-btn" onClick={() => navigate(-1)}>
-            ← Back
+            <ArrowLeft size={16} /> Back
           </button>
           <h1>Checkout</h1>
           <div className="secure-badge">
-            🔒 Secure Checkout
+            <Lock size={16} /> Secure Checkout
           </div>
         </div>
         
@@ -229,7 +230,7 @@ const Checkout: React.FC = () => {
             {/* Address Step */}
             {step === 'address' && (
               <div className="address-section">
-                <h2>📍 Delivery Address</h2>
+                <h2><MapPin size={18} /> Delivery Address</h2>
                 
                 {/* Saved Addresses */}
                 {savedAddresses.length > 0 && (
@@ -245,7 +246,7 @@ const Checkout: React.FC = () => {
                         <div className="address-details">
                           <span className="name">{addr.fullName}</span>
                           <span className="full-address">{addr.address}, {addr.city}, {addr.state} - {addr.pincode}</span>
-                          <span className="phone">📞 {addr.phone}</span>
+                          <span className="phone"><Phone size={14} /> {addr.phone}</span>
                         </div>
                       </div>
                     ))}
@@ -333,7 +334,7 @@ const Checkout: React.FC = () => {
                   onClick={() => setStep('payment')}
                   disabled={!validateAddress()}
                 >
-                  Continue to Payment →
+                  Continue to Payment <ArrowRight size={14} />
                 </button>
               </div>
             )}
@@ -341,7 +342,7 @@ const Checkout: React.FC = () => {
             {/* Payment Step */}
             {step === 'payment' && (
               <div className="payment-section">
-                <h2>💳 Payment Method</h2>
+                <h2><CreditCard size={18} /> Payment Method</h2>
                 
                 <div className="payment-methods">
                   {paymentMethods.map((method) => (
@@ -405,7 +406,7 @@ const Checkout: React.FC = () => {
                 
                 <div className="payment-actions">
                   <button className="back-step-btn" onClick={() => setStep('address')}>
-                    ← Back to Address
+                    <ArrowLeft size={14} /> Back to Address
                   </button>
                   <button 
                     className="place-order-btn"
@@ -428,7 +429,7 @@ const Checkout: React.FC = () => {
           
           {/* Right Column - Order Summary */}
           <div className="order-summary">
-            <h2>🛒 Order Summary</h2>
+            <h2><ShoppingCart size={18} /> Order Summary</h2>
             
             <div className="cart-items">
               {cartItems.map((item, idx) => (
@@ -437,7 +438,7 @@ const Checkout: React.FC = () => {
                     {item.listing.images?.[0] ? (
                       <img src={item.listing.images[0]} alt={item.listing.title} />
                     ) : (
-                      <div className="placeholder-image">🥬</div>
+                      <div className="placeholder-image"><Leaf size={24} /></div>
                     )}
                   </div>
                   <div className="item-details">
@@ -482,7 +483,7 @@ const Checkout: React.FC = () => {
             {/* Delivery Info */}
             {step !== 'address' && (
               <div className="delivery-info">
-                <h4>📍 Delivering to</h4>
+                <h4><MapPin size={14} /> Delivering to</h4>
                 <p className="delivery-name">{address.fullName}</p>
                 <p className="delivery-address">
                   {address.address}, {address.city}, {address.state} - {address.pincode}
@@ -495,18 +496,18 @@ const Checkout: React.FC = () => {
             
             {/* Impact Preview */}
             <div className="impact-preview">
-              <h4>🌍 Your Impact with this order</h4>
+              <h4><Globe size={14} /> Your Impact with this order</h4>
               <div className="impact-items">
                 <div className="impact-item">
-                  <span className="icon">🥬</span>
+                  <span className="icon"><Leaf size={16} /></span>
                   <span className="text">{cartItems.reduce((sum, item) => sum + item.quantity, 0)} kg food saved from waste</span>
                 </div>
                 <div className="impact-item">
-                  <span className="icon">👨‍🌾</span>
+                  <span className="icon"><User size={16} /></span>
                   <span className="text">{new Set(cartItems.map(i => i.listing.farmerId)).size} farmer(s) supported</span>
                 </div>
                 <div className="impact-item">
-                  <span className="icon">🌱</span>
+                  <span className="icon"><Sprout size={16} /></span>
                   <span className="text">{Math.round(cartItems.reduce((sum, item) => sum + item.quantity, 0) * 0.5)} kg CO₂ prevented</span>
                 </div>
               </div>

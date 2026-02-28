@@ -1,4 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import {
+  AlertTriangle, ArrowDown, ArrowDownLeft, ArrowUp, ArrowUpRight,
+  Banknote, BarChart3, Building2, Car, Check, CheckCircle,
+  ChevronDown, ChevronUp, Circle, ClipboardList, CreditCard,
+  DollarSign, Download, Eye, Factory, Handshake, Info,
+  RefreshCw, Scale, Search, ShoppingCart, Undo2, User, X, XCircle,
+} from 'lucide-react';
 import './Transactions.css';
 
 /* ─── Types ─── */
@@ -106,28 +113,28 @@ const formatTime = (iso: string): string =>
 const formatFullDate = (iso: string): string =>
   new Date(iso).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-const typeConfig: Record<TxnType, { icon: string; label: string; color: string }> = {
-  order: { icon: '🛒', label: 'Order', color: '#4f46e5' },
-  payout: { icon: '💸', label: 'Payout', color: '#16a34a' },
-  refund: { icon: '↩️', label: 'Refund', color: '#f59e0b' },
-  commission: { icon: '🏢', label: 'Commission', color: '#06b6d4' },
-  adjustment: { icon: '⚖️', label: 'Adjustment', color: '#8b5cf6' },
-  subscription: { icon: '🔄', label: 'Subscription', color: '#ec4899' },
+const typeConfig: Record<TxnType, { icon: React.ReactNode; label: string; color: string }> = {
+  order: { icon: <ShoppingCart size={14} />, label: 'Order', color: '#4f46e5' },
+  payout: { icon: <Banknote size={14} />, label: 'Payout', color: '#16a34a' },
+  refund: { icon: <Undo2 size={14} />, label: 'Refund', color: '#f59e0b' },
+  commission: { icon: <Building2 size={14} />, label: 'Commission', color: '#06b6d4' },
+  adjustment: { icon: <Scale size={14} />, label: 'Adjustment', color: '#8b5cf6' },
+  subscription: { icon: <RefreshCw size={14} />, label: 'Subscription', color: '#ec4899' },
 };
 
-const statusConfig: Record<TxnStatus, { icon: string; label: string }> = {
-  success: { icon: '✓', label: 'Success' },
-  pending: { icon: '◦', label: 'Pending' },
-  failed: { icon: '✕', label: 'Failed' },
-  reversed: { icon: '↺', label: 'Reversed' },
+const statusConfig: Record<TxnStatus, { icon: React.ReactNode; label: string }> = {
+  success: { icon: <Check size={14} />, label: 'Success' },
+  pending: { icon: <Circle size={14} />, label: 'Pending' },
+  failed: { icon: <X size={14} />, label: 'Failed' },
+  reversed: { icon: <Undo2 size={14} />, label: 'Reversed' },
 };
 
-const partyIcons: Record<string, string> = {
-  customer: '👤',
-  driver: '🚗',
-  vendor: '🏭',
-  platform: '🏢',
-  ngo: '🤝',
+const partyIcons: Record<string, React.ReactNode> = {
+  customer: <User size={14} />,
+  driver: <Car size={14} />,
+  vendor: <Factory size={14} />,
+  platform: <Building2 size={14} />,
+  ngo: <Handshake size={14} />,
 };
 
 /* ─── Animated Counter ─── */
@@ -188,7 +195,7 @@ const Toast: React.FC<{ toast: ToastNotification; onDismiss: (id: string) => voi
     return () => clearTimeout(t);
   }, [toast.id, onDismiss]);
 
-  const icons: Record<string, string> = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const icons: Record<string, React.ReactNode> = { success: <CheckCircle size={16} />, error: <XCircle size={16} />, warning: <AlertTriangle size={16} />, info: <Info size={16} /> };
 
   return (
     <div className={`txn-toast txn-toast--${toast.type}`}>
@@ -197,7 +204,7 @@ const Toast: React.FC<{ toast: ToastNotification; onDismiss: (id: string) => voi
         <div className="txn-toast__title">{toast.title}</div>
         <div className="txn-toast__message">{toast.message}</div>
       </div>
-      <button className="txn-toast__close" onClick={() => onDismiss(toast.id)}>✕</button>
+      <button className="txn-toast__close" onClick={() => onDismiss(toast.id)}><X size={14} /></button>
       <div className="txn-toast__progress" style={{ animationDuration: '4s' }} />
     </div>
   );
@@ -226,7 +233,7 @@ const TransactionModal: React.FC<{
               <p className="txn-modal__subtitle">{txn.description}</p>
             </div>
           </div>
-          <button className="txn-modal__close" onClick={onClose}>✕</button>
+          <button className="txn-modal__close" onClick={onClose}><X size={16} /></button>
         </div>
 
         <div className="txn-modal__content">
@@ -282,7 +289,7 @@ const TransactionModal: React.FC<{
             <div className="txn-modal__detail-row">
               <span className="txn-modal__detail-label">Direction</span>
               <span className={`txn-modal__detail-value txn-direction-tag txn-direction-tag--${txn.direction}`}>
-                {txn.direction === 'credit' ? '↗ Credit (Incoming)' : '↙ Debit (Outgoing)'}
+                {txn.direction === 'credit' ? <><ArrowUpRight size={14} /> Credit (Incoming)</> : <><ArrowDownLeft size={14} /> Debit (Outgoing)</>}
               </span>
             </div>
             {txn.notes && (
@@ -332,12 +339,12 @@ const TransactionModal: React.FC<{
           <button className="txn-btn txn-btn--secondary" onClick={onClose}>Close</button>
           <div className="txn-modal__footer-actions">
             {txn.status === 'failed' && onRetry && (
-              <button className="txn-btn txn-btn--warning" onClick={onRetry}>🔄 Retry</button>
+              <button className="txn-btn txn-btn--warning" onClick={onRetry}><RefreshCw size={14} /> Retry</button>
             )}
             {txn.status === 'success' && txn.direction === 'credit' && onRefund && (
-              <button className="txn-btn txn-btn--danger" onClick={onRefund}>↩️ Refund</button>
+              <button className="txn-btn txn-btn--danger" onClick={onRefund}><Undo2 size={14} /> Refund</button>
             )}
-            <button className="txn-btn txn-btn--primary">📥 Download Receipt</button>
+            <button className="txn-btn txn-btn--primary"><Download size={14} /> Download Receipt</button>
           </div>
         </div>
       </div>
@@ -513,10 +520,10 @@ const Transactions: React.FC = () => {
     { key: '90d', label: '90 Days' },
   ];
 
-  const tabs: { key: ActiveTab; label: string; icon: string; count: number }[] = [
-    { key: 'all', label: 'All', icon: '📋', count: filtered.length },
-    { key: 'credits', label: 'Credits', icon: '↗️', count: filtered.filter((t) => t.direction === 'credit').length },
-    { key: 'debits', label: 'Debits', icon: '↙️', count: filtered.filter((t) => t.direction === 'debit').length },
+  const tabs: { key: ActiveTab; label: string; icon: React.ReactNode; count: number }[] = [
+    { key: 'all', label: 'All', icon: <ClipboardList size={14} />, count: filtered.length },
+    { key: 'credits', label: 'Credits', icon: <ArrowUpRight size={14} />, count: filtered.filter((t) => t.direction === 'credit').length },
+    { key: 'debits', label: 'Debits', icon: <ArrowDownLeft size={14} />, count: filtered.filter((t) => t.direction === 'debit').length },
   ];
 
   return (
@@ -529,7 +536,7 @@ const Transactions: React.FC = () => {
       {/* Header */}
       <header className="txn-header">
         <div className="txn-header__left">
-          <h1 className="txn-header__title">💳 Transactions</h1>
+          <h1 className="txn-header__title"><CreditCard size={20} /> Transactions</h1>
           <p className="txn-header__subtitle">Track all financial movements across your platform</p>
         </div>
         <div className="txn-header__right">
@@ -545,7 +552,7 @@ const Transactions: React.FC = () => {
             ))}
           </div>
           <button className="txn-btn txn-btn--secondary" onClick={handleExport} disabled={isExporting}>
-            {isExporting ? <><span className="txn-btn-spinner" /> Exporting...</> : <>📥 Export CSV</>}
+            {isExporting ? <><span className="txn-btn-spinner" /> Exporting...</> : <><Download size={14} /> Export CSV</>}
           </button>
         </div>
       </header>
@@ -554,7 +561,7 @@ const Transactions: React.FC = () => {
       <div className="txn-summary-cards">
         <div className="txn-summary-card" style={{ '--sc-color': '#16a34a' } as React.CSSProperties}>
           <div className="txn-summary-card__top">
-            <div className="txn-summary-card__icon">↗️</div>
+            <div className="txn-summary-card__icon"><ArrowUpRight size={18} /></div>
             <div className="txn-summary-card__chart">
               <MiniBarChart data={stats.dailyVolumes.length ? stats.dailyVolumes : [0]} color="#16a34a" />
             </div>
@@ -567,7 +574,7 @@ const Transactions: React.FC = () => {
 
         <div className="txn-summary-card" style={{ '--sc-color': '#dc2626' } as React.CSSProperties}>
           <div className="txn-summary-card__top">
-            <div className="txn-summary-card__icon">↙️</div>
+            <div className="txn-summary-card__icon"><ArrowDownLeft size={18} /></div>
             <div className="txn-summary-card__chart">
               <MiniBarChart data={stats.dailyVolumes.length ? stats.dailyVolumes : [0]} color="#dc2626" />
             </div>
@@ -580,9 +587,9 @@ const Transactions: React.FC = () => {
 
         <div className="txn-summary-card" style={{ '--sc-color': '#4f46e5' } as React.CSSProperties}>
           <div className="txn-summary-card__top">
-            <div className="txn-summary-card__icon">💰</div>
+            <div className="txn-summary-card__icon"><DollarSign size={18} /></div>
             <span className={`txn-summary-card__trend ${stats.net >= 0 ? 'txn-summary-card__trend--up' : 'txn-summary-card__trend--down'}`}>
-              {stats.net >= 0 ? '↑' : '↓'}
+              {stats.net >= 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
             </span>
           </div>
           <div className="txn-summary-card__value">
@@ -593,7 +600,7 @@ const Transactions: React.FC = () => {
 
         <div className="txn-summary-card" style={{ '--sc-color': '#f59e0b' } as React.CSSProperties}>
           <div className="txn-summary-card__top">
-            <div className="txn-summary-card__icon">📊</div>
+            <div className="txn-summary-card__icon"><BarChart3 size={18} /></div>
           </div>
           <div className="txn-summary-card__value">
             <AnimatedCounter target={stats.avgAmount} prefix="₹" />
@@ -603,7 +610,7 @@ const Transactions: React.FC = () => {
 
         <div className="txn-summary-card" style={{ '--sc-color': '#06b6d4' } as React.CSSProperties}>
           <div className="txn-summary-card__top">
-            <div className="txn-summary-card__icon">✅</div>
+            <div className="txn-summary-card__icon"><CheckCircle size={18} /></div>
           </div>
           <div className="txn-summary-card__stats-row">
             <span className="txn-summary-card__stat txn-summary-card__stat--success">{stats.successCount}</span>
@@ -635,7 +642,7 @@ const Transactions: React.FC = () => {
       <div className="txn-toolbar">
         <div className="txn-toolbar__left">
           <div className="txn-search">
-            <span className="txn-search__icon">🔍</span>
+            <span className="txn-search__icon"><Search size={16} /></span>
             <input
               ref={searchRef}
               className="txn-search__input"
@@ -644,14 +651,14 @@ const Transactions: React.FC = () => {
               onChange={(e) => setSearch(e.target.value)}
             />
             {search && (
-              <button className="txn-search__clear" onClick={() => { setSearch(''); searchRef.current?.focus(); }}>✕</button>
+              <button className="txn-search__clear" onClick={() => { setSearch(''); searchRef.current?.focus(); }}><X size={14} /></button>
             )}
           </div>
           <button
             className={`txn-filter-toggle ${showFilters ? 'txn-filter-toggle--active' : ''}`}
             onClick={() => setShowFilters(!showFilters)}
           >
-            🔽 Filters
+            <ChevronDown size={14} /> Filters
             {activeFilterCount > 0 && <span className="txn-filter-badge">{activeFilterCount}</span>}
           </button>
         </div>
@@ -669,7 +676,7 @@ const Transactions: React.FC = () => {
               <select className="txn-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as any)}>
                 <option value="all">All Types</option>
                 {Object.entries(typeConfig).map(([key, cfg]) => (
-                  <option key={key} value={key}>{cfg.icon} {cfg.label}</option>
+                  <option key={key} value={key}>{cfg.label}</option>
                 ))}
               </select>
             </div>
@@ -677,10 +684,10 @@ const Transactions: React.FC = () => {
               <label>Status</label>
               <select className="txn-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)}>
                 <option value="all">All Statuses</option>
-                <option value="success">✓ Success</option>
-                <option value="pending">◦ Pending</option>
-                <option value="failed">✕ Failed</option>
-                <option value="reversed">↺ Reversed</option>
+                <option value="success">Success</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+                <option value="reversed">Reversed</option>
               </select>
             </div>
             <div className="txn-filter-group">
@@ -712,7 +719,7 @@ const Transactions: React.FC = () => {
               addToast('success', 'Exported', `${selectedIds.size} transactions exported`);
               setSelectedIds(new Set());
             }}>
-              📥 Export Selected
+              <Download size={14} /> Export Selected
             </button>
           </div>
         </div>
@@ -732,22 +739,22 @@ const Transactions: React.FC = () => {
                   />
                 </th>
                 <th className="txn-th-sortable" onClick={() => handleSort('date')}>
-                  Date {sortField === 'date' && <span className="txn-sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                  Date {sortField === 'date' && <span className="txn-sort-icon">{sortDir === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}</span>}
                 </th>
                 <th>TXN ID</th>
                 <th className="txn-th-sortable" onClick={() => handleSort('type')}>
-                  Type {sortField === 'type' && <span className="txn-sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                  Type {sortField === 'type' && <span className="txn-sort-icon">{sortDir === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}</span>}
                 </th>
                 <th>Description</th>
                 <th className="txn-th-sortable" onClick={() => handleSort('party')}>
-                  Party {sortField === 'party' && <span className="txn-sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                  Party {sortField === 'party' && <span className="txn-sort-icon">{sortDir === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}</span>}
                 </th>
                 <th>Method</th>
                 <th className="txn-th-sortable" onClick={() => handleSort('amount')}>
-                  Amount {sortField === 'amount' && <span className="txn-sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                  Amount {sortField === 'amount' && <span className="txn-sort-icon">{sortDir === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}</span>}
                 </th>
                 <th className="txn-th-sortable" onClick={() => handleSort('status')}>
-                  Status {sortField === 'status' && <span className="txn-sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                  Status {sortField === 'status' && <span className="txn-sort-icon">{sortDir === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}</span>}
                 </th>
                 <th>Actions</th>
               </tr>
@@ -785,7 +792,7 @@ const Transactions: React.FC = () => {
                       <td>
                         <div className="txn-desc-cell">
                           <span className="txn-desc-cell__text">{t.description}</span>
-                          {t.notes && <span className="txn-desc-cell__flag">⚠️</span>}
+                          {t.notes && <span className="txn-desc-cell__flag"><AlertTriangle size={14} /></span>}
                         </div>
                       </td>
                       <td>
@@ -817,14 +824,14 @@ const Transactions: React.FC = () => {
                             onClick={() => setSelectedTxn(t)}
                             title="View Details"
                           >
-                            👁
+                            <Eye size={14} />
                           </button>
                           <button
                             className="txn-action-btn txn-action-btn--expand"
                             onClick={() => setExpandedRow(expandedRow === t.id ? null : t.id)}
                             title="Quick View"
                           >
-                            {expandedRow === t.id ? '▲' : '▼'}
+                            {expandedRow === t.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                           </button>
                         </div>
                       </td>
@@ -871,7 +878,7 @@ const Transactions: React.FC = () => {
 
           {paginated.length === 0 && (
             <div className="txn-empty-state">
-              <span className="txn-empty-state__icon">🔍</span>
+              <span className="txn-empty-state__icon"><Search size={40} /></span>
               <h3>No transactions found</h3>
               <p>Try adjusting your search or filter criteria</p>
               <button className="txn-btn txn-btn--secondary" onClick={() => {

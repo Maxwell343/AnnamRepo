@@ -1,5 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
+import {
+  Home, ScrollText, Package, PlusCircle, ShoppingCart, BarChart3,
+  Handshake, Truck, Settings, MapPin, Map, Wallet, CreditCard,
+  MapPinned, LogOut, Wheat, ChevronLeft, ChevronRight
+} from 'lucide-react';
 import './HomePage.css';
 
 interface User {
@@ -67,34 +72,34 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     };
 
     const commonItems = [
-      { id: 'dashboard', icon: '🏠', label: 'Dashboard', action: () => navigate(getDashboardRoute()) },
-      { id: 'history', icon: '📜', label: 'History', action: () => navigate('/history') },
+      { id: 'dashboard', icon: <Home size={20} />, label: 'Dashboard', action: () => navigate(getDashboardRoute()) },
+      { id: 'history', icon: <ScrollText size={20} />, label: 'History', action: () => navigate('/history') },
     ];
 
     const roleSpecificItems = {
       farmer: [
-        { id: 'my-listings', icon: '📦', label: 'My Listings', action: () => navigate('/my-listings') },
-        { id: 'add-listing', icon: '➕', label: 'Add Listing', action: () => navigate('/listing') },
-        { id: 'marketplace', icon: '🛒', label: 'Marketplace', action: () => navigate('/marketplace') },
-        { id: 'analytics', icon: '📊', label: 'Analytics', action: () => navigate('/analytics') },
+        { id: 'my-listings', icon: <Package size={20} />, label: 'My Listings', action: () => navigate('/my-listings') },
+        { id: 'add-listing', icon: <PlusCircle size={20} />, label: 'Add Listing', action: () => navigate('/listing') },
+        { id: 'marketplace', icon: <ShoppingCart size={20} />, label: 'Marketplace', action: () => navigate('/marketplace') },
+        { id: 'analytics', icon: <BarChart3 size={20} />, label: 'Analytics', action: () => navigate('/analytics') },
       ],
       ngo: [
-        { id: 'claimed', icon: '🤝', label: 'Claimed Donations', action: () => navigate('/claimed-donations') },
-        { id: 'tracking', icon: '🚚', label: 'Order Tracking', action: () => navigate('/order-tracking') },
-        { id: 'ngo-settings', icon: '⚙️', label: 'Settings', action: () => navigate('/ngo-settings') },
+        { id: 'claimed', icon: <Handshake size={20} />, label: 'Claimed Donations', action: () => navigate('/claimed-donations') },
+        { id: 'tracking', icon: <Truck size={20} />, label: 'Order Tracking', action: () => navigate('/order-tracking') },
+        { id: 'ngo-settings', icon: <Settings size={20} />, label: 'Settings', action: () => navigate('/ngo-settings') },
       ],
       driver: [
-        { id: 'my-deliveries', icon: '📍', label: 'My Deliveries', action: () => navigate('/my-deliveries') },
-        { id: 'available-pickups', icon: '🚚', label: 'Available Pickups', action: () => navigate('/available-pickups') },
-        { id: 'route-map', icon: '🗺️', label: 'Route Map', action: () => navigate('/route-map') },
-        { id: 'earnings', icon: '💰', label: 'Earnings', action: () => navigate('/earnings') },
+        { id: 'my-deliveries', icon: <MapPin size={20} />, label: 'My Deliveries', action: () => navigate('/my-deliveries') },
+        { id: 'available-pickups', icon: <Truck size={20} />, label: 'Available Pickups', action: () => navigate('/available-pickups') },
+        { id: 'route-map', icon: <Map size={20} />, label: 'Route Map', action: () => navigate('/route-map') },
+        { id: 'earnings', icon: <Wallet size={20} />, label: 'Earnings', action: () => navigate('/earnings') },
       ],
       customer: [
-        { id: 'marketplace', icon: '🛒', label: 'Marketplace', action: () => navigate('/marketplace') },
-        { id: 'orders', icon: '📦', label: 'My Orders', action: () => navigate('/order-tracking') },
-        { id: 'payments', icon: '💳', label: 'Payments', action: () => navigate('/payments') },
-        { id: 'addresses', icon: '📍', label: 'Addresses', action: () => navigate('/addresses') },
-        { id: 'customer-settings', icon: '⚙️', label: 'Settings', action: () => navigate('/customer-settings') },
+        { id: 'marketplace', icon: <ShoppingCart size={20} />, label: 'Marketplace', action: () => navigate('/marketplace') },
+        { id: 'orders', icon: <Package size={20} />, label: 'My Orders', action: () => navigate('/order-tracking') },
+        { id: 'payments', icon: <CreditCard size={20} />, label: 'Payments', action: () => navigate('/payments') },
+        { id: 'addresses', icon: <MapPinned size={20} />, label: 'Addresses', action: () => navigate('/addresses') },
+        { id: 'customer-settings', icon: <Settings size={20} />, label: 'Settings', action: () => navigate('/customer-settings') },
       ],
     };
 
@@ -112,7 +117,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
     // Add settings only for non-customer roles
     if (user.role !== 'customer') {
-      items.push({ id: 'settings', icon: '⚙️', label: 'Settings', action: () => navigate(getSettingsRoute()) });
+      items.push({ id: 'settings', icon: <Settings size={20} />, label: 'Settings', action: () => navigate(getSettingsRoute()) });
     }
 
     return (
@@ -138,7 +143,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-header">
           <div className="brand">
-            <span className="brand-icon">🌾</span>
+            <span className="brand-icon"><Wheat size={28} /></span>
             {!sidebarCollapsed && <span className="brand-text">Annam</span>}
           </div>
           <button 
@@ -146,7 +151,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {sidebarCollapsed ? '»' : '«'}
+            {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
         </div>
         
@@ -154,7 +159,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
         <div className="sidebar-footer">
           <div className="nav-item logout-item" onClick={handleLogout}>
-            <span className="nav-icon">🚪</span>
+            <span className="nav-icon"><LogOut size={20} /></span>
             {!sidebarCollapsed && <span className="nav-label">Logout</span>}
           </div>
         </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Menu, Search, Bell, Settings } from 'lucide-react';
 
 interface AdminTopbarProps {
   onToggleSidebar: () => void;
@@ -11,7 +12,7 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
     <header className="admin-topbar">
       <div className="admin-topbar__left">
         <button className="admin-topbar__toggle" onClick={onToggleSidebar}>
-          ☰
+          <Menu size={20} />
         </button>
         <div className="admin-topbar__breadcrumb">
           <span>Admin</span>
@@ -22,7 +23,7 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
 
       <div className="admin-topbar__right">
         <div className="admin-topbar__search">
-          <span>🔍</span>
+          <span><Search size={16} /></span>
           <input
             type="text"
             placeholder="Search users, orders, listings..."
@@ -32,12 +33,12 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
         </div>
 
         <button className="admin-topbar__icon-btn">
-          🔔
+          <Bell size={18} />
           <span className="admin-topbar__badge" />
         </button>
 
         <button className="admin-topbar__icon-btn">
-          ⚙️
+          <Settings size={18} />
         </button>
       </div>
     </header>

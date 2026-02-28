@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Check, Wheat, Home, MapPin, Truck, Map, Wallet, ScrollText, Trophy, Settings, LogOut, Calendar, BarChart3, TrendingUp, Gem, Package, Flag, Ruler, Landmark, Clock, Timer, Hash } from 'lucide-react';
 import './Earnings.css';
+import { API_ENDPOINTS } from '../../../config/api';
 
 interface User {
   id: number;
@@ -68,7 +70,7 @@ const Earnings: React.FC = () => {
     // Fetch earnings from API
     const fetchEarnings = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/drivers/${parsedUser.id}/earnings`);
+        const response = await fetch(API_ENDPOINTS.driverEarnings(parsedUser.id.toString()));
         const data = await response.json();
         
         if (response.ok) {
@@ -186,11 +188,11 @@ const Earnings: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'paid':
-        return <span className="status-badge paid">✓ Paid</span>;
+        return <span className="status-badge paid"><Check size={14} /> Paid</span>;
       case 'processing':
-        return <span className="status-badge processing">⏳ Processing</span>;
+        return <span className="status-badge processing"><Clock size={14} /> Processing</span>;
       case 'pending':
-        return <span className="status-badge pending">⏱ Pending</span>;
+        return <span className="status-badge pending"><Timer size={14} /> Pending</span>;
       default:
         return null;
     }
@@ -214,7 +216,7 @@ const Earnings: React.FC = () => {
       <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-header">
           <div className="logo-section">
-            <span className="logo-icon">🌾</span>
+            <span className="logo-icon"><Wheat size={20} /></span>
             {!sidebarCollapsed && <span className="logo-text">Annam</span>}
           </div>
           <button 
@@ -227,42 +229,42 @@ const Earnings: React.FC = () => {
         
         <nav className="sidebar-nav">
           <div className="nav-item" onClick={() => navigate('/home')}>
-            <span className="nav-icon">🏠</span>
+            <span className="nav-icon"><Home size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">Dashboard</span>}
           </div>
           <div className="nav-item" onClick={() => navigate('/my-deliveries')}>
-            <span className="nav-icon">📍</span>
+            <span className="nav-icon"><MapPin size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">My Deliveries</span>}
           </div>
           <div className="nav-item" onClick={() => navigate('/available-pickups')}>
-            <span className="nav-icon">🚚</span>
+            <span className="nav-icon"><Truck size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">Available Pickups</span>}
           </div>
           <div className="nav-item" onClick={() => navigate('/route-map')}>
-            <span className="nav-icon">🗺️</span>
+            <span className="nav-icon"><Map size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">Route Map</span>}
           </div>
           <div className="nav-item active">
-            <span className="nav-icon">💰</span>
+            <span className="nav-icon"><Wallet size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">Earnings</span>}
           </div>
           <div className="nav-item" onClick={() => navigate('/history')}>
-            <span className="nav-icon">📜</span>
+            <span className="nav-icon"><ScrollText size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">History</span>}
           </div>
           <div className="nav-item" onClick={() => navigate('/leaderboards')}>
-            <span className="nav-icon">🏆</span>
+            <span className="nav-icon"><Trophy size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">Leaderboards</span>}
           </div>
           <div className="nav-item" onClick={() => navigate('/driver-settings')}>
-            <span className="nav-icon">⚙️</span>
+            <span className="nav-icon"><Settings size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">Settings</span>}
           </div>
         </nav>
 
         <div className="sidebar-footer">
           <div className="nav-item logout-item" onClick={handleLogout}>
-            <span className="nav-icon">🚪</span>
+            <span className="nav-icon"><LogOut size={18} /></span>
             {!sidebarCollapsed && <span className="nav-label">Logout</span>}
           </div>
         </div>
@@ -273,7 +275,7 @@ const Earnings: React.FC = () => {
         {/* Header */}
         <header className="top-header">
           <div className="header-left">
-            <h1 className="page-title">💰 Earnings</h1>
+            <h1 className="page-title"><Wallet size={22} /> Earnings</h1>
             <p className="page-subtitle">Track your delivery earnings and payouts</p>
           </div>
           <div className="header-right">
@@ -292,28 +294,28 @@ const Earnings: React.FC = () => {
         {/* Stats Cards */}
         <div className="earnings-stats">
           <div className="stat-card today">
-            <div className="stat-icon">📅</div>
+            <div className="stat-icon"><Calendar size={20} /></div>
             <div className="stat-content">
               <span className="stat-label">Today's Earnings</span>
               <span className="stat-value">₹{stats.todayEarnings}</span>
             </div>
           </div>
           <div className="stat-card week">
-            <div className="stat-icon">📊</div>
+            <div className="stat-icon"><BarChart3 size={20} /></div>
             <div className="stat-content">
               <span className="stat-label">This Week</span>
               <span className="stat-value">₹{stats.weeklyEarnings}</span>
             </div>
           </div>
           <div className="stat-card month">
-            <div className="stat-icon">📈</div>
+            <div className="stat-icon"><TrendingUp size={20} /></div>
             <div className="stat-content">
               <span className="stat-label">This Month</span>
               <span className="stat-value">₹{stats.monthlyEarnings}</span>
             </div>
           </div>
           <div className="stat-card total">
-            <div className="stat-icon">💎</div>
+            <div className="stat-icon"><Gem size={20} /></div>
             <div className="stat-content">
               <span className="stat-label">Total Earnings</span>
               <span className="stat-value">₹{stats.totalEarnings}</span>
@@ -324,17 +326,17 @@ const Earnings: React.FC = () => {
         {/* Quick Stats Row */}
         <div className="quick-stats">
           <div className="quick-stat">
-            <span className="quick-icon">🚚</span>
+            <span className="quick-icon"><Truck size={16} /></span>
             <span className="quick-value">{stats.totalDeliveries}</span>
             <span className="quick-label">Total Deliveries</span>
           </div>
           <div className="quick-stat">
-            <span className="quick-icon">📊</span>
+            <span className="quick-icon"><BarChart3 size={16} /></span>
             <span className="quick-value">₹{stats.avgPerDelivery}</span>
             <span className="quick-label">Avg per Delivery</span>
           </div>
           <div className="quick-stat pending-payout">
-            <span className="quick-icon">⏳</span>
+            <span className="quick-icon"><Clock size={16} /></span>
             <span className="quick-value">₹{stats.pendingPayouts}</span>
             <span className="quick-label">Pending Payouts</span>
           </div>
@@ -378,7 +380,7 @@ const Earnings: React.FC = () => {
         <div className="earnings-list">
           {filteredEarnings.length === 0 ? (
             <div className="empty-state">
-              <span className="empty-icon">💸</span>
+              <span className="empty-icon"><Wallet size={40} /></span>
               <h3>No earnings found</h3>
               <p>Complete deliveries to start earning!</p>
               <button 
@@ -397,27 +399,27 @@ const Earnings: React.FC = () => {
                 </div>
                 <div className="earning-body">
                   <div className="earning-title">
-                    <span className="delivery-icon">📦</span>
+                    <span className="delivery-icon"><Package size={16} /></span>
                     <span>{entry.title}</span>
                   </div>
                   <div className="earning-route">
                     <div className="route-point">
-                      <span className="point-icon from">📍</span>
+                      <span className="point-icon from"><MapPin size={14} /></span>
                       <span className="point-text">{entry.from}</span>
                     </div>
                     <div className="route-line"></div>
                     <div className="route-point">
-                      <span className="point-icon to">🏁</span>
+                      <span className="point-icon to"><Flag size={14} /></span>
                       <span className="point-text">{entry.to}</span>
                     </div>
                   </div>
                   <div className="earning-meta">
                     <span className="meta-item">
-                      <span className="meta-icon">📏</span>
+                      <span className="meta-icon"><Ruler size={14} /></span>
                       {entry.distance}
                     </span>
                     <span className="meta-item">
-                      <span className="meta-icon">🆔</span>
+                      <span className="meta-icon"><Hash size={14} /></span>
                       #{entry.deliveryId}
                     </span>
                   </div>
@@ -449,7 +451,7 @@ const Earnings: React.FC = () => {
         <div className="payout-info">
           <div className="payout-card">
             <div className="payout-header">
-              <span className="payout-icon">🏦</span>
+              <span className="payout-icon"><Landmark size={16} /></span>
               <h3>Payout Information</h3>
             </div>
             <div className="payout-details">
@@ -467,7 +469,7 @@ const Earnings: React.FC = () => {
               </div>
             </div>
             <button className="payout-settings-btn" onClick={() => navigate('/driver-settings')}>
-              ⚙️ Update Payment Settings
+              <Settings size={14} /> Update Payment Settings
             </button>
           </div>
         </div>

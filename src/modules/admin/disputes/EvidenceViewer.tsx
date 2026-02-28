@@ -1,10 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  Camera, Video, FileText, Paperclip, Receipt, Check, X, AlertTriangle, Info,
+  Search, Download, LayoutGrid, List, Inbox, RotateCcw, RotateCw, RefreshCw,
+  Pin, MessageSquare, Columns2, Pause, Play, Minimize2, Maximize2, FolderOpen,
+  Lock, CheckCircle, Pencil, Save, ClipboardList
+} from 'lucide-react';
 import './EvidenceViewer.css';
 
 interface EvidenceItem {
   id: string;
   type: 'photo' | 'document' | 'receipt' | 'video';
-  icon: string;
+  icon: React.ReactNode;
   fileName: string;
   uploadedBy: string;
   uploadedAt: string;
@@ -43,7 +49,7 @@ const mockEvidence: EvidenceItem[] = [
   { 
     id: '1', 
     type: 'photo', 
-    icon: '📷', 
+    icon: <Camera size={16} />, 
     fileName: 'rotten_tomatoes_1.jpg', 
     uploadedBy: 'Ravi Sharma', 
     uploadedAt: '2 hrs ago',
@@ -58,7 +64,7 @@ const mockEvidence: EvidenceItem[] = [
   { 
     id: '2', 
     type: 'photo', 
-    icon: '📷', 
+    icon: <Camera size={16} />, 
     fileName: 'wilted_spinach.jpg', 
     uploadedBy: 'Ravi Sharma', 
     uploadedAt: '2 hrs ago',
@@ -73,7 +79,7 @@ const mockEvidence: EvidenceItem[] = [
   { 
     id: '3', 
     type: 'receipt', 
-    icon: '🧾', 
+    icon: <Receipt size={16} />, 
     fileName: 'order_receipt_2389.pdf', 
     uploadedBy: 'System', 
     uploadedAt: '2 hrs ago',
@@ -88,7 +94,7 @@ const mockEvidence: EvidenceItem[] = [
   { 
     id: '4', 
     type: 'photo', 
-    icon: '📷', 
+    icon: <Camera size={16} />, 
     fileName: 'dispatch_photo.jpg', 
     uploadedBy: 'Green Valley Farm', 
     uploadedAt: '45 min ago',
@@ -102,7 +108,7 @@ const mockEvidence: EvidenceItem[] = [
   { 
     id: '5', 
     type: 'document', 
-    icon: '📄', 
+    icon: <FileText size={16} />, 
     fileName: 'quality_cert.pdf', 
     uploadedBy: 'Green Valley Farm', 
     uploadedAt: '40 min ago',
@@ -116,7 +122,7 @@ const mockEvidence: EvidenceItem[] = [
   { 
     id: '6', 
     type: 'video', 
-    icon: '🎥', 
+    icon: <Video size={16} />, 
     fileName: 'unboxing_video.mp4', 
     uploadedBy: 'Ravi Sharma', 
     uploadedAt: '1 hr ago',
@@ -348,13 +354,13 @@ const EvidenceViewer: React.FC = () => {
     };
   }, [slideInterval]);
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string): React.ReactNode => {
     switch(type) {
-      case 'photo': return '📷';
-      case 'document': return '📄';
-      case 'receipt': return '🧾';
-      case 'video': return '🎥';
-      default: return '📎';
+      case 'photo': return <Camera size={16} />;
+      case 'document': return <FileText size={16} />;
+      case 'receipt': return <Receipt size={16} />;
+      case 'video': return <Video size={16} />;
+      default: return <Paperclip size={16} />;
     }
   };
 
@@ -367,10 +373,10 @@ const EvidenceViewer: React.FC = () => {
         {toasts.map(toast => (
           <div key={toast.id} className={`toast toast--${toast.type}`}>
             <span className="toast__icon">
-              {toast.type === 'success' && '✓'}
-              {toast.type === 'error' && '✕'}
-              {toast.type === 'warning' && '⚠'}
-              {toast.type === 'info' && 'ℹ'}
+              {toast.type === 'success' && <Check size={14} />}
+              {toast.type === 'error' && <X size={14} />}
+              {toast.type === 'warning' && <AlertTriangle size={14} />}
+              {toast.type === 'info' && <Info size={14} />}
             </span>
             {toast.message}
           </div>
@@ -386,7 +392,7 @@ const EvidenceViewer: React.FC = () => {
         </div>
         <div className="evidence-viewer__header-right">
           <div className="evidence-viewer__search">
-            <span className="evidence-viewer__search-icon">🔍</span>
+            <span className="evidence-viewer__search-icon"><Search size={16} /></span>
             <input
               type="text"
               placeholder="Search evidence..."
@@ -404,7 +410,7 @@ const EvidenceViewer: React.FC = () => {
             )}
           </div>
           <button className="admin-btn admin-btn--secondary" onClick={handleDownloadAll}>
-            ⬇️ Download All
+            <Download size={16} /> Download All
           </button>
         </div>
       </header>
@@ -432,21 +438,21 @@ const EvidenceViewer: React.FC = () => {
             onClick={() => setViewMode('grid')}
             title="Grid view"
           >
-            ⊞
+            <LayoutGrid size={16} />
           </button>
           <button
             className={`evidence-viewer__view-btn ${viewMode === 'timeline' ? 'evidence-viewer__view-btn--active' : ''}`}
             onClick={() => setViewMode('timeline')}
             title="Timeline view"
           >
-            ≡
+            <List size={16} />
           </button>
         </div>
       </div>
 
       {filteredEvidence.length === 0 ? (
         <div className="evidence-viewer__empty">
-          <div className="evidence-viewer__empty-icon">📭</div>
+          <div className="evidence-viewer__empty-icon"><Inbox size={48} /></div>
           <h3>No evidence found</h3>
           <p>Try adjusting your search or filters</p>
         </div>
@@ -466,14 +472,14 @@ const EvidenceViewer: React.FC = () => {
                 </button>
                 <div className="evidence-viewer__toolbar-divider" />
                 <button className="evidence-viewer__tool-btn" onClick={handleRotateLeft} title="Rotate left">
-                  ↺
+                  <RotateCcw size={16} />
                 </button>
                 <button className="evidence-viewer__tool-btn" onClick={handleRotateRight} title="Rotate right (R)">
-                  ↻
+                  <RotateCw size={16} />
                 </button>
                 <div className="evidence-viewer__toolbar-divider" />
                 <button className="evidence-viewer__tool-btn" onClick={() => resetView()} title="Reset view">
-                  ⟲
+                  <RefreshCw size={16} />
                 </button>
               </div>
               <div className="evidence-viewer__toolbar-group">
@@ -482,14 +488,14 @@ const EvidenceViewer: React.FC = () => {
                   onClick={() => setIsAddingAnnotation(!isAddingAnnotation)}
                   title="Add annotation"
                 >
-                  📌
+                  <Pin size={16} />
                 </button>
                 <button 
                   className={`evidence-viewer__tool-btn ${showAnnotations ? 'evidence-viewer__tool-btn--active' : ''}`}
                   onClick={() => setShowAnnotations(!showAnnotations)}
                   title="Toggle annotations"
                 >
-                  💬
+                  <MessageSquare size={16} />
                 </button>
                 <div className="evidence-viewer__toolbar-divider" />
                 <button 
@@ -497,7 +503,7 @@ const EvidenceViewer: React.FC = () => {
                   onClick={() => { setIsCompareMode(!isCompareMode); setCompareIdx(null); }}
                   title="Compare mode"
                 >
-                  ⧉
+                  <Columns2 size={16} />
                 </button>
                 <div className="evidence-viewer__toolbar-divider" />
                 <button 
@@ -505,10 +511,10 @@ const EvidenceViewer: React.FC = () => {
                   onClick={toggleSlideshow}
                   title="Slideshow (Space)"
                 >
-                  {isPlaying ? '⏸' : '▶'}
+                  {isPlaying ? <Pause size={16} /> : <Play size={16} />}
                 </button>
                 <button className="evidence-viewer__tool-btn" onClick={toggleFullscreen} title="Fullscreen (F)">
-                  {isFullscreen ? '⊙' : '⛶'}
+                  {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
                 </button>
               </div>
             </div>
@@ -546,7 +552,7 @@ const EvidenceViewer: React.FC = () => {
                   <div className="evidence-viewer__placeholder-icon">{selected.icon}</div>
                   <div className="evidence-viewer__placeholder-text">{selected.fileName}</div>
                   {selected.type === 'video' && (
-                    <div className="evidence-viewer__play-overlay">▶</div>
+                    <div className="evidence-viewer__play-overlay"><Play size={24} /></div>
                   )}
                 </div>
 
@@ -557,7 +563,7 @@ const EvidenceViewer: React.FC = () => {
                     className="evidence-viewer__annotation"
                     style={{ left: `${annotation.x}%`, top: `${annotation.y}%` }}
                   >
-                    <div className="evidence-viewer__annotation-marker">📌</div>
+                    <div className="evidence-viewer__annotation-marker"><Pin size={16} /></div>
                     <div className="evidence-viewer__annotation-tooltip">
                       <p>{annotation.text}</p>
                       <span className="evidence-viewer__annotation-author">— {annotation.author}</span>
@@ -577,7 +583,7 @@ const EvidenceViewer: React.FC = () => {
                     className="evidence-viewer__annotation evidence-viewer__annotation--pending"
                     style={{ left: `${pendingAnnotation.x}%`, top: `${pendingAnnotation.y}%` }}
                   >
-                    <div className="evidence-viewer__annotation-marker">📌</div>
+                    <div className="evidence-viewer__annotation-marker"><Pin size={16} /></div>
                     <div className="evidence-viewer__annotation-input">
                       <textarea
                         value={newAnnotationText}
@@ -596,7 +602,7 @@ const EvidenceViewer: React.FC = () => {
 
                 {/* Verification Badge */}
                 <div className={`evidence-viewer__badge ${selected.verified ? 'evidence-viewer__badge--verified' : 'evidence-viewer__badge--unverified'}`}>
-                  {selected.verified ? '✓ Verified' : '⚠ Unverified'}
+                  {selected.verified ? <><Check size={14} /> Verified</> : <><AlertTriangle size={14} /> Unverified</>}
                 </div>
               </div>
 
@@ -641,7 +647,7 @@ const EvidenceViewer: React.FC = () => {
               <div className="evidence-viewer__info-left">
                 <div className="evidence-viewer__file-name">
                   {selected.fileName}
-                  {selected.verified && <span className="evidence-viewer__verified-icon">✓</span>}
+                  {selected.verified && <span className="evidence-viewer__verified-icon"><Check size={14} /></span>}
                 </div>
                 <div className="evidence-viewer__file-meta">
                   {selected.fileSize} • Uploaded by <strong>{selected.uploadedBy}</strong> • {selected.uploadedAt}
@@ -652,10 +658,10 @@ const EvidenceViewer: React.FC = () => {
               </div>
               <div className="evidence-viewer__info-actions">
                 <button className="admin-btn admin-btn--secondary admin-btn--sm" onClick={handleDownload}>
-                  ⬇️ Download
+                  <Download size={16} /> Download
                 </button>
                 <button className="admin-btn admin-btn--secondary admin-btn--sm" onClick={() => setIsLightboxOpen(true)}>
-                  🔍 View Full
+                  <Search size={16} /> View Full
                 </button>
               </div>
             </div>
@@ -680,7 +686,7 @@ const EvidenceViewer: React.FC = () => {
                   onClick={() => isCompareMode ? setCompareIdx(idx) : setSelectedIdx(idx)}
                 >
                   <span className="evidence-viewer__thumb-icon">{item.icon}</span>
-                  {item.verified && <span className="evidence-viewer__thumb-verified">✓</span>}
+                  {item.verified && <span className="evidence-viewer__thumb-verified"><Check size={12} /></span>}
                   {item.notes.length > 0 && <span className="evidence-viewer__thumb-notes">{item.notes.length}</span>}
                 </div>
               ))}
@@ -701,7 +707,7 @@ const EvidenceViewer: React.FC = () => {
             {/* File Details */}
             <div className="evidence-sidebar-card">
               <div className="evidence-sidebar-card__header">
-                <h3 className="evidence-sidebar-card__title">📁 File Details</h3>
+                <h3 className="evidence-sidebar-card__title"><FolderOpen size={16} /> File Details</h3>
               </div>
               <div className="evidence-sidebar-card__body">
                 {[
@@ -722,12 +728,12 @@ const EvidenceViewer: React.FC = () => {
             {/* Integrity Check */}
             <div className="evidence-sidebar-card">
               <div className="evidence-sidebar-card__header">
-                <h3 className="evidence-sidebar-card__title">🔒 Integrity Check</h3>
+                <h3 className="evidence-sidebar-card__title"><Lock size={16} /> Integrity Check</h3>
               </div>
               <div className="evidence-sidebar-card__body">
                 <div className={`evidence-viewer__integrity evidence-viewer__integrity--${selected.verified ? 'verified' : 'unverified'}`}>
                   <div className="evidence-viewer__integrity-icon">
-                    {selected.verified ? '✅' : '⚠️'}
+                    {selected.verified ? <CheckCircle size={20} /> : <AlertTriangle size={20} />}
                   </div>
                   <div className="evidence-viewer__integrity-info">
                     <strong>{selected.verified ? 'Verified' : 'Unverified'}</strong>
@@ -738,11 +744,11 @@ const EvidenceViewer: React.FC = () => {
                 <div className="evidence-viewer__verify-actions">
                   {!selected.verified ? (
                     <button className="admin-btn admin-btn--success admin-btn--sm admin-btn--full" onClick={() => handleVerify(true)}>
-                      ✓ Mark as Verified
+                      <Check size={14} /> Mark as Verified
                     </button>
                   ) : (
                     <button className="admin-btn admin-btn--danger admin-btn--sm admin-btn--full" onClick={() => handleVerify(false)}>
-                      ✕ Remove Verification
+                      <X size={14} /> Remove Verification
                     </button>
                   )}
                 </div>
@@ -752,7 +758,7 @@ const EvidenceViewer: React.FC = () => {
             {/* Admin Notes */}
             <div className="evidence-sidebar-card">
               <div className="evidence-sidebar-card__header">
-                <h3 className="evidence-sidebar-card__title">📝 Notes ({selected.notes.length})</h3>
+                <h3 className="evidence-sidebar-card__title"><Pencil size={16} /> Notes ({selected.notes.length})</h3>
               </div>
               <div className="evidence-sidebar-card__body">
                 {selected.notes.length > 0 && (
@@ -780,7 +786,7 @@ const EvidenceViewer: React.FC = () => {
                   onClick={handleSaveNote}
                   disabled={!noteText.trim()}
                 >
-                  💾 Save Note
+                  <Save size={16} /> Save Note
                 </button>
               </div>
             </div>
@@ -788,7 +794,7 @@ const EvidenceViewer: React.FC = () => {
             {/* Annotations */}
             <div className="evidence-sidebar-card">
               <div className="evidence-sidebar-card__header">
-                <h3 className="evidence-sidebar-card__title">📌 Annotations ({currentAnnotations.length})</h3>
+                <h3 className="evidence-sidebar-card__title"><Pin size={16} /> Annotations ({currentAnnotations.length})</h3>
                 <button 
                   className={`evidence-sidebar-card__toggle ${isAddingAnnotation ? 'evidence-sidebar-card__toggle--active' : ''}`}
                   onClick={() => setIsAddingAnnotation(!isAddingAnnotation)}
@@ -819,7 +825,7 @@ const EvidenceViewer: React.FC = () => {
             {/* All Evidence */}
             <div className="evidence-sidebar-card evidence-sidebar-card--expandable">
               <div className="evidence-sidebar-card__header">
-                <h3 className="evidence-sidebar-card__title">📋 All Evidence ({filteredEvidence.length})</h3>
+                <h3 className="evidence-sidebar-card__title"><ClipboardList size={16} /> All Evidence ({filteredEvidence.length})</h3>
               </div>
               <div className="evidence-sidebar-card__body evidence-sidebar-card__body--scrollable">
                 {viewMode === 'timeline' ? (
@@ -839,7 +845,7 @@ const EvidenceViewer: React.FC = () => {
                           <div className="evidence-timeline__file">
                             <span className="evidence-timeline__icon">{item.icon}</span>
                             <span className="evidence-timeline__name">{item.fileName}</span>
-                            {item.verified && <span className="evidence-timeline__verified">✓</span>}
+                            {item.verified && <span className="evidence-timeline__verified"><Check size={12} /></span>}
                           </div>
                           <div className="evidence-timeline__meta">
                             {item.uploadedBy} • {item.fileSize}
@@ -861,7 +867,7 @@ const EvidenceViewer: React.FC = () => {
                         <span className="evidence-sidebar-card__file-meta">{item.uploadedBy} • {item.fileSize}</span>
                       </div>
                       <div className="evidence-sidebar-card__file-badges">
-                        {item.verified && <span className="evidence-sidebar-card__file-verified">✓</span>}
+                        {item.verified && <span className="evidence-sidebar-card__file-verified"><Check size={12} /></span>}
                         {item.notes.length > 0 && <span className="evidence-sidebar-card__file-notes">{item.notes.length}</span>}
                       </div>
                     </div>

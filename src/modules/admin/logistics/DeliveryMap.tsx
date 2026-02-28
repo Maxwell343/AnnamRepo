@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Map, ArrowRight } from 'lucide-react';
 import './DeliveryMap.css';
 
 interface RouteInfo {
@@ -55,7 +56,7 @@ const DeliveryMap: React.FC = () => {
       <div className="delivery-map__container">
         <div className="delivery-map__map-area">
           <div className="delivery-map__placeholder">
-            <div className="delivery-map__placeholder-icon">🗺️</div>
+            <div className="delivery-map__placeholder-icon"><Map size={24} /></div>
             <div className="delivery-map__placeholder-text">Map View</div>
             <div className="delivery-map__placeholder-sub">
               Integrate with Google Maps / Mapbox to show live routes
@@ -91,7 +92,7 @@ const DeliveryMap: React.FC = () => {
                 </div>
                 <div className="delivery-map__route-path">
                   {route.pickup}
-                  <span className="delivery-map__route-path-arrow">→</span>
+                  <span className="delivery-map__route-path-arrow"><ArrowRight size={14} /></span>
                   {route.dropoff}
                 </div>
                 <div className="delivery-map__route-meta">

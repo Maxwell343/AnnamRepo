@@ -30,6 +30,7 @@ export const API_ENDPOINTS = {
   driverTasks: (id: string) => `${API_BASE_URL}/api/drivers/${id}/tasks`,
   driverEarnings: (id: string) => `${API_BASE_URL}/api/drivers/${id}/earnings`,
   driverStats: (id: string) => `${API_BASE_URL}/api/stats/driver/${id}`,
+  deliveryTaskStatus: (taskId: string) => `${API_BASE_URL}/api/delivery-tasks/${taskId}/status`,
   
   // Analytics
   farmerAnalytics: (id: string) => `${API_BASE_URL}/api/analytics/farmer/${id}`,
@@ -84,5 +85,10 @@ export const API_ENDPOINTS = {
     // Trust & Ratings
     farmerRating: (farmerId: string) => `${API_BASE_URL}/api/marketplace/farmers/${farmerId}/rating`,
     productReviews: (listingId: string) => `${API_BASE_URL}/api/marketplace/listings/${listingId}/reviews`,
+  },
+
+  // Admin
+  admin: {
+    users: `${API_BASE_URL}/api/admin/users`,
   },
 };

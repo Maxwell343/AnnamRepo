@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HomePage.css';
+import { API_ENDPOINTS } from '../config/api';
 
 // --- Types ---
 interface FoodListing {
@@ -162,7 +163,7 @@ const HomePage: React.FC = () => {
   // Fetch listings from backend
   const fetchListings = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/listings');
+      const response = await fetch(API_ENDPOINTS.listings);
       const data = await response.json();
       
       if (response.ok) {
@@ -180,7 +181,7 @@ const HomePage: React.FC = () => {
   // Fetch delivery tasks for drivers
   const fetchDeliveryTasks = async (driverId: number) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/drivers/${driverId}/tasks`);
+      const response = await fetch(API_ENDPOINTS.driverTasks(driverId.toString()));
       const data = await response.json();
       
       if (response.ok) {
@@ -237,7 +238,7 @@ const HomePage: React.FC = () => {
           const { isExpired } = parseExpiryAndGetCountdown(listing.expiry || listing.expiry_date, listing.created_at);
           
           if (isExpired) {
-            fetch(`http://localhost:8000/api/listings/${listing.id}`, {
+            fetch(`${API_ENDPOINTS.marketplace.listingById(listing.id.toString())}/details`, {
               method: 'DELETE',
               headers: { 'Content-Type': 'application/json' }
             }).catch(err => console.error('Error deleting expired listing:', err));
@@ -311,7 +312,7 @@ const HomePage: React.FC = () => {
     setClaimingId(listingId);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/listings/${listingId}/claim`, {
+      const response = await fetch(`${API_ENDPOINTS.marketplace.listings}/claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -363,7 +364,7 @@ const HomePage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/api/listings/${listingId}`, {
+      const response = await fetch(API_ENDPOINTS.marketplace.listingById(listingId.toString()), {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -396,7 +397,7 @@ const HomePage: React.FC = () => {
     if (user?.role !== 'driver') return;
 
     try {
-      const response = await fetch(`http://localhost:8000/api/listings/${listingId}/assign-driver`, {
+      const response = await fetch(`${API_ENDPOINTS.marketplace.listingById(listingId.toString())}/assign-driver`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -434,7 +435,7 @@ const HomePage: React.FC = () => {
     if (user?.role !== 'driver') return;
 
     try {
-      const response = await fetch(`http://localhost:8000/api/delivery-tasks/${taskId}/status`, {
+      const response = await fetch(API_ENDPOINTS.deliveryTaskStatus(taskId.toString()), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus, driver_id: user.id })

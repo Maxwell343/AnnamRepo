@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  AlertTriangle, Apple, ArrowDown, ArrowUp, Banknote, Building2, Calendar, Car,
+  CheckCircle, ChevronDown, ChevronUp, Circle, Clock, ClipboardList, CreditCard,
+  Download, Eye, Factory, Filter, Flame, Handshake, HeartCrack, HelpCircle, Info,
+  Lock, Mail, MessageSquare, Package, Paperclip, Phone, Plus, PlusCircle,
+  RefreshCw, Scale, Search, Smartphone, Timer, Truck, User, Wheat, X, XCircle
+} from 'lucide-react';
 import './DisputeCenter.css';
 
 /* ─── Types ─── */
@@ -287,39 +294,39 @@ const getSLAStatus = (deadline: string): { status: 'ok' | 'warning' | 'breach'; 
   return { status: 'ok', label: `${Math.floor(hours / 24)}d remaining` };
 };
 
-const categoryConfig: Record<DisputeCategory, { icon: string; label: string; color: string }> = {
-  quality: { icon: '🍎', label: 'Quality', color: '#ef4444' },
-  delivery: { icon: '🚚', label: 'Delivery', color: '#3b82f6' },
-  payment: { icon: '💳', label: 'Payment', color: '#16a34a' },
-  quantity: { icon: '📦', label: 'Quantity', color: '#f59e0b' },
-  no_show: { icon: '👤', label: 'No-Show', color: '#8b5cf6' },
-  damage: { icon: '💔', label: 'Damage', color: '#ec4899' },
-  other: { icon: '❓', label: 'Other', color: '#6b7280' },
+const categoryConfig: Record<DisputeCategory, { icon: React.ReactNode; label: string; color: string }> = {
+  quality: { icon: <Apple size={16} />, label: 'Quality', color: '#ef4444' },
+  delivery: { icon: <Truck size={16} />, label: 'Delivery', color: '#3b82f6' },
+  payment: { icon: <CreditCard size={16} />, label: 'Payment', color: '#16a34a' },
+  quantity: { icon: <Package size={16} />, label: 'Quantity', color: '#f59e0b' },
+  no_show: { icon: <User size={16} />, label: 'No-Show', color: '#8b5cf6' },
+  damage: { icon: <HeartCrack size={16} />, label: 'Damage', color: '#ec4899' },
+  other: { icon: <HelpCircle size={16} />, label: 'Other', color: '#6b7280' },
 };
 
-const priorityConfig: Record<DisputePriority, { icon: string; label: string; color: string }> = {
-  critical: { icon: '🔴', label: 'Critical', color: '#dc2626' },
-  high: { icon: '🟠', label: 'High', color: '#f59e0b' },
-  medium: { icon: '🟡', label: 'Medium', color: '#eab308' },
-  low: { icon: '🟢', label: 'Low', color: '#16a34a' },
+const priorityConfig: Record<DisputePriority, { icon: React.ReactNode; label: string; color: string }> = {
+  critical: { icon: <Circle size={16} fill="#dc2626" color="#dc2626" />, label: 'Critical', color: '#dc2626' },
+  high: { icon: <Circle size={16} fill="#f59e0b" color="#f59e0b" />, label: 'High', color: '#f59e0b' },
+  medium: { icon: <Circle size={16} fill="#eab308" color="#eab308" />, label: 'Medium', color: '#eab308' },
+  low: { icon: <Circle size={16} fill="#16a34a" color="#16a34a" />, label: 'Low', color: '#16a34a' },
 };
 
-const statusConfig: Record<DisputeStatus, { icon: string; label: string; color: string }> = {
-  open: { icon: '🔵', label: 'Open', color: '#3b82f6' },
-  investigating: { icon: '🔍', label: 'Investigating', color: '#8b5cf6' },
-  awaiting_response: { icon: '⏳', label: 'Awaiting Response', color: '#f59e0b' },
-  resolved: { icon: '✅', label: 'Resolved', color: '#16a34a' },
-  escalated: { icon: '⚠️', label: 'Escalated', color: '#dc2626' },
-  closed: { icon: '🔒', label: 'Closed', color: '#6b7280' },
+const statusConfig: Record<DisputeStatus, { icon: React.ReactNode; label: string; color: string }> = {
+  open: { icon: <Circle size={16} fill="#3b82f6" color="#3b82f6" />, label: 'Open', color: '#3b82f6' },
+  investigating: { icon: <Search size={16} />, label: 'Investigating', color: '#8b5cf6' },
+  awaiting_response: { icon: <Clock size={16} />, label: 'Awaiting Response', color: '#f59e0b' },
+  resolved: { icon: <CheckCircle size={16} />, label: 'Resolved', color: '#16a34a' },
+  escalated: { icon: <AlertTriangle size={16} />, label: 'Escalated', color: '#dc2626' },
+  closed: { icon: <Lock size={16} />, label: 'Closed', color: '#6b7280' },
 };
 
-const roleIcons: Record<PartyRole, string> = {
-  customer: '👤',
-  ngo: '🤝',
-  driver: '🚗',
-  farmer: '🌾',
-  vendor: '🏭',
-  platform: '🏢',
+const roleIcons: Record<PartyRole, React.ReactNode> = {
+  customer: <User size={16} />,
+  ngo: <Handshake size={16} />,
+  driver: <Car size={16} />,
+  farmer: <Wheat size={16} />,
+  vendor: <Factory size={16} />,
+  platform: <Building2 size={16} />,
 };
 
 /* ─── Animated Counter ─── */
@@ -350,7 +357,7 @@ const Toast: React.FC<{ toast: ToastNotification; onDismiss: (id: string) => voi
     return () => clearTimeout(t);
   }, [toast.id, onDismiss]);
 
-  const icons: Record<string, string> = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const icons: Record<string, React.ReactNode> = { success: <CheckCircle size={16} />, error: <XCircle size={16} />, warning: <AlertTriangle size={16} />, info: <Info size={16} /> };
 
   return (
     <div className={`dsp-toast dsp-toast--${toast.type}`}>
@@ -359,7 +366,7 @@ const Toast: React.FC<{ toast: ToastNotification; onDismiss: (id: string) => voi
         <div className="dsp-toast__title">{toast.title}</div>
         <div className="dsp-toast__message">{toast.message}</div>
       </div>
-      <button className="dsp-toast__close" onClick={() => onDismiss(toast.id)}>✕</button>
+      <button className="dsp-toast__close" onClick={() => onDismiss(toast.id)}><X size={14} /></button>
       <div className="dsp-toast__progress" style={{ animationDuration: '4s' }} />
     </div>
   );
@@ -400,7 +407,7 @@ const SLAIndicator: React.FC<{ deadline: string }> = ({ deadline }) => {
   const sla = getSLAStatus(deadline);
   return (
     <span className={`dsp-sla-indicator dsp-sla-indicator--${sla.status}`}>
-      ⏱️ {sla.label}
+      <Timer size={14} /> {sla.label}
     </span>
   );
 };
@@ -439,11 +446,11 @@ const DisputeModal: React.FC<{
     }
   };
 
-  const tabs: { key: ActiveTab; label: string; icon: string }[] = [
-    { key: 'details', label: 'Details', icon: '📋' },
-    { key: 'timeline', label: 'Timeline', icon: '📅' },
-    { key: 'messages', label: 'Messages', icon: '💬' },
-    { key: 'resolution', label: 'Resolution', icon: '✅' },
+  const tabs: { key: ActiveTab; label: string; icon: React.ReactNode }[] = [
+    { key: 'details', label: 'Details', icon: <ClipboardList size={16} /> },
+    { key: 'timeline', label: 'Timeline', icon: <Calendar size={16} /> },
+    { key: 'messages', label: 'Messages', icon: <MessageSquare size={16} /> },
+    { key: 'resolution', label: 'Resolution', icon: <CheckCircle size={16} /> },
   ];
 
   return (
@@ -461,7 +468,7 @@ const DisputeModal: React.FC<{
               )}
             </div>
           </div>
-          <button className="dsp-modal__close" onClick={onClose}>✕</button>
+          <button className="dsp-modal__close" onClick={onClose}><X size={18} /></button>
         </div>
 
         <div className="dsp-modal__tabs">
@@ -513,8 +520,8 @@ const DisputeModal: React.FC<{
                   <div className="dsp-party-card__name">{dispute.filedBy}</div>
                   <div className="dsp-party-card__role">{dispute.filedByRole}</div>
                   <div className="dsp-party-card__contact">
-                    <span>📧 {dispute.filedByEmail}</span>
-                    <span>📱 {dispute.filedByPhone}</span>
+                    <span><Mail size={14} /> {dispute.filedByEmail}</span>
+                    <span><Smartphone size={14} /> {dispute.filedByPhone}</span>
                   </div>
                 </div>
                 <div className="dsp-party-vs">VS</div>
@@ -553,7 +560,7 @@ const DisputeModal: React.FC<{
                   <div className="dsp-evidence__list">
                     {Array.from({ length: dispute.evidenceCount }, (_, i) => (
                       <div key={i} className="dsp-evidence__item">
-                        <span className="dsp-evidence__icon">📎</span>
+                        <span className="dsp-evidence__icon"><Paperclip size={16} /></span>
                         <span className="dsp-evidence__name">evidence_{i + 1}.jpg</span>
                         <button className="dsp-evidence__view">View</button>
                       </div>
@@ -595,13 +602,13 @@ const DisputeModal: React.FC<{
                   <div key={event.id} className={`dsp-timeline__item dsp-timeline__item--${event.type}`}>
                     <div className="dsp-timeline__marker">
                       <div className="dsp-timeline__dot">
-                        {event.type === 'created' && '🆕'}
-                        {event.type === 'status_change' && '🔄'}
-                        {event.type === 'message' && '💬'}
-                        {event.type === 'escalated' && '⚠️'}
-                        {event.type === 'assigned' && '👤'}
-                        {event.type === 'resolved' && '✅'}
-                        {event.type === 'attachment' && '📎'}
+                        {event.type === 'created' && <PlusCircle size={16} />}
+                        {event.type === 'status_change' && <RefreshCw size={16} />}
+                        {event.type === 'message' && <MessageSquare size={16} />}
+                        {event.type === 'escalated' && <AlertTriangle size={16} />}
+                        {event.type === 'assigned' && <User size={16} />}
+                        {event.type === 'resolved' && <CheckCircle size={16} />}
+                        {event.type === 'attachment' && <Paperclip size={16} />}
                       </div>
                       {i < timeline.length - 1 && <div className="dsp-timeline__line" />}
                     </div>
@@ -661,7 +668,7 @@ const DisputeModal: React.FC<{
                     <span className="dsp-toggle__slider" />
                   </label>
                   <span className={isInternal ? 'dsp-internal-label' : ''}>
-                    {isInternal ? '🔒 Internal Note' : '💬 Public Reply'}
+                    {isInternal ? <><Lock size={14} /> Internal Note</> : <><MessageSquare size={14} /> Public Reply</>}
                   </span>
                 </div>
                 <div className="dsp-message-composer__input-wrap">
@@ -689,7 +696,7 @@ const DisputeModal: React.FC<{
             <div className="dsp-modal__resolution">
               {dispute.status === 'resolved' || dispute.status === 'closed' ? (
                 <div className="dsp-resolution-summary">
-                  <div className="dsp-resolution-summary__icon">✅</div>
+                  <div className="dsp-resolution-summary__icon"><CheckCircle size={32} /></div>
                   <h3>Dispute Resolved</h3>
                   <p>{dispute.resolution}</p>
                   {dispute.refundAmount && (
@@ -750,7 +757,7 @@ const DisputeModal: React.FC<{
 
                   {newStatus === 'escalated' && (
                     <div className="dsp-escalation-warning">
-                      <span>⚠️</span>
+                      <span><AlertTriangle size={16} /></span>
                       <div>
                         <strong>Escalation Notice</strong>
                         <p>This will notify senior management and mark the dispute as high priority.</p>
@@ -777,19 +784,19 @@ const DisputeModal: React.FC<{
                 <h4>Quick Actions</h4>
                 <div className="dsp-quick-actions__grid">
                   <button className="dsp-quick-action">
-                    <span>📧</span>
+                    <span><Mail size={16} /></span>
                     <span>Email Parties</span>
                   </button>
                   <button className="dsp-quick-action">
-                    <span>📞</span>
+                    <span><Phone size={16} /></span>
                     <span>Schedule Call</span>
                   </button>
                   <button className="dsp-quick-action">
-                    <span>💸</span>
+                    <span><Banknote size={16} /></span>
                     <span>Process Refund</span>
                   </button>
                   <button className="dsp-quick-action">
-                    <span>📋</span>
+                    <span><ClipboardList size={16} /></span>
                     <span>Generate Report</span>
                   </button>
                 </div>
@@ -820,10 +827,10 @@ const DisputeModal: React.FC<{
               a.click();
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
-            }}>📥 Export</button>
+            }}><Download size={14} /> Export</button>
             {canEscalate && (
               <button className="dsp-btn dsp-btn--warning" onClick={() => onStatusChange(dispute.id, 'escalated')}>
-                ⚠️ Escalate
+                <AlertTriangle size={14} /> Escalate
               </button>
             )}
           </div>
@@ -1027,21 +1034,21 @@ const DisputeCenter: React.FC = () => {
       {/* Header */}
       <header className="dsp-header">
         <div className="dsp-header__left">
-          <h1 className="dsp-header__title">⚖️ Dispute Center</h1>
+          <h1 className="dsp-header__title"><Scale size={24} /> Dispute Center</h1>
           <p className="dsp-header__subtitle">Manage and resolve platform disputes efficiently</p>
         </div>
         <div className="dsp-header__right">
           <button className="dsp-btn dsp-btn--secondary" onClick={handleExport} disabled={isExporting}>
-            {isExporting ? <><span className="dsp-btn-spinner" /> Exporting...</> : <>📥 Export Report</>}
+            {isExporting ? <><span className="dsp-btn-spinner" /> Exporting...</> : <><Download size={16} /> Export Report</>}
           </button>
-          <button className="dsp-btn dsp-btn--primary">➕ Log Dispute</button>
+          <button className="dsp-btn dsp-btn--primary"><Plus size={16} /> Log Dispute</button>
         </div>
       </header>
 
       {/* Stats Cards */}
       <div className="dsp-stats">
         <div className="dsp-stat-card" style={{ '--stat-color': '#3b82f6' } as React.CSSProperties} onClick={() => setStatusFilter('open')}>
-          <div className="dsp-stat-card__icon">🔵</div>
+          <div className="dsp-stat-card__icon"><Circle size={20} fill="#3b82f6" color="#3b82f6" /></div>
           <div className="dsp-stat-card__content">
             <div className="dsp-stat-card__value"><AnimatedCounter target={stats.open} /></div>
             <div className="dsp-stat-card__label">Open</div>
@@ -1049,7 +1056,7 @@ const DisputeCenter: React.FC = () => {
           <div className="dsp-stat-card__glow" />
         </div>
         <div className="dsp-stat-card" style={{ '--stat-color': '#8b5cf6' } as React.CSSProperties} onClick={() => setStatusFilter('investigating')}>
-          <div className="dsp-stat-card__icon">🔍</div>
+          <div className="dsp-stat-card__icon"><Search size={20} /></div>
           <div className="dsp-stat-card__content">
             <div className="dsp-stat-card__value"><AnimatedCounter target={stats.investigating} /></div>
             <div className="dsp-stat-card__label">Investigating</div>
@@ -1057,7 +1064,7 @@ const DisputeCenter: React.FC = () => {
           <div className="dsp-stat-card__glow" />
         </div>
         <div className="dsp-stat-card" style={{ '--stat-color': '#dc2626' } as React.CSSProperties} onClick={() => setStatusFilter('escalated')}>
-          <div className="dsp-stat-card__icon">⚠️</div>
+          <div className="dsp-stat-card__icon"><AlertTriangle size={20} /></div>
           <div className="dsp-stat-card__content">
             <div className="dsp-stat-card__value"><AnimatedCounter target={stats.escalated} /></div>
             <div className="dsp-stat-card__label">Escalated</div>
@@ -1066,7 +1073,7 @@ const DisputeCenter: React.FC = () => {
           <div className="dsp-stat-card__glow" />
         </div>
         <div className="dsp-stat-card" style={{ '--stat-color': '#16a34a' } as React.CSSProperties} onClick={() => setStatusFilter('resolved')}>
-          <div className="dsp-stat-card__icon">✅</div>
+          <div className="dsp-stat-card__icon"><CheckCircle size={20} /></div>
           <div className="dsp-stat-card__content">
             <div className="dsp-stat-card__value"><AnimatedCounter target={stats.resolved} /></div>
             <div className="dsp-stat-card__label">Resolved</div>
@@ -1074,7 +1081,7 @@ const DisputeCenter: React.FC = () => {
           <div className="dsp-stat-card__glow" />
         </div>
         <div className="dsp-stat-card" style={{ '--stat-color': '#f59e0b' } as React.CSSProperties}>
-          <div className="dsp-stat-card__icon">🔴</div>
+          <div className="dsp-stat-card__icon"><Circle size={20} fill="#dc2626" color="#dc2626" /></div>
           <div className="dsp-stat-card__content">
             <div className="dsp-stat-card__value"><AnimatedCounter target={stats.critical} /></div>
             <div className="dsp-stat-card__label">Critical</div>
@@ -1083,7 +1090,7 @@ const DisputeCenter: React.FC = () => {
           <div className="dsp-stat-card__glow" />
         </div>
         <div className="dsp-stat-card" style={{ '--stat-color': '#06b6d4' } as React.CSSProperties}>
-          <div className="dsp-stat-card__icon">⏱️</div>
+          <div className="dsp-stat-card__icon"><Timer size={20} /></div>
           <div className="dsp-stat-card__content">
             <div className="dsp-stat-card__value">{stats.avgResolutionTime}</div>
             <div className="dsp-stat-card__label">Avg. Resolution</div>
@@ -1096,7 +1103,7 @@ const DisputeCenter: React.FC = () => {
       <div className="dsp-toolbar">
         <div className="dsp-toolbar__left">
           <div className="dsp-search">
-            <span className="dsp-search__icon">🔍</span>
+            <span className="dsp-search__icon"><Search size={16} /></span>
             <input
               ref={searchRef}
               className="dsp-search__input"
@@ -1105,14 +1112,14 @@ const DisputeCenter: React.FC = () => {
               onChange={(e) => setSearch(e.target.value)}
             />
             {search && (
-              <button className="dsp-search__clear" onClick={() => { setSearch(''); searchRef.current?.focus(); }}>✕</button>
+              <button className="dsp-search__clear" onClick={() => { setSearch(''); searchRef.current?.focus(); }}><X size={14} /></button>
             )}
           </div>
           <button
             className={`dsp-filter-toggle ${showFilters ? 'dsp-filter-toggle--active' : ''}`}
             onClick={() => setShowFilters(!showFilters)}
           >
-            🔽 Filters
+            <Filter size={16} /> Filters
             {activeFilterCount > 0 && <span className="dsp-filter-badge">{activeFilterCount}</span>}
           </button>
         </div>
@@ -1130,7 +1137,7 @@ const DisputeCenter: React.FC = () => {
               <select className="dsp-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)}>
                 <option value="all">All Statuses</option>
                 {Object.entries(statusConfig).map(([key, cfg]) => (
-                  <option key={key} value={key}>{cfg.icon} {cfg.label}</option>
+                  <option key={key} value={key}>{cfg.label}</option>
                 ))}
               </select>
             </div>
@@ -1139,7 +1146,7 @@ const DisputeCenter: React.FC = () => {
               <select className="dsp-select" value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value as any)}>
                 <option value="all">All Priorities</option>
                 {Object.entries(priorityConfig).map(([key, cfg]) => (
-                  <option key={key} value={key}>{cfg.icon} {cfg.label}</option>
+                  <option key={key} value={key}>{cfg.label}</option>
                 ))}
               </select>
             </div>
@@ -1148,7 +1155,7 @@ const DisputeCenter: React.FC = () => {
               <select className="dsp-select" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value as any)}>
                 <option value="all">All Categories</option>
                 {Object.entries(categoryConfig).map(([key, cfg]) => (
-                  <option key={key} value={key}>{cfg.icon} {cfg.label}</option>
+                  <option key={key} value={key}>{cfg.label}</option>
                 ))}
               </select>
             </div>
@@ -1170,8 +1177,8 @@ const DisputeCenter: React.FC = () => {
             <button className="dsp-btn dsp-btn--sm dsp-btn--secondary" onClick={() => setSelectedIds(new Set())}>
               Deselect
             </button>
-            <button className="dsp-btn dsp-btn--sm dsp-btn--secondary">👤 Bulk Assign</button>
-            <button className="dsp-btn dsp-btn--sm dsp-btn--primary" onClick={handleExportSelected}>📥 Export Selected</button>
+            <button className="dsp-btn dsp-btn--sm dsp-btn--secondary"><User size={14} /> Bulk Assign</button>
+            <button className="dsp-btn dsp-btn--sm dsp-btn--primary" onClick={handleExportSelected}><Download size={14} /> Export Selected</button>
           </div>
         </div>
       )}
@@ -1194,17 +1201,17 @@ const DisputeCenter: React.FC = () => {
                 <th>Filed By</th>
                 <th>Against</th>
                 <th className="dsp-th-sortable" onClick={() => handleSort('category')}>
-                  Category {sortField === 'category' && <span className="dsp-sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                  Category {sortField === 'category' && <span className="dsp-sort-icon">{sortDir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>}
                 </th>
                 <th>Subject</th>
                 <th className="dsp-th-sortable" onClick={() => handleSort('priority')}>
-                  Priority {sortField === 'priority' && <span className="dsp-sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                  Priority {sortField === 'priority' && <span className="dsp-sort-icon">{sortDir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>}
                 </th>
                 <th className="dsp-th-sortable" onClick={() => handleSort('status')}>
-                  Status {sortField === 'status' && <span className="dsp-sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                  Status {sortField === 'status' && <span className="dsp-sort-icon">{sortDir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>}
                 </th>
                 <th className="dsp-th-sortable" onClick={() => handleSort('createdAt')}>
-                  Updated {sortField === 'createdAt' && <span className="dsp-sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                  Updated {sortField === 'createdAt' && <span className="dsp-sort-icon">{sortDir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>}
                 </th>
                 <th>Actions</th>
               </tr>
@@ -1249,8 +1256,8 @@ const DisputeCenter: React.FC = () => {
                     <td>
                       <div className="dsp-subject-cell">
                         <span className="dsp-subject-cell__text">{d.subject}</span>
-                        {d.evidenceCount > 0 && <span className="dsp-subject-cell__attach">📎{d.evidenceCount}</span>}
-                        {d.tags.includes('urgent') && <span className="dsp-subject-cell__urgent">🔥</span>}
+                        {d.evidenceCount > 0 && <span className="dsp-subject-cell__attach"><Paperclip size={12} />{d.evidenceCount}</span>}
+                        {d.tags.includes('urgent') && <span className="dsp-subject-cell__urgent"><Flame size={14} /></span>}
                       </div>
                     </td>
                     <td>
@@ -1274,14 +1281,14 @@ const DisputeCenter: React.FC = () => {
                           onClick={() => navigate(`/admin/disputes/${d.id}`)}
                           title="View Details"
                         >
-                          👁
+                          <Eye size={16} />
                         </button>
                         <button
                           className="dsp-action-btn dsp-action-btn--expand"
                           onClick={() => setExpandedRow(expandedRow === d.id ? null : d.id)}
                           title="Quick View"
                         >
-                          {expandedRow === d.id ? '▲' : '▼'}
+                          {expandedRow === d.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </button>
                       </div>
                     </td>
@@ -1325,7 +1332,7 @@ const DisputeCenter: React.FC = () => {
                             <button className="dsp-btn dsp-btn--sm dsp-btn--primary" onClick={() => navigate(`/admin/disputes/${d.id}`)}>
                               View Full Details
                             </button>
-                            <button className="dsp-btn dsp-btn--sm dsp-btn--secondary">💬 Add Note</button>
+                            <button className="dsp-btn dsp-btn--sm dsp-btn--secondary"><MessageSquare size={14} /> Add Note</button>
                           </div>
                         </div>
                       </td>
@@ -1338,7 +1345,7 @@ const DisputeCenter: React.FC = () => {
 
           {paginated.length === 0 && (
             <div className="dsp-empty-state">
-              <span className="dsp-empty-state__icon">🔍</span>
+              <span className="dsp-empty-state__icon"><Search size={32} /></span>
               <h3>No disputes found</h3>
               <p>Try adjusting your search or filter criteria</p>
               <button className="dsp-btn dsp-btn--secondary" onClick={() => {

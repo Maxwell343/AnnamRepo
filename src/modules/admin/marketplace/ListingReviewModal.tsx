@@ -1,4 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Clock, Check, X, Flag, AlarmClock, Maximize, Star, Lightbulb,
+  MapPin, MessageSquare, Mail, Smartphone, AlertTriangle,
+  ClipboardList, User, BarChart3, ScrollText, Leaf, Pencil,
+  Package, DollarSign, Calendar, Truck, Eye, FileText, ImageIcon
+} from 'lucide-react';
 import './ListingReviewModal.css';
 
 // ============ Types ============
@@ -150,12 +156,12 @@ const QUALITY_CHECKLIST: QualityCheck[] = [
   { id: 'contact', label: 'Contact Information', description: 'Seller contact details are valid', checked: false, required: false },
 ];
 
-const STATUS_CONFIG: Record<ListingStatus, { icon: string; color: string; bgColor: string; label: string }> = {
-  pending: { icon: '⏳', color: '#d97706', bgColor: '#fef3c7', label: 'Pending Review' },
-  approved: { icon: '✓', color: '#16a34a', bgColor: '#dcfce7', label: 'Approved' },
-  rejected: { icon: '✕', color: '#dc2626', bgColor: '#fee2e2', label: 'Rejected' },
-  flagged: { icon: '🚩', color: '#ea580c', bgColor: '#ffedd5', label: 'Flagged' },
-  expired: { icon: '⏰', color: '#6b7280', bgColor: '#f3f4f6', label: 'Expired' },
+const STATUS_CONFIG: Record<ListingStatus, { icon: React.ReactNode; color: string; bgColor: string; label: string }> = {
+  pending: { icon: <Clock size={16} />, color: '#d97706', bgColor: '#fef3c7', label: 'Pending Review' },
+  approved: { icon: <Check size={16} />, color: '#16a34a', bgColor: '#dcfce7', label: 'Approved' },
+  rejected: { icon: <X size={16} />, color: '#dc2626', bgColor: '#fee2e2', label: 'Rejected' },
+  flagged: { icon: <Flag size={16} />, color: '#ea580c', bgColor: '#ffedd5', label: 'Flagged' },
+  expired: { icon: <AlarmClock size={16} />, color: '#6b7280', bgColor: '#f3f4f6', label: 'Expired' },
 };
 
 // ============ Helper Functions ============
@@ -276,7 +282,7 @@ const ImageGallery: React.FC<{
           onClick={() => setShowFullscreen(true)}
           title="View fullscreen"
         >
-          ⛶
+          <Maximize size={14} />
         </button>
       </div>
 
@@ -289,7 +295,7 @@ const ImageGallery: React.FC<{
               onClick={() => setSelectedIndex(index)}
             >
               <img src={image.url} alt={`Thumbnail ${index + 1}`} />
-              {image.isPrimary && <span className="lrm-gallery__primary-badge">★</span>}
+              {image.isPrimary && <span className="lrm-gallery__primary-badge"><Star size={10} /></span>}
             </button>
           ))}
         </div>
@@ -306,7 +312,7 @@ const ImageGallery: React.FC<{
                 <span>{Math.round(zoom * 100)}%</span>
                 <button onClick={() => setZoom((z) => Math.min(3, z + 0.25))}>+</button>
                 <button onClick={() => setZoom(1)}>Reset</button>
-                <button className="close" onClick={() => setShowFullscreen(false)}>✕</button>
+                <button className="close" onClick={() => setShowFullscreen(false)}><X size={16} /></button>
               </div>
             </div>
             <div className="lrm-fullscreen__body">
@@ -364,7 +370,7 @@ const QualityChecklistComponent: React.FC<{
               onChange={(e) => onChange(item.id, e.target.checked)}
             />
             <span className="lrm-checklist__checkbox">
-              {item.checked ? '✓' : ''}
+              {item.checked ? <Check size={14} /> : null}
             </span>
             <div className="lrm-checklist__content">
               <span className="lrm-checklist__label">
@@ -456,7 +462,7 @@ const PriceAnalysisComponent: React.FC<{
       </div>
 
       <div className="lrm-price-analysis__recommendation">
-        <span className="icon">💡</span>
+        <span className="icon"><Lightbulb size={16} /></span>
         <p>{analysis.recommendation}</p>
       </div>
     </div>
@@ -481,24 +487,25 @@ const FarmerDetailsComponent: React.FC<{
             <span>{farmer.name.charAt(0).toUpperCase()}</span>
           )}
           {farmer.verified && (
-            <span className="lrm-farmer__verified" title="Verified Seller">✓</span>
+            <span className="lrm-farmer__verified" title="Verified Seller"><Check size={12} /></span>
           )}
         </div>
         <div className="lrm-farmer__info">
           <h4 className="lrm-farmer__name">{farmer.name}</h4>
           <div className="lrm-farmer__rating">
             <span className="stars">
-              {'★'.repeat(Math.floor(farmer.rating))}
-              {'☆'.repeat(5 - Math.floor(farmer.rating))}
+              {Array.from({ length: 5 }, (_, i) => (
+                <Star key={i} size={14} fill={i < Math.floor(farmer.rating) ? 'currentColor' : 'none'} />
+              ))}
             </span>
             <span className="value">{farmer.rating.toFixed(1)}</span>
             <span className="count">({farmer.reviewsCount} reviews)</span>
           </div>
-          <span className="lrm-farmer__location">📍 {farmer.location}</span>
+          <span className="lrm-farmer__location"><MapPin size={14} /> {farmer.location}</span>
         </div>
         {onContact && (
           <button className="lrm-farmer__contact-btn" onClick={onContact}>
-            💬 Contact
+            <MessageSquare size={14} /> Contact
           </button>
         )}
       </div>
@@ -524,18 +531,18 @@ const FarmerDetailsComponent: React.FC<{
 
       <div className="lrm-farmer__contact-info">
         <div className="lrm-farmer__contact-item">
-          <span className="icon">📧</span>
+          <span className="icon"><Mail size={14} /></span>
           <span className="value">{farmer.email}</span>
         </div>
         <div className="lrm-farmer__contact-item">
-          <span className="icon">📱</span>
+          <span className="icon"><Smartphone size={14} /></span>
           <span className="value">{farmer.phone}</span>
         </div>
       </div>
 
       {farmer.rejectedListings > 0 && (
         <div className="lrm-farmer__warning">
-          <span className="icon">⚠️</span>
+          <span className="icon"><AlertTriangle size={14} /></span>
           <span>This seller has {farmer.rejectedListings} rejected listing(s)</span>
         </div>
       )}
@@ -554,9 +561,9 @@ const HistoryTimeline: React.FC<{
       >
         <div className="lrm-history__marker">
           <span className="lrm-history__icon">
-            {item.status === 'success' && '✓'}
-            {item.status === 'warning' && '⚠'}
-            {item.status === 'error' && '✕'}
+            {item.status === 'success' && <Check size={14} />}
+            {item.status === 'warning' && <AlertTriangle size={14} />}
+            {item.status === 'error' && <X size={14} />}
             {(!item.status || item.status === 'info') && '•'}
           </span>
           {index < history.length - 1 && <div className="lrm-history__line" />}
@@ -579,7 +586,7 @@ const FlagsList: React.FC<{
 }> = ({ flags }) => (
   <div className="lrm-flags">
     <div className="lrm-flags__header">
-      <span className="icon">🚩</span>
+      <span className="icon"><Flag size={16} /></span>
       <span className="count">{flags.length} Flag{flags.length > 1 ? 's' : ''} Reported</span>
     </div>
     <div className="lrm-flags__list">
@@ -787,12 +794,12 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
   }, [onClose, showRejectForm, showApproveConfirm]);
 
   // Tabs configuration
-  const tabs: { key: TabType; label: string; icon: string; badge?: number }[] = [
-    { key: 'details', label: 'Details', icon: '📋' },
-    { key: 'images', label: 'Images', icon: '🖼️', badge: listingDetails.images.length },
-    { key: 'farmer', label: 'Seller', icon: '👤' },
-    { key: 'analysis', label: 'Analysis', icon: '📊' },
-    { key: 'history', label: 'History', icon: '📜' },
+  const tabs: { key: TabType; label: string; icon: React.ReactNode; badge?: number }[] = [
+    { key: 'details', label: 'Details', icon: <ClipboardList size={16} /> },
+    { key: 'images', label: 'Images', icon: <ImageIcon size={16} />, badge: listingDetails.images.length },
+    { key: 'farmer', label: 'Seller', icon: <User size={16} /> },
+    { key: 'analysis', label: 'Analysis', icon: <BarChart3 size={16} /> },
+    { key: 'history', label: 'History', icon: <ScrollText size={16} /> },
   ];
 
   return (
@@ -813,10 +820,10 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
                 </span>
                 <span className="lrm-header__category">{listingDetails.type}</span>
                 {listingDetails.isOrganic && (
-                  <span className="lrm-header__organic">🌱 Organic</span>
+                  <span className="lrm-header__organic"><Leaf size={14} /> Organic</span>
                 )}
                 {listingDetails.isFeatured && (
-                  <span className="lrm-header__featured">⭐ Featured</span>
+                  <span className="lrm-header__featured"><Star size={14} /> Featured</span>
                 )}
               </div>
             </div>
@@ -824,11 +831,11 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
           <div className="lrm-header__actions">
             {onEdit && (
               <button className="lrm-header__btn" onClick={onEdit} title="Edit Listing">
-                ✏️
+                <Pencil size={16} />
               </button>
             )}
             <button className="lrm-header__close" onClick={onClose} title="Close">
-              ✕
+              <X size={16} />
             </button>
           </div>
         </div>
@@ -836,7 +843,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
         {/* Flags Alert */}
         {listingDetails.flags && listingDetails.flags.length > 0 && (
           <div className="lrm-flags-alert">
-            <span className="lrm-flags-alert__icon">🚩</span>
+            <span className="lrm-flags-alert__icon"><Flag size={16} /></span>
             <span className="lrm-flags-alert__text">
               This listing has been flagged {listingDetails.flags.length} time(s). Please review carefully.
             </span>
@@ -871,7 +878,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
                   {/* Quick Stats */}
                   <div className="lrm-quick-stats">
                     <div className="lrm-quick-stat">
-                      <span className="icon">💰</span>
+                      <span className="icon"><DollarSign size={16} /></span>
                       <div className="content">
                         <span className="value">
                           {formatCurrency(listingDetails.price, listingDetails.currency)}/{listingDetails.unit}
@@ -880,21 +887,21 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
                       </div>
                     </div>
                     <div className="lrm-quick-stat">
-                      <span className="icon">📦</span>
+                      <span className="icon"><Package size={16} /></span>
                       <div className="content">
                         <span className="value">{listingDetails.quantity} {listingDetails.unit}</span>
                         <span className="label">Quantity</span>
                       </div>
                     </div>
                     <div className="lrm-quick-stat">
-                      <span className="icon">📍</span>
+                      <span className="icon"><MapPin size={16} /></span>
                       <div className="content">
                         <span className="value">{listingDetails.location}</span>
                         <span className="label">Location</span>
                       </div>
                     </div>
                     <div className="lrm-quick-stat">
-                      <span className="icon">📅</span>
+                      <span className="icon"><Calendar size={16} /></span>
                       <div className="content">
                         <span className="value">{getTimeAgo(listingDetails.submittedAt)}</span>
                         <span className="label">Submitted</span>
@@ -948,7 +955,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
                       <div className="lrm-tags">
                         {listingDetails.deliveryOptions.map((option) => (
                           <span key={option} className="lrm-tag">
-                            🚚 {option}
+                            <Truck size={14} /> {option}
                           </span>
                         ))}
                       </div>
@@ -962,7 +969,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
                       <div className="lrm-tags">
                         {listingDetails.certifications.map((cert) => (
                           <span key={cert} className="lrm-tag lrm-tag--certification">
-                            ✓ {cert}
+                            <Check size={14} /> {cert}
                           </span>
                         ))}
                       </div>
@@ -974,17 +981,17 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
                     <h4 className="lrm-section__title">Engagement</h4>
                     <div className="lrm-engagement-stats">
                       <div className="lrm-engagement-stat">
-                        <span className="icon">👁️</span>
+                        <span className="icon"><Eye size={16} /></span>
                         <span className="value">{listingDetails.viewCount}</span>
                         <span className="label">Views</span>
                       </div>
                       <div className="lrm-engagement-stat">
-                        <span className="icon">💬</span>
+                        <span className="icon"><MessageSquare size={16} /></span>
                         <span className="value">{listingDetails.inquiryCount}</span>
                         <span className="label">Inquiries</span>
                       </div>
                       <div className="lrm-engagement-stat">
-                        <span className="icon">📋</span>
+                        <span className="icon"><ClipboardList size={16} /></span>
                         <span className="value">{listingDetails.similarListingsCount}</span>
                         <span className="label">Similar</span>
                       </div>
@@ -1018,11 +1025,11 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
               <div className="lrm-images-info">
                 <h4>Image Guidelines Check</h4>
                 <ul className="lrm-images-checklist">
-                  <li className="passed">✓ Images are clear and not blurry</li>
-                  <li className="passed">✓ Product is clearly visible</li>
-                  <li className="passed">✓ No inappropriate content</li>
-                  <li className="passed">✓ Correct aspect ratio</li>
-                  <li className="passed">✓ Adequate lighting</li>
+                  <li className="passed"><Check size={14} /> Images are clear and not blurry</li>
+                  <li className="passed"><Check size={14} /> Product is clearly visible</li>
+                  <li className="passed"><Check size={14} /> No inappropriate content</li>
+                  <li className="passed"><Check size={14} /> Correct aspect ratio</li>
+                  <li className="passed"><Check size={14} /> Adequate lighting</li>
                 </ul>
               </div>
             </div>
@@ -1070,7 +1077,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
         {isPending && (
           <div className="lrm-notes">
             <label className="lrm-notes__label">
-              <span className="icon">📝</span>
+              <span className="icon"><FileText size={14} /></span>
               Moderator Notes (Optional)
             </label>
             <textarea
@@ -1105,7 +1112,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
                     onClick={() => onFlag('Manual flag by moderator')}
                     disabled={isLoading}
                   >
-                    <span className="btn-icon">🚩</span>
+                    <span className="btn-icon"><Flag size={14} /></span>
                     Flag
                   </button>
                 )}
@@ -1114,7 +1121,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
                   onClick={() => setShowRejectForm(true)}
                   disabled={isLoading}
                 >
-                  <span className="btn-icon">✕</span>
+                  <span className="btn-icon"><X size={14} /></span>
                   Reject
                 </button>
                 <button 
@@ -1123,7 +1130,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
                   disabled={isLoading || !allRequiredChecksMet}
                   title={!allRequiredChecksMet ? 'Complete all required quality checks first' : ''}
                 >
-                  <span className="btn-icon">✓</span>
+                  <span className="btn-icon"><Check size={14} /></span>
                   Approve
                 </button>
               </>
@@ -1136,7 +1143,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
           <div className="lrm-action-overlay">
             <div className="lrm-action-panel lrm-reject-panel">
               <div className="lrm-action-panel__header">
-                <span className="icon">⚠️</span>
+                <span className="icon"><AlertTriangle size={16} /></span>
                 <div>
                   <h3>Reject Listing</h3>
                   <p>Select the reason(s) for rejection</p>
@@ -1156,7 +1163,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
                         onChange={() => handleToggleReason(reason.id)}
                       />
                       <span className="checkbox">
-                        {selectedReasons.has(reason.id) ? '✓' : ''}
+                        {selectedReasons.has(reason.id) ? <Check size={14} /> : null}
                       </span>
                       <div className="content">
                         <span className="label">{reason.label}</span>
@@ -1198,7 +1205,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
                     <span className="btn-spinner" />
                   ) : (
                     <>
-                      <span className="btn-icon">✕</span>
+                      <span className="btn-icon"><X size={14} /></span>
                       Confirm Rejection
                     </>
                   )}
@@ -1213,7 +1220,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
           <div className="lrm-action-overlay">
             <div className="lrm-action-panel lrm-approve-panel">
               <div className="lrm-action-panel__header">
-                <span className="icon success">✓</span>
+                <span className="icon success"><Check size={16} /></span>
                 <div>
                   <h3>Approve Listing</h3>
                   <p>This listing will be visible to all users</p>
@@ -1246,7 +1253,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
                 </div>
 
                 <div className="lrm-approve-checklist-summary">
-                  <span className="icon">✓</span>
+                  <span className="icon"><Check size={14} /></span>
                   <span>All {qualityChecklist.filter(c => c.required).length} required quality checks passed</span>
                 </div>
               </div>
@@ -1268,7 +1275,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
                     <span className="btn-spinner" />
                   ) : (
                     <>
-                      <span className="btn-icon">✓</span>
+                      <span className="btn-icon"><Check size={14} /></span>
                       Confirm Approval
                     </>
                   )}

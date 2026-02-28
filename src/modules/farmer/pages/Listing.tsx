@@ -173,7 +173,7 @@ const ListingForm: React.FC = () => {
       console.error('Listing submission error:', err);
       const message = err instanceof Error ? err.message : 'Failed to create listing';
       if (message.toLowerCase().includes('failed to fetch')) {
-        alert('Error: Failed to reach backend. Please start FastAPI on http://localhost:8000 and try again.');
+        alert('Error: Failed to reach backend. Please ensure the backend server is running and try again.');
       } else {
         alert(`Error: ${message}`);
       }

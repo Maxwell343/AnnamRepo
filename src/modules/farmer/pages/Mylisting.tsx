@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './MyListings.css';
+import { API_ENDPOINTS } from '../../../config/api';
 
 // --- Types ---
 interface User {
@@ -155,7 +156,7 @@ const MyListings: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await fetch(`http://localhost:8000/api/listings?farmer_id=${user.id}`);
+      const response = await fetch(API_ENDPOINTS.marketplace.listingsByFarmer(user.id.toString()));
       const data = await response.json();
       
       console.log('MyListings - User ID:', user.id, 'Fetched listings:', data.listings?.length);
@@ -221,7 +222,7 @@ const MyListings: React.FC = () => {
     setDeletingId(listingId);
     
     try {
-      const response = await fetch(`http://localhost:8000/api/listings/${listingId}`, {
+      const response = await fetch(`${API_ENDPOINTS.marketplace.listingById(listingId.toString())}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
       });

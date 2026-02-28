@@ -1,4 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  AlertTriangle, ArrowDown, ArrowDownLeft, ArrowUp, ArrowUpRight,
+  Banknote, BarChart3, Building2, Car, CheckCircle, Clock, ClipboardList,
+  CreditCard, DollarSign, Download, Eye, FileSpreadsheet, FileText,
+  Package, PartyPopper, Receipt, RefreshCw, Search, Star, Undo2,
+  Upload, X, XCircle, Zap,
+} from 'lucide-react';
 import './FinancialOverview.css';
 
 type TimeRange = '7d' | '30d' | '90d' | '1y';
@@ -47,7 +54,7 @@ interface FinanceCardData {
   value: string;
   rawValue: number;
   trend: number;
-  icon: string;
+  icon: React.ReactNode;
   color: string;
   sparkline: number[];
 }
@@ -547,11 +554,11 @@ const FinancialOverview: React.FC = () => {
     { key: '1y', label: '1 Year' },
   ];
 
-  const tabs: { key: ActiveTab; label: string; icon: string }[] = [
-    { key: 'overview', label: 'Overview', icon: '📊' },
-    { key: 'transactions', label: 'Transactions', icon: '💳' },
-    { key: 'payouts', label: 'Payouts', icon: '💰' },
-    { key: 'invoices', label: 'Invoices', icon: '📄' },
+  const tabs: { key: ActiveTab; label: string; icon: React.ReactNode }[] = [
+    { key: 'overview', label: 'Overview', icon: <BarChart3 size={16} /> },
+    { key: 'transactions', label: 'Transactions', icon: <CreditCard size={16} /> },
+    { key: 'payouts', label: 'Payouts', icon: <DollarSign size={16} /> },
+    { key: 'invoices', label: 'Invoices', icon: <FileText size={16} /> },
   ];
 
   const chartTypes: { key: ChartType; label: string }[] = [
@@ -575,7 +582,7 @@ const FinancialOverview: React.FC = () => {
       value: '₹12,48,500',
       rawValue: 1248500,
       trend: 12.4,
-      icon: '💰',
+      icon: <DollarSign size={16} />,
       color: '#4f46e5',
       sparkline: [28, 35, 32, 45, 42, 55, 52],
     },
@@ -584,7 +591,7 @@ const FinancialOverview: React.FC = () => {
       value: '₹1,87,275',
       rawValue: 187275,
       trend: 8.2,
-      icon: '🏢',
+      icon: <Building2 size={16} />,
       color: '#06b6d4',
       sparkline: [18, 22, 20, 28, 25, 30, 28],
     },
@@ -593,7 +600,7 @@ const FinancialOverview: React.FC = () => {
       value: '₹3,74,550',
       rawValue: 374550,
       trend: 15.1,
-      icon: '🚗',
+      icon: <Car size={16} />,
       color: '#16a34a',
       sparkline: [35, 40, 38, 48, 45, 55, 50],
     },
@@ -602,7 +609,7 @@ const FinancialOverview: React.FC = () => {
       value: '₹86,200',
       rawValue: 86200,
       trend: -3.5,
-      icon: '⏳',
+      icon: <Clock size={16} />,
       color: '#f59e0b',
       sparkline: [22, 20, 18, 15, 17, 14, 12],
     },
@@ -894,26 +901,26 @@ const FinancialOverview: React.FC = () => {
                   Exporting...
                 </>
               ) : (
-                <>📥 Export</>
+                <><Download size={16} /> Export</>
               )}
             </button>
             <div className="fo-quick-actions-wrapper">
               <button className="fo-btn fo-btn--primary" onClick={() => setShowQuickAction(!showQuickAction)}>
-                ⚡ Quick Actions
+                <Zap size={16} /> Quick Actions
               </button>
               {showQuickAction && (
                 <div className="fo-quick-actions-menu">
                   <button className="fo-quick-actions-menu__item" onClick={() => { setShowQuickAction(false); setShowSendInvoice(true); }}>
-                    <span>📤</span> Send Invoice
+                    <Upload size={16} /> Send Invoice
                   </button>
                   <button className="fo-quick-actions-menu__item" onClick={() => { setShowQuickAction(false); setShowProcessPayouts(true); }}>
-                    <span>💸</span> Process Payouts
+                    <Banknote size={16} /> Process Payouts
                   </button>
                   <button className="fo-quick-actions-menu__item" onClick={() => { setShowQuickAction(false); setShowGenerateReport(true); }}>
-                    <span>📊</span> Generate Report
+                    <BarChart3 size={16} /> Generate Report
                   </button>
                   <button className="fo-quick-actions-menu__item" onClick={() => { setShowQuickAction(false); setShowReconcile(true); }}>
-                    <span>🔄</span> Reconcile
+                    <RefreshCw size={16} /> Reconcile
                   </button>
                 </div>
               )}
@@ -929,7 +936,7 @@ const FinancialOverview: React.FC = () => {
             <div className="fo-card__top">
               <div className="fo-card__icon">{card.icon}</div>
               <span className={`fo-card__trend ${card.trend >= 0 ? 'fo-card__trend--up' : 'fo-card__trend--down'}`}>
-                {card.trend >= 0 ? '↑' : '↓'} {Math.abs(card.trend)}%
+                {card.trend >= 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />} {Math.abs(card.trend)}%
               </span>
             </div>
             <div className="fo-card__value">
@@ -1026,28 +1033,28 @@ const FinancialOverview: React.FC = () => {
             {/* Quick Stats */}
             <div className="fo-quick-stats">
               <div className="fo-quick-stat">
-                <div className="fo-quick-stat__icon">📦</div>
+                <div className="fo-quick-stat__icon"><Package size={20} /></div>
                 <div className="fo-quick-stat__content">
                   <div className="fo-quick-stat__value">{totalOrders}</div>
                   <div className="fo-quick-stat__label">Total Orders</div>
                 </div>
               </div>
               <div className="fo-quick-stat">
-                <div className="fo-quick-stat__icon">🧾</div>
+                <div className="fo-quick-stat__icon"><Receipt size={20} /></div>
                 <div className="fo-quick-stat__content">
                   <div className="fo-quick-stat__value">{formatCurrency(avgOrderValue)}</div>
                   <div className="fo-quick-stat__label">Avg. Order Value</div>
                 </div>
               </div>
               <div className="fo-quick-stat">
-                <div className="fo-quick-stat__icon">🔄</div>
+                <div className="fo-quick-stat__icon"><RefreshCw size={20} /></div>
                 <div className="fo-quick-stat__content">
                   <div className="fo-quick-stat__value">2.8%</div>
                   <div className="fo-quick-stat__label">Refund Rate</div>
                 </div>
               </div>
               <div className="fo-quick-stat">
-                <div className="fo-quick-stat__icon">⭐</div>
+                <div className="fo-quick-stat__icon"><Star size={20} /></div>
                 <div className="fo-quick-stat__content">
                   <div className="fo-quick-stat__value">4.6</div>
                   <div className="fo-quick-stat__label">Customer Rating</div>
@@ -1062,7 +1069,7 @@ const FinancialOverview: React.FC = () => {
           <div className="fo-transactions">
             <div className="fo-transactions__toolbar">
               <div className="fo-transactions__search">
-                <span className="fo-transactions__search-icon">🔍</span>
+                <span className="fo-transactions__search-icon"><Search size={16} /></span>
                 <input
                   type="text"
                   placeholder="Search transactions..."
@@ -1072,7 +1079,7 @@ const FinancialOverview: React.FC = () => {
                 />
                 {txnSearch && (
                   <button className="fo-transactions__search-clear" onClick={() => setTxnSearch('')}>
-                    ✕
+                    <X size={14} />
                   </button>
                 )}
               </div>
@@ -1127,7 +1134,7 @@ const FinancialOverview: React.FC = () => {
                         </td>
                         <td>
                           <span className={`fo-txn-type fo-txn-type--${txn.type}`}>
-                            {txn.type === 'credit' ? '↗' : txn.type === 'debit' ? '↙' : '↩'}{' '}
+                            {txn.type === 'credit' ? <ArrowUpRight size={14} /> : txn.type === 'debit' ? <ArrowDownLeft size={14} /> : <Undo2 size={14} />}{' '}
                             {txn.type.charAt(0).toUpperCase() + txn.type.slice(1)}
                           </span>
                         </td>
@@ -1145,7 +1152,7 @@ const FinancialOverview: React.FC = () => {
                         </td>
                         <td>
                           <button className="fo-action-btn" title="View Details">
-                            👁
+                            <Eye size={16} />
                           </button>
                         </td>
                       </tr>
@@ -1183,7 +1190,7 @@ const FinancialOverview: React.FC = () => {
               </table>
               {filteredTransactions.length === 0 && (
                 <div className="fo-empty-state">
-                  <span className="fo-empty-state__icon">🔍</span>
+                  <span className="fo-empty-state__icon"><Search size={36} /></span>
                   <h3>No transactions found</h3>
                   <p>Try adjusting your search or filter criteria</p>
                 </div>
@@ -1198,7 +1205,7 @@ const FinancialOverview: React.FC = () => {
             <div className="fo-payouts__summary">
               <div className="fo-payouts__summary-card">
                 <div className="fo-payouts__summary-icon" style={{ background: '#dcfce7' }}>
-                  ✅
+                  <CheckCircle size={20} />
                 </div>
                 <div>
                   <div className="fo-payouts__summary-value">
@@ -1209,7 +1216,7 @@ const FinancialOverview: React.FC = () => {
               </div>
               <div className="fo-payouts__summary-card">
                 <div className="fo-payouts__summary-icon" style={{ background: '#fef3c7' }}>
-                  ⏳
+                  <Clock size={20} />
                 </div>
                 <div>
                   <div className="fo-payouts__summary-value">
@@ -1220,7 +1227,7 @@ const FinancialOverview: React.FC = () => {
               </div>
               <div className="fo-payouts__summary-card">
                 <div className="fo-payouts__summary-icon" style={{ background: '#dbeafe' }}>
-                  🔄
+                  <RefreshCw size={20} />
                 </div>
                 <div>
                   <div className="fo-payouts__summary-value">
@@ -1274,7 +1281,7 @@ const FinancialOverview: React.FC = () => {
               {invoices.map((invoice) => (
                 <div key={invoice.id} className="fo-invoice-card">
                   <div className="fo-invoice-card__left">
-                    <div className="fo-invoice-card__icon">📄</div>
+                    <div className="fo-invoice-card__icon"><FileText size={20} /></div>
                     <div className="fo-invoice-card__info">
                       <div className="fo-invoice-card__id">{invoice.id}</div>
                       <div className="fo-invoice-card__vendor">{invoice.vendor}</div>
@@ -1311,13 +1318,13 @@ const FinancialOverview: React.FC = () => {
         <div className="fo-overlay fo-overlay--modal" onClick={() => setShowSendInvoice(false)}>
           <div className="fo-modal" onClick={(e) => e.stopPropagation()}>
             <div className="fo-modal__header">
-              <h2 className="fo-modal__title">📤 Send Invoice</h2>
-              <button className="fo-modal__close" onClick={() => setShowSendInvoice(false)}>✕</button>
+              <h2 className="fo-modal__title"><Upload size={18} /> Send Invoice</h2>
+              <button className="fo-modal__close" onClick={() => setShowSendInvoice(false)}><X size={16} /></button>
             </div>
             <div className="fo-modal__body">
               {quickActionSuccess ? (
                 <div className="fo-modal__success">
-                  <span style={{ fontSize: 48 }}>✅</span>
+                  <CheckCircle size={48} />
                   <h3>{quickActionSuccess}</h3>
                   <button className="fo-btn fo-btn--primary" onClick={() => { setQuickActionSuccess(null); setShowSendInvoice(false); }}>Done</button>
                 </div>
@@ -1395,13 +1402,13 @@ const FinancialOverview: React.FC = () => {
         <div className="fo-overlay fo-overlay--modal" onClick={() => setShowProcessPayouts(false)}>
           <div className="fo-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 640 }}>
             <div className="fo-modal__header">
-              <h2 className="fo-modal__title">💸 Process Payouts</h2>
-              <button className="fo-modal__close" onClick={() => setShowProcessPayouts(false)}>✕</button>
+              <h2 className="fo-modal__title"><Banknote size={18} /> Process Payouts</h2>
+              <button className="fo-modal__close" onClick={() => setShowProcessPayouts(false)}><X size={16} /></button>
             </div>
             <div className="fo-modal__body">
               {quickActionSuccess ? (
                 <div className="fo-modal__success">
-                  <span style={{ fontSize: 48 }}>✅</span>
+                  <CheckCircle size={48} />
                   <h3>{quickActionSuccess}</h3>
                   <button className="fo-btn fo-btn--primary" onClick={() => { setQuickActionSuccess(null); setShowProcessPayouts(false); }}>Done</button>
                 </div>
@@ -1424,7 +1431,7 @@ const FinancialOverview: React.FC = () => {
                   <div className="fo-modal__payout-list">
                     {payouts.filter((p) => p.status === 'pending').length === 0 ? (
                       <div className="fo-modal__empty">
-                        <span style={{ fontSize: 36 }}>🎉</span>
+                        <PartyPopper size={36} />
                         <p>All payouts are processed! No pending payouts.</p>
                       </div>
                     ) : (
@@ -1488,13 +1495,13 @@ const FinancialOverview: React.FC = () => {
         <div className="fo-overlay fo-overlay--modal" onClick={() => setShowGenerateReport(false)}>
           <div className="fo-modal" onClick={(e) => e.stopPropagation()}>
             <div className="fo-modal__header">
-              <h2 className="fo-modal__title">📊 Generate Report</h2>
-              <button className="fo-modal__close" onClick={() => setShowGenerateReport(false)}>✕</button>
+              <h2 className="fo-modal__title"><BarChart3 size={18} /> Generate Report</h2>
+              <button className="fo-modal__close" onClick={() => setShowGenerateReport(false)}><X size={16} /></button>
             </div>
             <div className="fo-modal__body">
               {quickActionSuccess ? (
                 <div className="fo-modal__success">
-                  <span style={{ fontSize: 48 }}>📥</span>
+                  <Download size={48} />
                   <h3>{quickActionSuccess}</h3>
                   <button className="fo-btn fo-btn--primary" onClick={() => { setQuickActionSuccess(null); setShowGenerateReport(false); }}>Done</button>
                 </div>
@@ -1504,11 +1511,11 @@ const FinancialOverview: React.FC = () => {
                     <label className="fo-modal__label">Report Type</label>
                     <div className="fo-modal__radio-group">
                       {[
-                        { value: 'revenue', label: '💰 Revenue Summary', desc: 'Revenue, commissions, and growth metrics' },
-                        { value: 'payouts', label: '🚗 Driver Payouts', desc: 'All payout records and pending amounts' },
-                        { value: 'transactions', label: '💳 Transaction History', desc: 'Detailed transaction log with filters' },
-                        { value: 'tax', label: '🧾 Tax Report', desc: 'GST, TDS, and tax-related summaries' },
-                        { value: 'full', label: '📋 Full Financial Report', desc: 'Comprehensive report with all sections' },
+                        { value: 'revenue', label: <><DollarSign size={14} /> Revenue Summary</>, desc: 'Revenue, commissions, and growth metrics' },
+                        { value: 'payouts', label: <><Car size={14} /> Driver Payouts</>, desc: 'All payout records and pending amounts' },
+                        { value: 'transactions', label: <><CreditCard size={14} /> Transaction History</>, desc: 'Detailed transaction log with filters' },
+                        { value: 'tax', label: <><Receipt size={14} /> Tax Report</>, desc: 'GST, TDS, and tax-related summaries' },
+                        { value: 'full', label: <><ClipboardList size={14} /> Full Financial Report</>, desc: 'Comprehensive report with all sections' },
                       ].map((opt) => (
                         <label key={opt.value} className={`fo-modal__radio-card ${reportForm.type === opt.value ? 'fo-modal__radio-card--active' : ''}`}>
                           <input
@@ -1549,9 +1556,9 @@ const FinancialOverview: React.FC = () => {
                     <label className="fo-modal__label">Format</label>
                     <div style={{ display: 'flex', gap: 10 }}>
                       {[
-                        { value: 'pdf', label: '📄 PDF' },
-                        { value: 'csv', label: '📊 CSV' },
-                        { value: 'xlsx', label: '📗 Excel' },
+                        { value: 'pdf', label: <><FileText size={14} /> PDF</> },
+                        { value: 'csv', label: <><BarChart3 size={14} /> CSV</> },
+                        { value: 'xlsx', label: <><FileSpreadsheet size={14} /> Excel</> },
                       ].map((fmt) => (
                         <button
                           key={fmt.value}
@@ -1588,13 +1595,13 @@ const FinancialOverview: React.FC = () => {
         <div className="fo-overlay fo-overlay--modal" onClick={() => setShowReconcile(false)}>
           <div className="fo-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 580 }}>
             <div className="fo-modal__header">
-              <h2 className="fo-modal__title">🔄 Reconciliation</h2>
-              <button className="fo-modal__close" onClick={() => setShowReconcile(false)}>✕</button>
+              <h2 className="fo-modal__title"><RefreshCw size={18} /> Reconciliation</h2>
+              <button className="fo-modal__close" onClick={() => setShowReconcile(false)}><X size={16} /></button>
             </div>
             <div className="fo-modal__body">
               {quickActionSuccess ? (
                 <div className="fo-modal__success">
-                  <span style={{ fontSize: 48 }}>✅</span>
+                  <CheckCircle size={48} />
                   <h3>{quickActionSuccess}</h3>
                   <button className="fo-btn fo-btn--primary" onClick={() => { setQuickActionSuccess(null); setShowReconcile(false); }}>Done</button>
                 </div>
@@ -1602,21 +1609,21 @@ const FinancialOverview: React.FC = () => {
                 <div className="fo-modal__form">
                   <div className="fo-modal__reconcile-summary">
                     <div className="fo-modal__reconcile-item">
-                      <div className="fo-modal__reconcile-icon" style={{ background: '#dcfce7', color: '#16a34a' }}>✅</div>
+                      <div className="fo-modal__reconcile-icon" style={{ background: '#dcfce7', color: '#16a34a' }}><CheckCircle size={20} /></div>
                       <div>
                         <div style={{ fontSize: 13, color: '#6b7280' }}>Matched Transactions</div>
                         <div style={{ fontSize: 20, fontWeight: 700 }}>{transactions.filter((t) => t.status === 'completed').length}</div>
                       </div>
                     </div>
                     <div className="fo-modal__reconcile-item">
-                      <div className="fo-modal__reconcile-icon" style={{ background: '#fef3c7', color: '#d97706' }}>⚠️</div>
+                      <div className="fo-modal__reconcile-icon" style={{ background: '#fef3c7', color: '#d97706' }}><AlertTriangle size={20} /></div>
                       <div>
                         <div style={{ fontSize: 13, color: '#6b7280' }}>Pending Review</div>
                         <div style={{ fontSize: 20, fontWeight: 700 }}>{transactions.filter((t) => t.status === 'pending').length}</div>
                       </div>
                     </div>
                     <div className="fo-modal__reconcile-item">
-                      <div className="fo-modal__reconcile-icon" style={{ background: '#fee2e2', color: '#dc2626' }}>❌</div>
+                      <div className="fo-modal__reconcile-icon" style={{ background: '#fee2e2', color: '#dc2626' }}><XCircle size={20} /></div>
                       <div>
                         <div style={{ fontSize: 13, color: '#6b7280' }}>Discrepancies</div>
                         <div style={{ fontSize: 20, fontWeight: 700 }}>{transactions.filter((t) => t.status === 'failed').length}</div>

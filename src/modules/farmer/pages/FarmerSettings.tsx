@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './FarmerSettings.css';
+import { API_ENDPOINTS } from '../../../config/api';
 
 interface FormData {
   fullName: string;
@@ -100,7 +101,7 @@ const FarmerSettings: React.FC = () => {
     
     const fetchSettings = async (parsedUser: User & { id: number }) => {
       try {
-        const response = await fetch(`http://localhost:8000/api/settings/farmer/${parsedUser.id}`);
+        const response = await fetch(API_ENDPOINTS.farmerSettings(parsedUser.id.toString()));
         const data = await response.json();
         
         if (response.ok && data && Object.keys(data).length > 1) {
@@ -276,7 +277,7 @@ const FarmerSettings: React.FC = () => {
       const parsedUser = savedUser ? JSON.parse(savedUser) : null;
       
       if (parsedUser?.id) {
-        const response = await fetch(`http://localhost:8000/api/settings/farmer/${parsedUser.id}`, {
+        const response = await fetch(API_ENDPOINTS.farmerSettings(parsedUser.id.toString()), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

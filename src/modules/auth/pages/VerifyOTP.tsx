@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Smartphone } from 'lucide-react';
 import './AuthStyles.css';
+import { API_ENDPOINTS } from '../../../config/api';
 
 const VerifyOTPPage: React.FC = () => {
   const navigate = useNavigate();
@@ -92,7 +94,7 @@ const VerifyOTPPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/verify-otp', {
+      const response = await fetch(API_ENDPOINTS.verifyOtp, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -133,7 +135,7 @@ const VerifyOTPPage: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/forgot-password', {
+      const response = await fetch(API_ENDPOINTS.forgotPassword, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -180,10 +182,10 @@ const VerifyOTPPage: React.FC = () => {
             onClick={() => navigate('/forgot-password')}
             type="button"
           >
-            ← Back
+            <ArrowLeft size={16} /> Back
           </button>
 
-          <div className="forgot-icon">📱</div>
+          <div className="forgot-icon"><Smartphone size={32} /></div>
 
           <h1 className="auth-title">Verify OTP</h1>
           <p className="auth-subtitle">

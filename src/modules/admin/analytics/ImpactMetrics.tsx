@@ -16,10 +16,44 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import {
+  UtensilsCrossed,
+  Users,
+  Globe,
+  Handshake,
+  Trophy,
+  Target,
+  Sprout,
+  Truck,
+  Award,
+  ChefHat,
+  HeartHandshake,
+  Leaf,
+  Building2,
+  Wheat,
+  Share2,
+  Download,
+  FileText,
+  BarChart3,
+  ClipboardList,
+  TrendingUp,
+  Scale,
+  Sparkles,
+  PartyPopper,
+  Maximize,
+  CheckCircle,
+  RefreshCw,
+  Calendar,
+  ArrowUpRight,
+  ArrowDownRight,
+  ArrowRight,
+  ArrowUp,
+  Home,
+} from 'lucide-react';
 import './ImpactMetrics.css';
 
 interface HeroMetric {
-  icon: string;
+  icon: React.ReactNode;
   value: string;
   label: string;
   sub: string;
@@ -29,7 +63,7 @@ interface HeroMetric {
 }
 
 interface Milestone {
-  icon: string;
+  icon: React.ReactNode;
   name: string;
   desc: string;
   pct: number;
@@ -46,7 +80,7 @@ interface NGO {
   meals: string;
   communities: number;
   score: number;
-  logo: string;
+  logo: React.ReactNode;
   trend: 'up' | 'down' | 'stable';
   growth: number;
 }
@@ -64,7 +98,7 @@ const ImpactMetrics: React.FC = () => {
 
   const heroMetrics: HeroMetric[] = [
     {
-      icon: '🥗',
+      icon: <UtensilsCrossed size={16} />,
       value: '45,200',
       label: 'Food Rescued',
       sub: 'Equivalent to 90,400 meals',
@@ -73,7 +107,7 @@ const ImpactMetrics: React.FC = () => {
       animatedValue: 0,
     },
     {
-      icon: '👨‍👩‍👧‍👦',
+      icon: <Users size={16} />,
       value: '12,800',
       label: 'People Fed',
       sub: 'Across 45 communities',
@@ -82,7 +116,7 @@ const ImpactMetrics: React.FC = () => {
       animatedValue: 0,
     },
     {
-      icon: '🌍',
+      icon: <Globe size={16} />,
       value: '28.4',
       label: 'CO₂ Prevented (T)',
       sub: 'Equivalent to 62 trees planted',
@@ -91,7 +125,7 @@ const ImpactMetrics: React.FC = () => {
       animatedValue: 0,
     },
     {
-      icon: '🤝',
+      icon: <Handshake size={16} />,
       value: '38',
       label: 'NGO Partners',
       sub: 'Active in 12 cities',
@@ -149,7 +183,7 @@ const ImpactMetrics: React.FC = () => {
 
   const milestones: Milestone[] = [
     {
-      icon: '🏆',
+      icon: <Trophy size={16} />,
       name: '50,000 kg Food Rescued',
       desc: 'Target: 50,000 kg',
       pct: 90,
@@ -158,7 +192,7 @@ const ImpactMetrics: React.FC = () => {
       current: 45200,
     },
     {
-      icon: '🎯',
+      icon: <Target size={16} />,
       name: '10,000 People Fed',
       desc: 'Reached on Dec 15, 2024',
       pct: 100,
@@ -168,7 +202,7 @@ const ImpactMetrics: React.FC = () => {
       date: 'Dec 15, 2024',
     },
     {
-      icon: '🌱',
+      icon: <Sprout size={16} />,
       name: '25 Tons CO₂ Prevented',
       desc: 'Current: 28.4T — exceeded target!',
       pct: 100,
@@ -178,7 +212,7 @@ const ImpactMetrics: React.FC = () => {
       date: 'Nov 28, 2024',
     },
     {
-      icon: '🤝',
+      icon: <Handshake size={16} />,
       name: '50 NGO Partners',
       desc: 'Target: 50 active NGOs',
       pct: 76,
@@ -187,7 +221,7 @@ const ImpactMetrics: React.FC = () => {
       current: 38,
     },
     {
-      icon: '🚛',
+      icon: <Truck size={16} />,
       name: '1,000 Deliveries in a Month',
       desc: 'Best month: 892 deliveries',
       pct: 89,
@@ -205,7 +239,7 @@ const ImpactMetrics: React.FC = () => {
       meals: '16,400',
       communities: 8,
       score: 98,
-      logo: '🏆',
+      logo: <Trophy size={16} />,
       trend: 'up',
       growth: 12,
     },
@@ -216,7 +250,7 @@ const ImpactMetrics: React.FC = () => {
       meals: '13,600',
       communities: 6,
       score: 94,
-      logo: '🥈',
+      logo: <Award size={16} />,
       trend: 'up',
       growth: 8,
     },
@@ -227,7 +261,7 @@ const ImpactMetrics: React.FC = () => {
       meals: '10,800',
       communities: 5,
       score: 89,
-      logo: '🥉',
+      logo: <Award size={16} />,
       trend: 'stable',
       growth: 0,
     },
@@ -238,7 +272,7 @@ const ImpactMetrics: React.FC = () => {
       meals: '8,400',
       communities: 4,
       score: 82,
-      logo: '🤝',
+      logo: <Handshake size={16} />,
       trend: 'up',
       growth: 15,
     },
@@ -249,7 +283,7 @@ const ImpactMetrics: React.FC = () => {
       meals: '6,200',
       communities: 3,
       score: 76,
-      logo: '🍽️',
+      logo: <UtensilsCrossed size={16} />,
       trend: 'down',
       growth: -3,
     },
@@ -260,7 +294,7 @@ const ImpactMetrics: React.FC = () => {
       meals: '5,700',
       communities: 2,
       score: 71,
-      logo: '👨‍🍳',
+      logo: <ChefHat size={16} />,
       trend: 'up',
       growth: 5,
     },
@@ -271,7 +305,7 @@ const ImpactMetrics: React.FC = () => {
       meals: '4,900',
       communities: 2,
       score: 68,
-      logo: '🤲',
+      logo: <HeartHandshake size={16} />,
       trend: 'up',
       growth: 10,
     },
@@ -282,7 +316,7 @@ const ImpactMetrics: React.FC = () => {
       meals: '4,000',
       communities: 1,
       score: 64,
-      logo: '🌿',
+      logo: <Leaf size={16} />,
       trend: 'stable',
       growth: 0,
     },
@@ -293,7 +327,7 @@ const ImpactMetrics: React.FC = () => {
       meals: '3,500',
       communities: 1,
       score: 60,
-      logo: '🏙️',
+      logo: <Building2 size={16} />,
       trend: 'down',
       growth: -2,
     },
@@ -304,7 +338,7 @@ const ImpactMetrics: React.FC = () => {
       meals: '2,900',
       communities: 1,
       score: 55,
-      logo: '🌾',
+      logo: <Wheat size={16} />,
       trend: 'up',
       growth: 8,
     },
@@ -512,16 +546,16 @@ const ImpactMetrics: React.FC = () => {
 
   const handleShareImpact = () => {
     const reportSummary = `
-🌟 IMPACT METRICS SUMMARY 🌟
+IMPACT METRICS SUMMARY
 
 Food Rescued: ${metrics[0].value} kg
 People Fed: ${metrics[1].value}
 CO₂ Prevented: ${metrics[2].value} T
 NGO Partners: ${metrics[3].value}
 
-📈 Key Achievements:
-✅ Milestones Achieved: ${milestones.filter((m) => m.status === 'achieved').length}/${milestones.length}
-🏆 Top NGO Partner: ${ngos[0].name} (${ngos[0].food})
+Key Achievements:
+Milestones Achieved: ${milestones.filter((m) => m.status === 'achieved').length}/${milestones.length}
+Top NGO Partner: ${ngos[0].name} (${ngos[0].food})
 
 Generated: ${new Date().toLocaleString('en-IN')}
     `.trim();
@@ -574,7 +608,7 @@ Generated: ${new Date().toLocaleString('en-IN')}
       {showCelebration && (
         <div className="im-celebration">
           <div className="im-celebration__content">
-            🎉 🎊 🎈 Achievement Unlocked! 🎈 🎊 🎉
+            <PartyPopper size={16} /> <Sparkles size={16} /> Achievement Unlocked! <Sparkles size={16} /> <PartyPopper size={16} />
           </div>
         </div>
       )}
@@ -592,14 +626,14 @@ Generated: ${new Date().toLocaleString('en-IN')}
             className="im-btn im-btn--secondary"
             onClick={handleShareImpact}
           >
-            <span>📤</span> Share Impact
+            <Share2 size={16} /> Share Impact
           </button>
           <div className="im-download-dropdown">
             <button
               className="im-btn im-btn--primary"
               onClick={handleDownloadReport}
             >
-              <span>📥</span> Download Report
+              <Download size={16} /> Download Report
             </button>
             {showDownloadDropdown && (
               <div className="im-dropdown-menu">
@@ -607,19 +641,19 @@ Generated: ${new Date().toLocaleString('en-IN')}
                   className="im-dropdown-item"
                   onClick={() => handleDownloadFormat('pdf')}
                 >
-                  <span>📄</span> PDF
+                  <FileText size={16} /> PDF
                 </button>
                 <button
                   className="im-dropdown-item"
                   onClick={() => handleDownloadFormat('excel')}
                 >
-                  <span>📊</span> Excel
+                  <BarChart3 size={16} /> Excel
                 </button>
                 <button
                   className="im-dropdown-item"
                   onClick={() => handleDownloadFormat('csv')}
                 >
-                  <span>📋</span> CSV
+                  <ClipboardList size={16} /> CSV
                 </button>
               </div>
             )}
@@ -655,7 +689,7 @@ Generated: ${new Date().toLocaleString('en-IN')}
               <div className="im-hero-card__sub">{metric.sub}</div>
             </div>
             <div className="im-hero-card__trend">
-              <span className="im-hero-card__trend-icon">↗</span>
+              <span className="im-hero-card__trend-icon"><ArrowUpRight size={14} /></span>
               <span className="im-hero-card__trend-value">+{metric.trend}%</span>
             </div>
             {/* Progress Ring */}
@@ -693,20 +727,20 @@ Generated: ${new Date().toLocaleString('en-IN')}
             className={`im-control-btn ${showComparison ? 'im-control-btn--active' : ''}`}
             onClick={() => setShowComparison(!showComparison)}
           >
-            <span>⚖️</span> Compare
+            <Scale size={16} /> Compare
           </button>
           <div className="im-chart-toggle">
             <button
               className={`im-chart-toggle-btn ${chartView === 'area' ? 'im-chart-toggle-btn--active' : ''}`}
               onClick={() => setChartView('area')}
             >
-              📈
+              <TrendingUp size={16} />
             </button>
             <button
               className={`im-chart-toggle-btn ${chartView === 'bar' ? 'im-chart-toggle-btn--active' : ''}`}
               onClick={() => setChartView('bar')}
             >
-              📊
+              <BarChart3 size={16} />
             </button>
           </div>
         </div>
@@ -718,12 +752,12 @@ Generated: ${new Date().toLocaleString('en-IN')}
           <div className="im-chart__header">
             <div>
               <h3 className="im-chart__title">
-                <span className="im-chart__icon">📈</span>
+                <span className="im-chart__icon"><TrendingUp size={16} /></span>
                 Food Rescued Over Time
               </h3>
               <p className="im-chart__subtitle">Monthly progress tracking</p>
             </div>
-            <button className="im-chart__fullscreen">⛶</button>
+            <button className="im-chart__fullscreen"><Maximize size={16} /></button>
           </div>
           <div className="im-chart__body">
             <ResponsiveContainer width="100%" height={350}>
@@ -794,12 +828,12 @@ Generated: ${new Date().toLocaleString('en-IN')}
           <div className="im-chart__header">
             <div>
               <h3 className="im-chart__title">
-                <span className="im-chart__icon">🍽️</span>
+                <span className="im-chart__icon"><UtensilsCrossed size={16} /></span>
                 Meals Served Distribution
               </h3>
               <p className="im-chart__subtitle">By NGO partner</p>
             </div>
-            <button className="im-chart__fullscreen">⛶</button>
+            <button className="im-chart__fullscreen"><Maximize size={16} /></button>
           </div>
           <div className="im-chart__body">
             <ResponsiveContainer width="100%" height={350}>
@@ -845,7 +879,7 @@ Generated: ${new Date().toLocaleString('en-IN')}
         <div className="im-milestones__header">
           <div>
             <h2 className="im-milestones__title">
-              <span className="im-milestones__icon">🎯</span>
+              <span className="im-milestones__icon"><Target size={16} /></span>
               Impact Milestones
             </h2>
             <p className="im-milestones__subtitle">
@@ -863,8 +897,8 @@ Generated: ${new Date().toLocaleString('en-IN')}
                 {status === 'all'
                   ? 'All'
                   : status === 'achieved'
-                  ? '✅ Achieved'
-                  : '🔄 In Progress'}
+                  ? <><CheckCircle size={14} /> Achieved</>
+                  : <><RefreshCw size={14} /> In Progress</>}
               </button>
             ))}
           </div>
@@ -888,7 +922,7 @@ Generated: ${new Date().toLocaleString('en-IN')}
                   className={`im-milestone__badge im-milestone__badge--${milestone.status}`}
                 >
                   {milestone.status === 'achieved'
-                    ? '✅ Achieved'
+                    ? <><CheckCircle size={14} /> Achieved</>
                     : `${milestone.pct}%`}
                 </span>
               </div>
@@ -896,7 +930,7 @@ Generated: ${new Date().toLocaleString('en-IN')}
                 <h3 className="im-milestone__name">{milestone.name}</h3>
                 <p className="im-milestone__desc">{milestone.desc}</p>
                 {milestone.date && (
-                  <span className="im-milestone__date">📅 {milestone.date}</span>
+                  <span className="im-milestone__date"><Calendar size={14} /> {milestone.date}</span>
                 )}
               </div>
               <div className="im-milestone__progress">
@@ -925,7 +959,7 @@ Generated: ${new Date().toLocaleString('en-IN')}
         <div className="im-leaderboard__header">
           <div>
             <h2 className="im-leaderboard__title">
-              <span className="im-leaderboard__icon">🏆</span>
+              <span className="im-leaderboard__icon"><Trophy size={16} /></span>
               NGO Impact Leaderboard
             </h2>
             <p className="im-leaderboard__subtitle">
@@ -936,7 +970,7 @@ Generated: ${new Date().toLocaleString('en-IN')}
             className="im-btn im-btn--secondary"
             onClick={() => setShowAllNGOs(!showAllNGOs)}
           >
-            {showAllNGOs ? 'View Top 5 ↑' : 'View All NGOs →'}
+            {showAllNGOs ? <>View Top 5 <ArrowUp size={14} /></> : <>View All NGOs <ArrowRight size={14} /></>}
           </button>
         </div>
 
@@ -977,7 +1011,7 @@ Generated: ${new Date().toLocaleString('en-IN')}
                   <td className="im-meals">{ngo.meals}</td>
                   <td>
                     <div className="im-communities">
-                      <span className="im-communities__icon">🏘️</span>
+                      <span className="im-communities__icon"><Home size={16} /></span>
                       <span>{ngo.communities}</span>
                     </div>
                   </td>
@@ -1004,7 +1038,7 @@ Generated: ${new Date().toLocaleString('en-IN')}
                     <span
                       className={`im-growth im-growth--${ngo.trend}`}
                     >
-                      {ngo.trend === 'up' ? '↗' : ngo.trend === 'down' ? '↘' : '→'}{' '}
+                      {ngo.trend === 'up' ? <ArrowUpRight size={14} /> : ngo.trend === 'down' ? <ArrowDownRight size={14} /> : <ArrowRight size={14} />}{' '}
                       {Math.abs(ngo.growth)}%
                     </span>
                   </td>

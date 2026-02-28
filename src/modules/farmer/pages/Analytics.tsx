@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Analytics.css';
+import { API_ENDPOINTS } from '../../../config/api';
 
 // --- Types ---
 interface User {
@@ -92,7 +93,7 @@ const Analytics: React.FC = () => {
   // Fetch analytics data from API
   const fetchAnalyticsData = async (farmerId: number) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/analytics/farmer/${farmerId}`);
+      const response = await fetch(API_ENDPOINTS.farmerAnalytics(farmerId.toString()));
       const data = await response.json();
       
       if (response.ok) {

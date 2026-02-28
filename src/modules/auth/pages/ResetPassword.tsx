@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { KeyRound, Eye, EyeOff, Check } from 'lucide-react';
 import './AuthStyles.css';
+import { API_ENDPOINTS } from '../../../config/api';
 
 interface PasswordStrength {
   score: number;
@@ -87,7 +89,7 @@ const ResetPasswordPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/reset-password', {
+      const response = await fetch(API_ENDPOINTS.resetPassword, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -125,7 +127,7 @@ const ResetPasswordPage: React.FC = () => {
       <div className="auth-card">
         <div className="form-wrapper">
 
-          <div className="forgot-icon">🔑</div>
+          <div className="forgot-icon"><KeyRound size={32} /></div>
 
           <h1 className="auth-title">Reset Password</h1>
           <p className="auth-subtitle">
@@ -152,7 +154,7 @@ const ResetPasswordPage: React.FC = () => {
                   className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                  {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                 </button>
               </div>
               <div className="input-underline"></div>
@@ -185,16 +187,16 @@ const ResetPasswordPage: React.FC = () => {
               {/* Password Requirements */}
               <div className="password-requirements">
                 <p className={`requirement ${password.length >= 8 ? 'met' : ''}`}>
-                  {password.length >= 8 ? '✓' : '○'} At least 8 characters
+                  {password.length >= 8 ? <Check size={12} /> : '○'} At least 8 characters
                 </p>
                 <p className={`requirement ${/[A-Z]/.test(password) && /[a-z]/.test(password) ? 'met' : ''}`}>
-                  {/[A-Z]/.test(password) && /[a-z]/.test(password) ? '✓' : '○'} Upper & lowercase letters
+                  {/[A-Z]/.test(password) && /[a-z]/.test(password) ? <Check size={12} /> : '○'} Upper & lowercase letters
                 </p>
                 <p className={`requirement ${/\d/.test(password) ? 'met' : ''}`}>
-                  {/\d/.test(password) ? '✓' : '○'} At least one number
+                  {/\d/.test(password) ? <Check size={12} /> : '○'} At least one number
                 </p>
                 <p className={`requirement ${/[!@#$%^&*(),.?":{}|<>]/.test(password) ? 'met' : ''}`}>
-                  {/[!@#$%^&*(),.?":{}|<>]/.test(password) ? '✓' : '○'} Special character
+                  {/[!@#$%^&*(),.?":{}|<>]/.test(password) ? <Check size={12} /> : '○'} Special character
                 </p>
               </div>
             </div>
@@ -215,7 +217,7 @@ const ResetPasswordPage: React.FC = () => {
                   className="password-toggle"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
-                  {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                  {showConfirmPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                 </button>
               </div>
               <div className="input-underline"></div>
@@ -223,7 +225,7 @@ const ResetPasswordPage: React.FC = () => {
                 <div className="error-text">Passwords do not match</div>
               )}
               {confirmPassword && password === confirmPassword && confirmPassword.length > 0 && (
-                <div className="success-text">✓ Passwords match</div>
+                <div className="success-text"><Check size={12} /> Passwords match</div>
               )}
             </div>
 

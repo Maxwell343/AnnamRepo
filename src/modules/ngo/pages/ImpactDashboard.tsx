@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ImpactDashboard.css';
 import type { ImpactMetrics, DistrictAnalytics } from '../../../types/marketplace';
+import { ArrowLeft, Globe, BarChart3, TrendingUp, Map, ClipboardList, Leaf, UtensilsCrossed, Sprout, Droplet, User, Handshake, MapPin, CheckCircle, Trophy, Radio, AlertCircle, Banknote, Package, Settings, Link2, Wheat } from 'lucide-react';
 
 // ============================================
 // MOCK DATA
@@ -159,7 +160,7 @@ const getStateColor = (state: string): string => {
 
 // Stat Card Component
 const StatCard: React.FC<{
-  icon: string;
+  icon: React.ReactNode;
   value: string | number;
   label: string;
   subValue?: string;
@@ -319,10 +320,10 @@ const ImpactDashboard: React.FC = () => {
         <div className="header-content">
           <div className="header-left">
             <button className="back-btn" onClick={() => navigate('/marketplace')}>
-              ← Marketplace
+              <ArrowLeft size={16} /> Marketplace
             </button>
             <div className="header-title">
-              <h1>🌍 Impact Dashboard</h1>
+              <h1><Globe size={24} /> Impact Dashboard</h1>
               <p>Real-time food waste prevention analytics</p>
             </div>
           </div>
@@ -339,7 +340,7 @@ const ImpactDashboard: React.FC = () => {
               <option value="all">All Time</option>
             </select>
             <button className="export-btn">
-              📊 Export Report
+              <BarChart3 size={16} /> Export Report
             </button>
           </div>
         </div>
@@ -352,25 +353,25 @@ const ImpactDashboard: React.FC = () => {
             className={`nav-tab ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => setActiveTab('overview')}
           >
-            📈 Overview
+            <TrendingUp size={16} /> Overview
           </button>
           <button 
             className={`nav-tab ${activeTab === 'districts' ? 'active' : ''}`}
             onClick={() => setActiveTab('districts')}
           >
-            🗺️ District Analytics
+            <Map size={16} /> District Analytics
           </button>
           <button 
             className={`nav-tab ${activeTab === 'trends' ? 'active' : ''}`}
             onClick={() => setActiveTab('trends')}
           >
-            📊 Trends
+            <BarChart3 size={16} /> Trends
           </button>
           <button 
             className={`nav-tab ${activeTab === 'reports' ? 'active' : ''}`}
             onClick={() => setActiveTab('reports')}
           >
-            📋 Government Reports
+            <ClipboardList size={16} /> Government Reports
           </button>
         </div>
       </nav>
@@ -385,54 +386,54 @@ const ImpactDashboard: React.FC = () => {
               <h2>Key Impact Metrics</h2>
               <div className="metrics-grid">
                 <StatCard
-                  icon="🥬"
+                  icon={<Leaf size={20} />}
                   value={mockImpactMetrics.foodSaved}
                   label="Food Saved (kg)"
                   trend={{ value: 18, positive: true }}
                   color="#4CAF50"
                 />
                 <StatCard
-                  icon="🍽️"
+                  icon={<UtensilsCrossed size={20} />}
                   value={mockImpactMetrics.mealsProvided}
                   label="Meals Provided"
                   trend={{ value: 22, positive: true }}
                   color="#FF9800"
                 />
                 <StatCard
-                  icon="🌱"
+                  icon={<Sprout size={20} />}
                   value={mockImpactMetrics.carbonSaved}
                   label="CO₂ Saved (kg)"
                   subValue="Equivalent to planting 2,500 trees"
                   color="#00BCD4"
                 />
                 <StatCard
-                  icon="💧"
+                  icon={<Droplet size={20} />}
                   value={mockImpactMetrics.waterSaved}
                   label="Water Saved (L)"
                   subValue="3.75 million liters"
                   color="#2196F3"
                 />
                 <StatCard
-                  icon="👨‍🌾"
+                  icon={<User size={20} />}
                   value={mockImpactMetrics.farmersSupported}
                   label="Farmers Supported"
                   trend={{ value: 15, positive: true }}
                   color="#8BC34A"
                 />
                 <StatCard
-                  icon="🤝"
+                  icon={<Handshake size={20} />}
                   value={mockImpactMetrics.ngosPartnered}
                   label="NGO Partners"
                   color="#E91E63"
                 />
                 <StatCard
-                  icon="📍"
+                  icon={<MapPin size={20} />}
                   value={mockImpactMetrics.districtsServed}
                   label="Districts Served"
                   color="#9C27B0"
                 />
                 <StatCard
-                  icon="✅"
+                  icon={<CheckCircle size={20} />}
                   value={mockImpactMetrics.transactionsCompleted}
                   label="Transactions"
                   trend={{ value: 25, positive: true }}
@@ -445,7 +446,7 @@ const ImpactDashboard: React.FC = () => {
             <section className="insights-section">
               <div className="insights-grid">
                 <div className="insight-card">
-                  <h3>📊 Monthly Trend</h3>
+                  <h3><BarChart3 size={18} /> Monthly Trend</h3>
                   <div className="insight-chart">
                     <TrendChart data={mockTrendData} dataKey="foodSaved" />
                   </div>
@@ -456,7 +457,7 @@ const ImpactDashboard: React.FC = () => {
                 </div>
                 
                 <div className="insight-card">
-                  <h3>🏆 Top Performing States</h3>
+                  <h3><Trophy size={18} /> Top Performing States</h3>
                   <MiniBarChart 
                     data={[
                       { label: 'Haryana', value: 30700 },
@@ -469,7 +470,7 @@ const ImpactDashboard: React.FC = () => {
                 </div>
                 
                 <div className="insight-card">
-                  <h3>🥬 Top Products Rescued</h3>
+                  <h3><Leaf size={18} /> Top Products Rescued</h3>
                   <MiniBarChart 
                     data={[
                       { label: 'Vegetables', value: 45000 },
@@ -485,14 +486,14 @@ const ImpactDashboard: React.FC = () => {
             
             {/* Live Activity Feed */}
             <section className="activity-section">
-              <h2>🔴 Live Activity</h2>
+              <h2><Radio size={20} /> Live Activity</h2>
               <div className="activity-feed">
                 {[
-                  { time: '2 min ago', action: 'Rescue', detail: '50kg Tomatoes rescued by Akshaya Patra, Gurugram', icon: '🚨' },
-                  { time: '5 min ago', action: 'Sale', detail: '200kg Wheat sold to processor in Sonipat', icon: '💵' },
-                  { time: '8 min ago', action: 'Listing', detail: 'New listing: 150kg Organic Mangoes in Mohali', icon: '📦' },
-                  { time: '12 min ago', action: 'Donation', detail: 'Auto-donation triggered: 80kg Spinach to Food Bank', icon: '🤝' },
-                  { time: '15 min ago', action: 'Rescue', detail: '120kg Rice rescued by Feeding India, Lucknow', icon: '🚨' }
+                  { time: '2 min ago', action: 'Rescue', detail: '50kg Tomatoes rescued by Akshaya Patra, Gurugram', icon: <AlertCircle size={16} /> },
+                  { time: '5 min ago', action: 'Sale', detail: '200kg Wheat sold to processor in Sonipat', icon: <Banknote size={16} /> },
+                  { time: '8 min ago', action: 'Listing', detail: 'New listing: 150kg Organic Mangoes in Mohali', icon: <Package size={16} /> },
+                  { time: '12 min ago', action: 'Donation', detail: 'Auto-donation triggered: 80kg Spinach to Food Bank', icon: <Handshake size={16} /> },
+                  { time: '15 min ago', action: 'Rescue', detail: '120kg Rice rescued by Feeding India, Lucknow', icon: <AlertCircle size={16} /> }
                 ].map((activity, idx) => (
                   <div key={idx} className="activity-item">
                     <span className="activity-icon">{activity.icon}</span>
@@ -512,7 +513,7 @@ const ImpactDashboard: React.FC = () => {
         {activeTab === 'districts' && (
           <div className="districts-tab">
             <div className="districts-header">
-              <h2>🗺️ District-wise Analytics</h2>
+              <h2><Map size={20} /> District-wise Analytics</h2>
               <div className="districts-filters">
                 <select 
                   value={selectedState} 
@@ -558,7 +559,7 @@ const ImpactDashboard: React.FC = () => {
         {/* Trends Tab */}
         {activeTab === 'trends' && (
           <div className="trends-tab">
-            <h2>📊 Performance Trends</h2>
+            <h2><BarChart3 size={20} /> Performance Trends</h2>
             
             <div className="trends-grid">
               <div className="trend-card large">
@@ -678,7 +679,7 @@ const ImpactDashboard: React.FC = () => {
         {/* Reports Tab */}
         {activeTab === 'reports' && (
           <div className="reports-tab">
-            <h2>📋 Government-Ready Reports</h2>
+            <h2><ClipboardList size={20} /> Government-Ready Reports</h2>
             <p className="reports-subtitle">
               Generate comprehensive reports for policy makers and government stakeholders
             </p>
@@ -688,37 +689,37 @@ const ImpactDashboard: React.FC = () => {
                 {
                   title: 'Monthly Impact Summary',
                   description: 'Complete overview of food waste prevention metrics for the month',
-                  icon: '📊',
+                  icon: <BarChart3 size={20} />,
                   format: 'PDF / Excel'
                 },
                 {
                   title: 'District-wise Analysis',
                   description: 'Detailed breakdown by district with comparative analytics',
-                  icon: '🗺️',
+                  icon: <Map size={20} />,
                   format: 'PDF / Excel'
                 },
                 {
                   title: 'Farmer Participation Report',
                   description: 'Statistics on farmer engagement, listings, and success rates',
-                  icon: '👨‍🌾',
+                  icon: <User size={20} />,
                   format: 'PDF'
                 },
                 {
                   title: 'NGO Activity Report',
                   description: 'Food rescue operations, meals distributed, and partner performance',
-                  icon: '🤝',
+                  icon: <Handshake size={20} />,
                   format: 'PDF / Excel'
                 },
                 {
                   title: 'Environmental Impact Report',
                   description: 'Carbon footprint reduction, water savings, and sustainability metrics',
-                  icon: '🌍',
+                  icon: <Globe size={20} />,
                   format: 'PDF'
                 },
                 {
                   title: 'Custom Report Builder',
                   description: 'Create custom reports with selected metrics and date ranges',
-                  icon: '⚙️',
+                  icon: <Settings size={20} />,
                   format: 'Custom'
                 }
               ].map((report, idx) => (
@@ -735,7 +736,7 @@ const ImpactDashboard: React.FC = () => {
             </div>
             
             <div className="api-section">
-              <h3>🔗 Data API Access</h3>
+              <h3><Link2 size={18} /> Data API Access</h3>
               <p>Integrate ANNAM impact data directly into government dashboards and portals</p>
               <div className="api-info">
                 <code>GET /api/v1/impact/metrics</code>
@@ -752,7 +753,7 @@ const ImpactDashboard: React.FC = () => {
       <footer className="dashboard-footer">
         <div className="footer-content">
           <div className="footer-left">
-            <span>🌾 ANNAM Impact Dashboard</span>
+            <span><Wheat size={16} /> ANNAM Impact Dashboard</span>
             <span className="separator">•</span>
             <span>Last updated: {new Date().toLocaleString()}</span>
           </div>

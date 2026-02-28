@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Package, Truck, CheckCircle, XCircle, Circle, Wallet, ClipboardList, Bell, Search, X, RefreshCw, MailOpen, Flame, Zap, Leaf, Apple, Wheat, Ruler, MapPin, Phone, Map, Flag, Calendar, FileText, Eye, Camera, Sprout, Building2, BarChart3, Hourglass, Clock } from 'lucide-react';
 import './MyDeliveries.css';
+import { API_ENDPOINTS } from '../../../config/api';
 
 // --- Types ---
 interface User {
@@ -80,7 +82,7 @@ const MyDeliveries: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await fetch(`http://localhost:8000/api/drivers/${user.id}/tasks`);
+      const response = await fetch(API_ENDPOINTS.driverTasks(user.id.toString()));
       const data = await response.json();
       
       if (response.ok) {
@@ -248,14 +250,14 @@ const MyDeliveries: React.FC = () => {
       .reduce((sum, d) => sum + (d.earnings || 0), 0)
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string): React.ReactNode => {
     switch (status) {
-      case 'pending': return '⏳';
-      case 'picked_up': return '📦';
-      case 'in_transit': return '🚚';
-      case 'delivered': return '✅';
-      case 'cancelled': return '❌';
-      default: return '⚪';
+      case 'pending': return <Hourglass size={14} />;
+      case 'picked_up': return <Package size={14} />;
+      case 'in_transit': return <Truck size={14} />;
+      case 'delivered': return <CheckCircle size={14} />;
+      case 'cancelled': return <XCircle size={14} />;
+      default: return <Circle size={14} />;
     }
   };
 
@@ -296,14 +298,14 @@ const MyDeliveries: React.FC = () => {
     });
   };
 
-  const getNextStatus = (currentStatus: string): { status: string; label: string; icon: string } | null => {
+  const getNextStatus = (currentStatus: string): { status: string; label: string; icon: React.ReactNode } | null => {
     switch (currentStatus) {
       case 'pending':
-        return { status: 'picked_up', label: 'Mark as Picked Up', icon: '📦' };
+        return { status: 'picked_up', label: 'Mark as Picked Up', icon: <Package size={14} /> };
       case 'picked_up':
-        return { status: 'in_transit', label: 'Start Delivery', icon: '🚚' };
+        return { status: 'in_transit', label: 'Start Delivery', icon: <Truck size={14} /> };
       case 'in_transit':
-        return { status: 'delivered', label: 'Mark as Delivered', icon: '✅' };
+        return { status: 'delivered', label: 'Mark as Delivered', icon: <CheckCircle size={14} /> };
       default:
         return null;
     }
@@ -332,13 +334,13 @@ const MyDeliveries: React.FC = () => {
       {/* Header */}
       <header className="top-header">
           <div className="header-left">
-            <h1 className="page-title">🚚 My Deliveries</h1>
+            <h1 className="page-title"><Truck size={22} /> My Deliveries</h1>
             <p className="page-subtitle">Manage your pickup and delivery tasks</p>
           </div>
           
           <div className="header-right">
             <div className="earnings-badge">
-              <span className="earnings-icon">💰</span>
+              <span className="earnings-icon"><Wallet size={16} /></span>
               <div className="earnings-info">
                 <span className="earnings-label">Today's Earnings</span>
                 <span className="earnings-value">₹{stats.todayEarnings}</span>
@@ -357,7 +359,7 @@ const MyDeliveries: React.FC = () => {
             onClick={() => setFilterStatus('all')}
           >
             <div className="stat-icon-circle all">
-              <span>📋</span>
+              <span><ClipboardList size={16} /></span>
             </div>
             <div className="stat-details">
               <span className="stat-number">{stats.total}</span>
@@ -370,7 +372,7 @@ const MyDeliveries: React.FC = () => {
             onClick={() => setFilterStatus('pending')}
           >
             <div className="stat-icon-circle pending">
-              <span>⏳</span>
+              <span><Hourglass size={16} /></span>
             </div>
             <div className="stat-details">
               <span className="stat-number">{stats.pending}</span>
@@ -384,7 +386,7 @@ const MyDeliveries: React.FC = () => {
             onClick={() => setFilterStatus('picked_up')}
           >
             <div className="stat-icon-circle picked">
-              <span>📦</span>
+              <span><Package size={16} /></span>
             </div>
             <div className="stat-details">
               <span className="stat-number">{stats.pickedUp}</span>
@@ -397,7 +399,7 @@ const MyDeliveries: React.FC = () => {
             onClick={() => setFilterStatus('in_transit')}
           >
             <div className="stat-icon-circle transit">
-              <span>🚚</span>
+              <span><Truck size={16} /></span>
             </div>
             <div className="stat-details">
               <span className="stat-number">{stats.inTransit}</span>
@@ -413,7 +415,7 @@ const MyDeliveries: React.FC = () => {
             onClick={() => setFilterStatus('delivered')}
           >
             <div className="stat-icon-circle delivered">
-              <span>✅</span>
+              <span><CheckCircle size={16} /></span>
             </div>
             <div className="stat-details">
               <span className="stat-number">{stats.delivered}</span>
@@ -425,7 +427,7 @@ const MyDeliveries: React.FC = () => {
         {/* Active Deliveries Alert */}
         {(stats.pickedUp > 0 || stats.inTransit > 0) && (
           <div className="active-delivery-alert">
-            <span className="alert-icon">🔔</span>
+            <span className="alert-icon"><Bell size={16} /></span>
             <span className="alert-text">
               You have <strong>{stats.pickedUp + stats.inTransit}</strong> active 
               {stats.pickedUp + stats.inTransit === 1 ? ' delivery' : ' deliveries'} in progress
@@ -442,7 +444,7 @@ const MyDeliveries: React.FC = () => {
         {/* Filters & Controls */}
         <section className="deliveries-controls">
           <div className="search-box">
-            <span className="search-icon">🔍</span>
+            <span className="search-icon"><Search size={16} /></span>
             <input
               type="text"
               placeholder="Search by item, farmer, or NGO..."
@@ -451,7 +453,7 @@ const MyDeliveries: React.FC = () => {
             />
             {searchQuery && (
               <button className="clear-search" onClick={() => setSearchQuery('')}>
-                ✕
+                <X size={16} />
               </button>
             )}
           </div>
@@ -475,7 +477,7 @@ const MyDeliveries: React.FC = () => {
               onClick={fetchDeliveries}
               title="Refresh"
             >
-              🔄
+              <RefreshCw size={16} />
             </button>
           </div>
         </section>
@@ -501,7 +503,7 @@ const MyDeliveries: React.FC = () => {
         {/* Deliveries List */}
         {filteredDeliveries.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">📭</div>
+            <div className="empty-icon"><MailOpen size={40} /></div>
             <h3>
               {deliveries.length === 0 
                 ? "No deliveries assigned yet" 
@@ -517,7 +519,7 @@ const MyDeliveries: React.FC = () => {
                 className="empty-action-btn"
                 onClick={() => navigate('/available-pickups')}
               >
-                🚚 View Available Pickups
+                <Truck size={14} /> View Available Pickups
               </button>
             )}
           </div>
@@ -534,7 +536,7 @@ const MyDeliveries: React.FC = () => {
                   {/* Priority Badge */}
                   {delivery.priority !== 'normal' && (
                     <div className={`priority-badge ${delivery.priority}`}>
-                      {delivery.priority === 'urgent' ? '🔥 Urgent' : '⚡ High Priority'}
+                      {delivery.priority === 'urgent' ? <><Flame size={12} /> Urgent</> : <><Zap size={12} /> High Priority</>}
                     </div>
                   )}
 
@@ -550,9 +552,9 @@ const MyDeliveries: React.FC = () => {
                         <img src={delivery.image} alt={delivery.title} />
                       ) : (
                         <div className="delivery-emoji">
-                          {delivery.type === 'Vegetable' ? '🥦' : 
-                           delivery.type === 'Fruit' ? '🍎' : 
-                           delivery.type === 'Grain' ? '🌾' : '🍱'}
+                          {delivery.type === 'Vegetable' ? <Leaf size={14} /> : 
+                           delivery.type === 'Fruit' ? <Apple size={14} /> : 
+                           delivery.type === 'Grain' ? <Wheat size={14} /> : <Package size={14} />}
                         </div>
                       )}
                     </div>
@@ -560,16 +562,16 @@ const MyDeliveries: React.FC = () => {
                       <h3 className="delivery-title">{delivery.title}</h3>
                       <div className="delivery-meta">
                         <span className="meta-item">
-                          <span className="meta-icon">📦</span>
+                          <span className="meta-icon"><Package size={14} /></span>
                           {delivery.quantity}
                         </span>
                         <span className="meta-item">
-                          <span className="meta-icon">📏</span>
+                          <span className="meta-icon"><Ruler size={14} /></span>
                           {delivery.distance}
                         </span>
                         {delivery.earnings && (
                           <span className="meta-item earnings">
-                            <span className="meta-icon">💰</span>
+                            <span className="meta-icon"><Wallet size={14} /></span>
                             ₹{delivery.earnings}
                           </span>
                         )}
@@ -582,7 +584,7 @@ const MyDeliveries: React.FC = () => {
                     {/* Pickup Location */}
                     <div className="route-point pickup">
                       <div className="route-marker">
-                        <span className="marker-icon">📍</span>
+                        <span className="marker-icon"><MapPin size={14} /></span>
                         <span className="marker-line"></span>
                       </div>
                       <div className="route-details">
@@ -594,13 +596,13 @@ const MyDeliveries: React.FC = () => {
                             className="route-action-btn"
                             onClick={() => openPhoneDialer(delivery.farmer.phone)}
                           >
-                            📞 Call
+                            <Phone size={12} /> Call
                           </button>
                           <button 
                             className="route-action-btn"
                             onClick={() => openMaps(delivery.farmer.address)}
                           >
-                            🗺️ Navigate
+                            <Map size={12} /> Navigate
                           </button>
                         </div>
                       </div>
@@ -609,7 +611,7 @@ const MyDeliveries: React.FC = () => {
                     {/* Delivery Location */}
                     <div className="route-point delivery">
                       <div className="route-marker">
-                        <span className="marker-icon">🏁</span>
+                        <span className="marker-icon"><Flag size={14} /></span>
                       </div>
                       <div className="route-details">
                         <span className="route-label">DELIVER TO</span>
@@ -621,13 +623,13 @@ const MyDeliveries: React.FC = () => {
                             className="route-action-btn"
                             onClick={() => openPhoneDialer(delivery.ngo.phone)}
                           >
-                            📞 Call
+                            <Phone size={12} /> Call
                           </button>
                           <button 
                             className="route-action-btn"
                             onClick={() => openMaps(delivery.ngo.address)}
                           >
-                            🗺️ Navigate
+                            <Map size={12} /> Navigate
                           </button>
                         </div>
                       </div>
@@ -637,26 +639,26 @@ const MyDeliveries: React.FC = () => {
                   {/* Time Info */}
                   <div className="delivery-timeline">
                     <div className="timeline-item">
-                      <span className="timeline-icon">📅</span>
+                      <span className="timeline-icon"><Calendar size={14} /></span>
                       <span className="timeline-label">Created</span>
                       <span className="timeline-value">{formatDate(delivery.created_at)}</span>
                     </div>
                     {delivery.pickup_time && (
                       <div className="timeline-item">
-                        <span className="timeline-icon">📦</span>
+                        <span className="timeline-icon"><Package size={14} /></span>
                         <span className="timeline-label">Picked Up</span>
                         <span className="timeline-value">{formatTime(delivery.pickup_time)}</span>
                       </div>
                     )}
                     {delivery.delivered_at ? (
                       <div className="timeline-item completed">
-                        <span className="timeline-icon">✅</span>
+                        <span className="timeline-icon"><CheckCircle size={14} /></span>
                         <span className="timeline-label">Delivered</span>
                         <span className="timeline-value">{formatTime(delivery.delivered_at)}</span>
                       </div>
                     ) : delivery.estimated_delivery && (
                       <div className="timeline-item estimated">
-                        <span className="timeline-icon">⏰</span>
+                        <span className="timeline-icon"><Clock size={14} /></span>
                         <span className="timeline-label">ETA</span>
                         <span className="timeline-value">{formatTime(delivery.estimated_delivery)}</span>
                       </div>
@@ -666,7 +668,7 @@ const MyDeliveries: React.FC = () => {
                   {/* Notes */}
                   {delivery.notes && (
                     <div className="delivery-notes">
-                      <span className="notes-icon">📝</span>
+                      <span className="notes-icon"><FileText size={14} /></span>
                       <span className="notes-text">{delivery.notes}</span>
                     </div>
                   )}
@@ -680,7 +682,7 @@ const MyDeliveries: React.FC = () => {
                         setShowDetailsModal(true);
                       }}
                     >
-                      👁️ View Details
+                      <Eye size={14} /> View Details
                     </button>
 
                     {nextStatus && (
@@ -707,7 +709,7 @@ const MyDeliveries: React.FC = () => {
 
                     {delivery.status === 'delivered' && (
                       <div className="completed-badge">
-                        ✅ Completed
+                        <CheckCircle size={14} /> Completed
                       </div>
                     )}
                   </div>
@@ -724,16 +726,16 @@ const MyDeliveries: React.FC = () => {
               <div className="modal-header">
                 <h2>Update Delivery Status</h2>
                 <button className="modal-close" onClick={() => setShowUpdateModal(false)}>
-                  ✕
+                  <X size={18} />
                 </button>
               </div>
               <div className="modal-body">
                 <div className="update-preview">
                   <div className="update-item-info">
                     <span className="update-emoji">
-                      {selectedDelivery.type === 'Vegetable' ? '🥦' : 
-                       selectedDelivery.type === 'Fruit' ? '🍎' : 
-                       selectedDelivery.type === 'Grain' ? '🌾' : '🍱'}
+                      {selectedDelivery.type === 'Vegetable' ? <Leaf size={16} /> : 
+                       selectedDelivery.type === 'Fruit' ? <Apple size={16} /> : 
+                       selectedDelivery.type === 'Grain' ? <Wheat size={16} /> : <Package size={16} />}
                     </span>
                     <div>
                       <h4>{selectedDelivery.title}</h4>
@@ -756,14 +758,14 @@ const MyDeliveries: React.FC = () => {
 
                 {selectedDelivery.status === 'pending' && (
                   <div className="update-reminder">
-                    <span className="reminder-icon">📍</span>
+                    <span className="reminder-icon"><MapPin size={14} /></span>
                     <p>Make sure you have arrived at the pickup location before confirming.</p>
                   </div>
                 )}
 
                 {selectedDelivery.status === 'in_transit' && (
                   <div className="update-reminder">
-                    <span className="reminder-icon">📸</span>
+                    <span className="reminder-icon"><Camera size={14} /></span>
                     <p>You may be asked to take a photo as proof of delivery.</p>
                   </div>
                 )}
@@ -795,9 +797,9 @@ const MyDeliveries: React.FC = () => {
           <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
             <div className="modal-content details-modal" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>📦 Delivery Details</h2>
+                <h2><Package size={18} /> Delivery Details</h2>
                 <button className="modal-close" onClick={() => setShowDetailsModal(false)}>
-                  ✕
+                  <X size={18} />
                 </button>
               </div>
               <div className="modal-body">
@@ -828,7 +830,7 @@ const MyDeliveries: React.FC = () => {
 
                 {/* Farmer Info */}
                 <div className="details-section">
-                  <h3>🌱 Pickup - Farmer Details</h3>
+                  <h3><Sprout size={16} /> Pickup - Farmer Details</h3>
                   <div className="contact-card">
                     <div className="contact-info">
                       <span className="contact-name">{selectedDelivery.farmer.name}</span>
@@ -840,13 +842,13 @@ const MyDeliveries: React.FC = () => {
                         className="contact-btn call"
                         onClick={() => openPhoneDialer(selectedDelivery.farmer.phone)}
                       >
-                        📞
+                        <Phone size={14} />
                       </button>
                       <button 
                         className="contact-btn map"
                         onClick={() => openMaps(selectedDelivery.farmer.address)}
                       >
-                        🗺️
+                        <Map size={14} />
                       </button>
                     </div>
                   </div>
@@ -854,7 +856,7 @@ const MyDeliveries: React.FC = () => {
 
                 {/* NGO Info */}
                 <div className="details-section">
-                  <h3>🏢 Delivery - NGO Details</h3>
+                  <h3><Building2 size={16} /> Delivery - NGO Details</h3>
                   <div className="contact-card">
                     <div className="contact-info">
                       <span className="contact-org">{selectedDelivery.ngo.organization}</span>
@@ -867,13 +869,13 @@ const MyDeliveries: React.FC = () => {
                         className="contact-btn call"
                         onClick={() => openPhoneDialer(selectedDelivery.ngo.phone)}
                       >
-                        📞
+                        <Phone size={14} />
                       </button>
                       <button 
                         className="contact-btn map"
                         onClick={() => openMaps(selectedDelivery.ngo.address)}
                       >
-                        🗺️
+                        <Map size={14} />
                       </button>
                     </div>
                   </div>
@@ -881,7 +883,7 @@ const MyDeliveries: React.FC = () => {
 
                 {/* Trip Info */}
                 <div className="details-section">
-                  <h3>📊 Trip Information</h3>
+                  <h3><BarChart3 size={16} /> Trip Information</h3>
                   <div className="details-grid">
                     <div className="detail-item">
                       <span className="detail-label">Distance</span>
@@ -906,7 +908,7 @@ const MyDeliveries: React.FC = () => {
 
                 {selectedDelivery.notes && (
                   <div className="details-section">
-                    <h3>📝 Notes</h3>
+                    <h3><FileText size={16} /> Notes</h3>
                     <p className="notes-content">{selectedDelivery.notes}</p>
                   </div>
                 )}

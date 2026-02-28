@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './History.css';
+import { API_ENDPOINTS } from '../config/api';
 
 interface HistoryItem {
   id: number;
@@ -34,7 +35,7 @@ const HistoryPage: React.FC = () => {
       try {
         if (isDriver) {
           // Fetch driver's delivery tasks
-          const response = await fetch(`http://localhost:8000/api/drivers/${user.id}/tasks`);
+          const response = await fetch(API_ENDPOINTS.driverTasks(user.id.toString()));
           const data = await response.json();
           
           if (response.ok) {
@@ -70,7 +71,7 @@ const HistoryPage: React.FC = () => {
           }
         } else {
           // Fetch farmer's listings
-          const response = await fetch(`http://localhost:8000/api/listings?farmer_id=${user.id}`);
+          const response = await fetch(API_ENDPOINTS.marketplace.listingsByFarmer(user.id.toString()));
           const data = await response.json();
           
           if (response.ok) {

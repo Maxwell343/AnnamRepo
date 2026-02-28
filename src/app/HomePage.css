@@ -125,6 +125,9 @@ body {
   font-size: 36px;
   transition: transform var(--transition-base);
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .sidebar:hover .brand-icon {
@@ -208,6 +211,13 @@ body {
   align-items: center;
   justify-content: center;
   transition: transform var(--transition-base);
+  color: inherit;
+}
+
+.nav-icon svg {
+  stroke: currentColor;
+  opacity: 0.85;
+  transition: opacity var(--transition-base), transform var(--transition-base);
 }
 
 .nav-label {
@@ -231,6 +241,10 @@ body {
 
 .nav-item:hover .nav-icon {
   transform: scale(1.08);
+}
+
+.nav-item:hover .nav-icon svg {
+  opacity: 1;
 }
 
 .nav-item.active {

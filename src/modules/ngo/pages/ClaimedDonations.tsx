@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Clock, UserCheck, Truck, CheckCircle, Leaf, Apple, Wheat, Package, Handshake, ArrowLeft, RefreshCw, Search, X, MailOpen, User, Calendar, MapPin, Car, Phone, Eye, PartyPopper, ClipboardList, Check } from 'lucide-react';
 import './ClaimedDonations.css';
+import { API_ENDPOINTS } from '../../../config/api';
 
 interface User {
   id: string;
@@ -48,7 +50,7 @@ const ClaimedDonations: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await fetch(`http://localhost:8000/api/listings/claimed/${user.id}`);
+      const response = await fetch(`${API_ENDPOINTS.marketplace.listings}?user_id=${user.id}`);
       const data = await response.json();
       
       console.log('Claimed donations response:', data);
@@ -125,13 +127,13 @@ const ClaimedDonations: React.FC = () => {
   };
 
   // Get status icon
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string): React.ReactNode => {
     switch (status) {
-      case 'claimed': return '⏳';
-      case 'assigned': return '👨‍✈️';
-      case 'in_transit': return '🚚';
-      case 'delivered': return '✅';
-      default: return '⏳';
+      case 'claimed': return <Clock size={16} />;
+      case 'assigned': return <UserCheck size={16} />;
+      case 'in_transit': return <Truck size={16} />;
+      case 'delivered': return <CheckCircle size={16} />;
+      default: return <Clock size={16} />;
     }
   };
 
@@ -147,12 +149,12 @@ const ClaimedDonations: React.FC = () => {
   };
 
   // Get type emoji
-  const getTypeEmoji = (type: string) => {
+  const getTypeEmoji = (type: string): React.ReactNode => {
     switch (type) {
-      case 'Vegetable': return '🥦';
-      case 'Fruit': return '🍎';
-      case 'Grain': return '🌾';
-      default: return '🍱';
+      case 'Vegetable': return <Leaf size={16} />;
+      case 'Fruit': return <Apple size={16} />;
+      case 'Grain': return <Wheat size={16} />;
+      default: return <Package size={16} />;
     }
   };
 
@@ -216,50 +218,50 @@ const ClaimedDonations: React.FC = () => {
       <header className="page-header">
         <div className="header-left">
           <button className="back-btn" onClick={() => navigate('/home')}>
-            ← Back
+            <ArrowLeft size={16} /> Back
           </button>
           <div className="header-title">
-            <h1>🤝 Claimed Donations</h1>
+            <h1><Handshake size={24} /> Claimed Donations</h1>
             <p>Track and manage your claimed food donations</p>
           </div>
         </div>
         <button className="refresh-btn" onClick={fetchClaimedDonations}>
-          🔄 Refresh
+          <RefreshCw size={16} /> Refresh
         </button>
       </header>
 
       {/* Stats Cards */}
       <section className="stats-section">
         <div className="stat-card total">
-          <span className="stat-icon">📦</span>
+          <span className="stat-icon"><Package size={20} /></span>
           <div className="stat-info">
             <span className="stat-value">{stats.total}</span>
             <span className="stat-label">Total Claims</span>
           </div>
         </div>
         <div className="stat-card claimed">
-          <span className="stat-icon">⏳</span>
+          <span className="stat-icon"><Clock size={20} /></span>
           <div className="stat-info">
             <span className="stat-value">{stats.claimed}</span>
             <span className="stat-label">Awaiting Driver</span>
           </div>
         </div>
         <div className="stat-card assigned">
-          <span className="stat-icon">👨‍✈️</span>
+          <span className="stat-icon"><UserCheck size={20} /></span>
           <div className="stat-info">
             <span className="stat-value">{stats.assigned}</span>
             <span className="stat-label">Driver Assigned</span>
           </div>
         </div>
         <div className="stat-card in-transit">
-          <span className="stat-icon">🚚</span>
+          <span className="stat-icon"><Truck size={20} /></span>
           <div className="stat-info">
             <span className="stat-value">{stats.inTransit}</span>
             <span className="stat-label">In Transit</span>
           </div>
         </div>
         <div className="stat-card delivered">
-          <span className="stat-icon">🎉</span>
+          <span className="stat-icon"><PartyPopper size={20} /></span>
           <div className="stat-info">
             <span className="stat-value">{stats.delivered}</span>
             <span className="stat-label">Delivered</span>
@@ -270,7 +272,7 @@ const ClaimedDonations: React.FC = () => {
       {/* Filters Section */}
       <section className="filters-section">
         <div className="search-box">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"><Search size={16} /></span>
           <input
             type="text"
             placeholder="Search donations..."
@@ -278,7 +280,7 @@ const ClaimedDonations: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           {searchQuery && (
-            <button className="clear-search" onClick={() => setSearchQuery('')}>✕</button>
+            <button className="clear-search" onClick={() => setSearchQuery('')}><X size={14} /></button>
           )}
         </div>
 
@@ -315,7 +317,7 @@ const ClaimedDonations: React.FC = () => {
       <section className="donations-section">
         {filteredDonations.length === 0 ? (
           <div className="empty-state">
-            <span className="empty-icon">📭</span>
+            <span className="empty-icon"><MailOpen size={48} /></span>
             <h3>
               {donations.length === 0 
                 ? "No claimed donations yet" 
@@ -331,7 +333,7 @@ const ClaimedDonations: React.FC = () => {
                 className="browse-btn"
                 onClick={() => navigate('/home')}
               >
-                🔍 Browse Available Donations
+                <Search size={16} /> Browse Available Donations
               </button>
             )}
           </div>
@@ -365,22 +367,22 @@ const ClaimedDonations: React.FC = () => {
                   
                   <div className="donation-meta">
                     <div className="meta-item">
-                      <span className="meta-icon">📦</span>
+                      <span className="meta-icon"><Package size={14} /></span>
                       <span className="meta-value">{donation.quantity}</span>
                     </div>
                     <div className="meta-item">
-                      <span className="meta-icon">👨‍🌾</span>
+                      <span className="meta-icon"><User size={14} /></span>
                       <span className="meta-value">{donation.farmer_name || 'Unknown Farmer'}</span>
                     </div>
                     <div className="meta-item">
-                      <span className="meta-icon">📅</span>
+                      <span className="meta-icon"><Calendar size={14} /></span>
                       <span className="meta-value">{formatDate(donation.claimed_at)}</span>
                     </div>
                   </div>
 
                   {donation.pickup_address && (
                     <div className="pickup-location">
-                      <span className="location-icon">📍</span>
+                      <span className="location-icon"><MapPin size={14} /></span>
                       <span className="location-text">{donation.pickup_address}</span>
                     </div>
                   )}
@@ -388,12 +390,12 @@ const ClaimedDonations: React.FC = () => {
                   {/* Driver Info (for assigned and in_transit) */}
                   {(donation.status === 'assigned' || donation.status === 'in_transit') && donation.driver_name && (
                     <div className="driver-info">
-                      <span className="driver-icon">🚗</span>
+                      <span className="driver-icon"><Car size={14} /></span>
                       <div className="driver-details">
                         <span className="driver-name">{donation.driver_name}</span>
                         {donation.driver_phone && (
                           <a href={`tel:${donation.driver_phone}`} className="driver-phone">
-                            📞 {donation.driver_phone}
+                            <Phone size={12} /> {donation.driver_phone}
                           </a>
                         )}
                       </div>
@@ -406,14 +408,14 @@ const ClaimedDonations: React.FC = () => {
                       className="action-btn view"
                       onClick={() => viewDetails(donation)}
                     >
-                      👁️ View Details
+                      <Eye size={14} /> View Details
                     </button>
                     {(donation.status === 'assigned' || donation.status === 'in_transit') && (
                       <button 
                         className="action-btn track"
                         onClick={() => navigate(`/order-tracking/${donation.id}`)}
                       >
-                        📍 Track
+                        <MapPin size={14} /> Track
                       </button>
                     )}
                   </div>
@@ -428,7 +430,7 @@ const ClaimedDonations: React.FC = () => {
       {showDetailsModal && selectedDonation && (
         <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowDetailsModal(false)}>✕</button>
+            <button className="modal-close" onClick={() => setShowDetailsModal(false)}><X size={16} /></button>
             
             <div className="modal-header">
               <div className={`modal-status ${selectedDonation.status}`}>
@@ -480,14 +482,14 @@ const ClaimedDonations: React.FC = () => {
               {/* Driver Section */}
               {selectedDonation.driver_name && (
                 <div className="modal-driver-section">
-                  <h4>🚚 Driver Information</h4>
+                  <h4><Truck size={16} /> Driver Information</h4>
                   <div className="driver-card">
-                    <div className="driver-avatar">🧑‍✈️</div>
+                    <div className="driver-avatar"><UserCheck size={24} /></div>
                     <div className="driver-info">
                       <span className="driver-name">{selectedDonation.driver_name}</span>
                       {selectedDonation.driver_phone && (
                         <a href={`tel:${selectedDonation.driver_phone}`} className="driver-phone">
-                          📞 {selectedDonation.driver_phone}
+                          <Phone size={12} /> {selectedDonation.driver_phone}
                         </a>
                       )}
                     </div>
@@ -497,7 +499,7 @@ const ClaimedDonations: React.FC = () => {
 
               {/* Timeline */}
               <div className="modal-timeline">
-                <h4>📋 Status Timeline</h4>
+                <h4><ClipboardList size={16} /> Status Timeline</h4>
                 <div className="timeline">
                   <div className={`timeline-item ${selectedDonation.status ? 'completed' : ''}`}>
                     <div className="timeline-dot"></div>
@@ -533,7 +535,7 @@ const ClaimedDonations: React.FC = () => {
                     navigate(`/order-tracking/${selectedDonation.id}`);
                   }}
                 >
-                  📍 Track Delivery
+                  <MapPin size={14} /> Track Delivery
                 </button>
               )}
               <button 

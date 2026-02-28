@@ -1,4 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import {
+  CheckCircle, XCircle, AlertTriangle, Info, X, User, DollarSign,
+  ClipboardList, Smartphone, Mail, Building, Calendar, Rocket, Timer,
+  Check, Clock, RefreshCw, Download, Zap, Users, Search, Filter,
+  List, LayoutGrid, ArrowUp, ArrowDown, Eye, Circle
+} from 'lucide-react';
 import './DriverPayouts.css';
 
 /* ─── Types ─── */
@@ -274,7 +280,7 @@ const Toast: React.FC<{ toast: ToastNotification; onDismiss: (id: string) => voi
     return () => clearTimeout(timer);
   }, [toast.id, onDismiss]);
 
-  const icons: Record<string, string> = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const icons: Record<string, React.ReactNode> = { success: <CheckCircle size={16} />, error: <XCircle size={16} />, warning: <AlertTriangle size={16} />, info: <Info size={16} /> };
 
   return (
     <div className={`dp-toast dp-toast--${toast.type}`}>
@@ -283,7 +289,7 @@ const Toast: React.FC<{ toast: ToastNotification; onDismiss: (id: string) => voi
         <div className="dp-toast__title">{toast.title}</div>
         <div className="dp-toast__message">{toast.message}</div>
       </div>
-      <button className="dp-toast__close" onClick={() => onDismiss(toast.id)}>✕</button>
+      <button className="dp-toast__close" onClick={() => onDismiss(toast.id)}><X size={16} /></button>
       <div className="dp-toast__progress" style={{ animationDuration: '4s' }} />
     </div>
   );
@@ -300,9 +306,9 @@ const DriverDetailModal: React.FC<{
   const [history] = useState<PayoutHistory[]>(generatePayoutHistory(driver.driverId));
 
   const tabs = [
-    { key: 'overview' as const, label: 'Overview', icon: '👤' },
-    { key: 'earnings' as const, label: 'Earnings', icon: '💰' },
-    { key: 'history' as const, label: 'History', icon: '📋' },
+    { key: 'overview' as const, label: 'Overview', icon: <User size={16} /> },
+    { key: 'earnings' as const, label: 'Earnings', icon: <DollarSign size={16} /> },
+    { key: 'history' as const, label: 'History', icon: <ClipboardList size={16} /> },
   ];
 
   return (
@@ -322,7 +328,7 @@ const DriverDetailModal: React.FC<{
               </div>
             </div>
           </div>
-          <button className="dp-modal__close" onClick={onClose}>✕</button>
+          <button className="dp-modal__close" onClick={onClose}><X size={16} /></button>
         </div>
 
         <div className="dp-modal__tabs">
@@ -342,28 +348,28 @@ const DriverDetailModal: React.FC<{
             <div className="dp-modal__overview">
               <div className="dp-detail-grid">
                 <div className="dp-detail-card">
-                  <div className="dp-detail-card__icon">📱</div>
+                  <div className="dp-detail-card__icon"><Smartphone size={18} /></div>
                   <div className="dp-detail-card__content">
                     <span className="dp-detail-card__label">Phone</span>
                     <span className="dp-detail-card__value">{driver.phone}</span>
                   </div>
                 </div>
                 <div className="dp-detail-card">
-                  <div className="dp-detail-card__icon">📧</div>
+                  <div className="dp-detail-card__icon"><Mail size={18} /></div>
                   <div className="dp-detail-card__content">
                     <span className="dp-detail-card__label">Email</span>
                     <span className="dp-detail-card__value">{driver.email}</span>
                   </div>
                 </div>
                 <div className="dp-detail-card">
-                  <div className="dp-detail-card__icon">🏦</div>
+                  <div className="dp-detail-card__icon"><Building size={18} /></div>
                   <div className="dp-detail-card__content">
                     <span className="dp-detail-card__label">Bank Account</span>
                     <span className="dp-detail-card__value">{driver.bankName} ({driver.bankAccount})</span>
                   </div>
                 </div>
                 <div className="dp-detail-card">
-                  <div className="dp-detail-card__icon">📅</div>
+                  <div className="dp-detail-card__icon"><Calendar size={18} /></div>
                   <div className="dp-detail-card__content">
                     <span className="dp-detail-card__label">Joined</span>
                     <span className="dp-detail-card__value">{formatDate(driver.joinDate)}</span>
@@ -380,14 +386,14 @@ const DriverDetailModal: React.FC<{
                   </div>
                 </div>
                 <div className="dp-performance-item">
-                  <div className="dp-performance-item__icon">🚀</div>
+                  <div className="dp-performance-item__icon"><Rocket size={18} /></div>
                   <div>
                     <div className="dp-performance-item__value">{driver.deliveries}</div>
                     <div className="dp-performance-item__label">Deliveries</div>
                   </div>
                 </div>
                 <div className="dp-performance-item">
-                  <div className="dp-performance-item__icon">⏱️</div>
+                  <div className="dp-performance-item__icon"><Timer size={18} /></div>
                   <div>
                     <div className="dp-performance-item__value">{driver.avgDeliveryTime}</div>
                     <div className="dp-performance-item__label">Avg. Time</div>
@@ -502,7 +508,7 @@ const DriverDetailModal: React.FC<{
                   <div key={h.id} className="dp-history-item">
                     <div className="dp-history-item__left">
                       <div className={`dp-history-item__icon dp-history-item__icon--${h.status}`}>
-                        {h.status === 'paid' ? '✓' : h.status === 'failed' ? '✕' : '⏳'}
+                        {h.status === 'paid' ? <Check size={16} /> : h.status === 'failed' ? <X size={16} /> : <Clock size={16} />}
                       </div>
                       <div>
                         <div className="dp-history-item__amount">{formatCurrency(h.amount)}</div>
@@ -533,9 +539,9 @@ const DriverDetailModal: React.FC<{
               {processing ? (
                 <><span className="dp-btn-spinner" /> Processing...</>
               ) : driver.status === 'failed' ? (
-                '🔄 Retry Payment'
+                <><RefreshCw size={16} /> Retry Payment</>
               ) : (
-                '💸 Process Payment'
+                <><DollarSign size={16} /> Process Payment</>
               )}
             </button>
           )}
@@ -559,7 +565,7 @@ const ConfirmDialog: React.FC<{
   <div className="dp-modal-overlay" onClick={onCancel}>
     <div className="dp-confirm-dialog" onClick={(e) => e.stopPropagation()}>
       <div className="dp-confirm-dialog__icon">
-        {variant === 'danger' ? '⚠️' : '💸'}
+        {variant === 'danger' ? <AlertTriangle size={24} /> : <DollarSign size={24} />}
       </div>
       <h3 className="dp-confirm-dialog__title">{title}</h3>
       <p className="dp-confirm-dialog__message">{message}</p>
@@ -741,7 +747,7 @@ const DriverPayouts: React.FC = () => {
       {/* Header */}
       <header className="dp-header">
         <div className="dp-header__left">
-          <h1 className="dp-header__title">💰 Driver Payouts</h1>
+          <h1 className="dp-header__title"><DollarSign size={20} /> Driver Payouts</h1>
           <p className="dp-header__subtitle">Manage and process driver payment settlements</p>
         </div>
         <div className="dp-header__right">
@@ -779,7 +785,7 @@ const DriverPayouts: React.FC = () => {
               addToast('success', 'Export Complete', `${filtered.length} driver payouts exported to CSV`);
             }}
           >
-            📥 Export CSV
+            <Download size={16} /> Export CSV
           </button>
           <button
             className="dp-btn dp-btn--primary"
@@ -788,21 +794,21 @@ const DriverPayouts: React.FC = () => {
               else addToast('info', 'No Pending', 'All payouts are already processed');
             }}
           >
-            ⚡ Process All Pending
+            <Zap size={16} /> Process All Pending
           </button>
         </div>
       </header>
 
       {/* Cycle Info */}
       <div className="dp-cycle-info">
-        <span className="dp-cycle-info__icon">📅</span>
+        <span className="dp-cycle-info__icon"><Calendar size={16} /></span>
         <span>Settlement Cycle: <strong>{cycleLabels[payoutCycle]}</strong></span>
       </div>
 
       {/* Summary Cards */}
       <div className="dp-summary-cards">
         <div className="dp-summary-card" style={{ '--sc-color': '#16a34a' } as React.CSSProperties}>
-          <div className="dp-summary-card__icon">✅</div>
+          <div className="dp-summary-card__icon"><CheckCircle size={20} /></div>
           <div className="dp-summary-card__content">
             <div className="dp-summary-card__value">
               <AnimatedCounter target={stats.totalPaid} prefix="₹" />
@@ -816,7 +822,7 @@ const DriverPayouts: React.FC = () => {
         </div>
 
         <div className="dp-summary-card" style={{ '--sc-color': '#f59e0b' } as React.CSSProperties}>
-          <div className="dp-summary-card__icon">⏳</div>
+          <div className="dp-summary-card__icon"><Clock size={20} /></div>
           <div className="dp-summary-card__content">
             <div className="dp-summary-card__value">
               <AnimatedCounter target={stats.totalPending} prefix="₹" />
@@ -830,7 +836,7 @@ const DriverPayouts: React.FC = () => {
         </div>
 
         <div className="dp-summary-card" style={{ '--sc-color': '#06b6d4' } as React.CSSProperties}>
-          <div className="dp-summary-card__icon">🔄</div>
+          <div className="dp-summary-card__icon"><RefreshCw size={20} /></div>
           <div className="dp-summary-card__content">
             <div className="dp-summary-card__value">
               <AnimatedCounter target={stats.totalProcessing} prefix="₹" />
@@ -844,7 +850,7 @@ const DriverPayouts: React.FC = () => {
         </div>
 
         <div className="dp-summary-card" style={{ '--sc-color': '#dc2626' } as React.CSSProperties}>
-          <div className="dp-summary-card__icon">❌</div>
+          <div className="dp-summary-card__icon"><XCircle size={20} /></div>
           <div className="dp-summary-card__content">
             <div className="dp-summary-card__value">
               <AnimatedCounter target={stats.totalFailed} prefix="₹" />
@@ -858,7 +864,7 @@ const DriverPayouts: React.FC = () => {
         </div>
 
         <div className="dp-summary-card" style={{ '--sc-color': '#4f46e5' } as React.CSSProperties}>
-          <div className="dp-summary-card__icon">👥</div>
+          <div className="dp-summary-card__icon"><Users size={20} /></div>
           <div className="dp-summary-card__content">
             <div className="dp-summary-card__value">
               <AnimatedCounter target={stats.activeDrivers} />
@@ -870,7 +876,7 @@ const DriverPayouts: React.FC = () => {
         </div>
 
         <div className="dp-summary-card" style={{ '--sc-color': '#8b5cf6' } as React.CSSProperties}>
-          <div className="dp-summary-card__icon">🏢</div>
+          <div className="dp-summary-card__icon"><Building size={20} /></div>
           <div className="dp-summary-card__content">
             <div className="dp-summary-card__value">
               <AnimatedCounter target={stats.totalCommission} prefix="₹" />
@@ -886,7 +892,7 @@ const DriverPayouts: React.FC = () => {
       <div className="dp-toolbar">
         <div className="dp-toolbar__left">
           <div className="dp-search">
-            <span className="dp-search__icon">🔍</span>
+            <span className="dp-search__icon"><Search size={16} /></span>
             <input
               ref={searchRef}
               className="dp-search__input"
@@ -896,7 +902,7 @@ const DriverPayouts: React.FC = () => {
             />
             {search && (
               <button className="dp-search__clear" onClick={() => { setSearch(''); searchRef.current?.focus(); }}>
-                ✕
+                <X size={16} />
               </button>
             )}
           </div>
@@ -905,7 +911,7 @@ const DriverPayouts: React.FC = () => {
             className={`dp-filter-toggle ${showFilters ? 'dp-filter-toggle--active' : ''}`}
             onClick={() => setShowFilters(!showFilters)}
           >
-            🔽 Filters
+            <Filter size={16} /> Filters
             {activeFilterCount > 0 && <span className="dp-filter-badge">{activeFilterCount}</span>}
           </button>
         </div>
@@ -917,14 +923,14 @@ const DriverPayouts: React.FC = () => {
               onClick={() => setViewMode('table')}
               title="Table View"
             >
-              ☰
+              <List size={16} />
             </button>
             <button
               className={`dp-view-btn ${viewMode === 'cards' ? 'dp-view-btn--active' : ''}`}
               onClick={() => setViewMode('cards')}
               title="Card View"
             >
-              ▦
+              <LayoutGrid size={16} />
             </button>
           </div>
 
@@ -982,7 +988,7 @@ const DriverPayouts: React.FC = () => {
               Deselect All
             </button>
             <button className="dp-btn dp-btn--sm dp-btn--primary" onClick={() => setShowBulkConfirm(true)}>
-              💸 Process Selected
+              <DollarSign size={16} /> Process Selected
             </button>
           </div>
         </div>
@@ -1007,20 +1013,20 @@ const DriverPayouts: React.FC = () => {
                     />
                   </th>
                   <th className="dp-th-sortable" onClick={() => handleSort('name')}>
-                    Driver {sortField === 'name' && <span className="dp-sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                    Driver {sortField === 'name' && <span className="dp-sort-icon">{sortDir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>}
                   </th>
                   <th className="dp-th-sortable" onClick={() => handleSort('deliveries')}>
-                    Deliveries {sortField === 'deliveries' && <span className="dp-sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                    Deliveries {sortField === 'deliveries' && <span className="dp-sort-icon">{sortDir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>}
                   </th>
                   <th className="dp-th-sortable" onClick={() => handleSort('earnings')}>
-                    Gross {sortField === 'earnings' && <span className="dp-sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                    Gross {sortField === 'earnings' && <span className="dp-sort-icon">{sortDir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>}
                   </th>
                   <th>Commission</th>
                   <th className="dp-th-sortable" onClick={() => handleSort('netPayout')}>
-                    Net Payout {sortField === 'netPayout' && <span className="dp-sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                    Net Payout {sortField === 'netPayout' && <span className="dp-sort-icon">{sortDir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>}
                   </th>
                   <th className="dp-th-sortable" onClick={() => handleSort('status')}>
-                    Status {sortField === 'status' && <span className="dp-sort-icon">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                    Status {sortField === 'status' && <span className="dp-sort-icon">{sortDir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>}
                   </th>
                   <th>Bank</th>
                   <th>Actions</th>
@@ -1065,10 +1071,10 @@ const DriverPayouts: React.FC = () => {
                     <td className="dp-amount-cell dp-amount-cell--bold">{formatCurrency(p.netPayout)}</td>
                     <td>
                       <span className={`dp-status-badge dp-status-badge--${p.status}`}>
-                        {p.status === 'paid' && '✓ '}
-                        {p.status === 'processing' && '⟳ '}
-                        {p.status === 'failed' && '✕ '}
-                        {p.status === 'pending' && '◦ '}
+                        {p.status === 'paid' && <><Check size={12} />{' '}</>}
+                        {p.status === 'processing' && <><RefreshCw size={12} />{' '}</>}
+                        {p.status === 'failed' && <><X size={12} />{' '}</>}
+                        {p.status === 'pending' && <><Circle size={12} />{' '}</>}
                         {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
                       </span>
                     </td>
@@ -1085,7 +1091,7 @@ const DriverPayouts: React.FC = () => {
                           onClick={() => setSelectedDriver(p)}
                           title="View Details"
                         >
-                          👁
+                          <Eye size={16} />
                         </button>
                         {p.status !== 'paid' && (
                           <button
@@ -1096,7 +1102,7 @@ const DriverPayouts: React.FC = () => {
                           >
                             {processingId === p.id ? (
                               <span className="dp-btn-spinner dp-btn-spinner--small" />
-                            ) : p.status === 'failed' ? '🔄' : '💸'}
+                            ) : p.status === 'failed' ? <RefreshCw size={16} /> : <DollarSign size={16} />}
                           </button>
                         )}
                       </div>
@@ -1108,7 +1114,7 @@ const DriverPayouts: React.FC = () => {
 
             {filtered.length === 0 && (
               <div className="dp-empty-state">
-                <span className="dp-empty-state__icon">🔍</span>
+                <span className="dp-empty-state__icon"><Search size={32} /></span>
                 <h3>No drivers found</h3>
                 <p>Try adjusting your search or filter criteria</p>
                 <button
@@ -1186,10 +1192,10 @@ const DriverPayouts: React.FC = () => {
                     >
                       {processingId === p.id ? (
                         <><span className="dp-btn-spinner dp-btn-spinner--small" /> ...</>
-                      ) : p.status === 'failed' ? '🔄 Retry' : '💸 Pay'}
+                      ) : p.status === 'failed' ? <><RefreshCw size={14} /> Retry</> : <><DollarSign size={14} /> Pay</>}
                     </button>
                   ) : (
-                    <span className="dp-payout-card__paid-label">✓ Paid on {formatDate(p.paidDate)}</span>
+                    <span className="dp-payout-card__paid-label"><Check size={14} /> Paid on {formatDate(p.paidDate)}</span>
                   )}
                 </div>
 
@@ -1207,7 +1213,7 @@ const DriverPayouts: React.FC = () => {
 
             {filtered.length === 0 && (
               <div className="dp-empty-state dp-empty-state--cards">
-                <span className="dp-empty-state__icon">🔍</span>
+                <span className="dp-empty-state__icon"><Search size={32} /></span>
                 <h3>No drivers found</h3>
                 <p>Try adjusting your search or filter criteria</p>
               </div>

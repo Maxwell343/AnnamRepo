@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import './EditListing.css';
-
+import './EditListing.css';import { API_ENDPOINTS } from '../../../config/api';
 interface User {
   id: number;
   name: string;
@@ -109,7 +108,8 @@ const EditListing: React.FC = () => {
 
   const fetchListing = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/listings/${id}`);
+      if (!id) throw new Error('Listing ID is required');
+      const response = await fetch(API_ENDPOINTS.marketplace.listingById(id));
       if (!response.ok) {
         throw new Error('Failed to fetch listing');
       }

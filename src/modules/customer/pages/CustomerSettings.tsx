@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CustomerSettings.css';
+import { Check, X, Info, AlertTriangle, Camera, Pencil, Eye, EyeOff, ShieldCheck, Shield, Smartphone, Zap, ArrowRight, ArrowLeft, ClipboardList, Trash2, Package, CreditCard, MapPin, Wallet, Gift, Heart, User, Bell, Lock, Settings as SettingsIcon, Link, HelpCircle, Mail, MessageSquare, Truck, Tag, Sparkles, Newspaper, Target, BarChart3, Handshake, Download, Eraser, Palette, Type, Globe, DollarSign, Scale, Play, Image, Key, Fingerprint, Tablet, Laptop, BookOpen, Phone, Star, Lightbulb, Bug, Wheat, FileText, Undo2, ScrollText, LogOut, Twitter, Instagram, Linkedin, Facebook } from 'lucide-react';
 
 // ============================================
 // TYPES
@@ -305,7 +306,7 @@ const ToggleSwitch: React.FC<{
 );
 
 const SettingItem: React.FC<{
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   description?: string;
   children?: React.ReactNode;
@@ -331,7 +332,7 @@ const SettingItem: React.FC<{
 );
 
 const SectionHeader: React.FC<{
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   description?: string;
 }> = ({ icon, title, description }) => (
@@ -398,7 +399,7 @@ const ProfileSection: React.FC<{
               <span className="cs-avatar-initials">{user.name.charAt(0).toUpperCase()}</span>
             )}
           </div>
-          <button className="cs-avatar-edit" onClick={() => fileInputRef.current?.click()}>📷</button>
+          <button className="cs-avatar-edit" onClick={() => fileInputRef.current?.click()}><Camera size={14} /></button>
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
         </div>
         <div className="cs-profile-info">
@@ -407,7 +408,7 @@ const ProfileSection: React.FC<{
           <p className="cs-profile-member">Member since {formatDate(user.createdAt || new Date().toISOString())}</p>
         </div>
         <button className="cs-edit-btn" onClick={() => setIsEditing(!isEditing)}>
-          {isEditing ? 'Cancel' : '✏️ Edit'}
+          {isEditing ? 'Cancel' : <><Pencil size={12} /> Edit</>}
         </button>
       </div>
 
@@ -445,7 +446,7 @@ const ProfileSection: React.FC<{
           <div className="cs-form-actions">
             <button className="cs-btn-cancel" onClick={() => setIsEditing(false)}>Cancel</button>
             <button className="cs-btn-save" onClick={handleSave} disabled={isSaving}>
-              {isSaving ? <><span className="cs-spinner" /> Saving...</> : <>✓ Save Changes</>}
+              {isSaving ? <><span className="cs-spinner" /> Saving...</> : <><Check size={14} /> Save Changes</>}
             </button>
           </div>
         </div>
@@ -521,14 +522,14 @@ const ChangePasswordModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
       <div className="cs-modal" onClick={e => e.stopPropagation()}>
         <div className="cs-modal-header">
           <h2>Change Password</h2>
-          <button className="cs-modal-close" onClick={onClose}>✕</button>
+          <button className="cs-modal-close" onClick={onClose}><X size={18} /></button>
         </div>
         <div className="cs-modal-body">
           <div className={`cs-form-group ${errors.currentPassword ? 'error' : ''}`}>
             <label>Current Password</label>
             <div className="cs-password-input">
               <input type={showPasswords.current ? 'text' : 'password'} value={formData.currentPassword} onChange={(e) => setFormData(prev => ({ ...prev, currentPassword: e.target.value }))} placeholder="Enter current password" />
-              <button type="button" className="cs-toggle-pw" onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}>{showPasswords.current ? '🙈' : '👁️'}</button>
+              <button type="button" className="cs-toggle-pw" onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}>{showPasswords.current ? <EyeOff size={16} /> : <Eye size={16} />}</button>
             </div>
             {errors.currentPassword && <span className="cs-error-text">{errors.currentPassword}</span>}
           </div>
@@ -536,7 +537,7 @@ const ChangePasswordModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
             <label>New Password</label>
             <div className="cs-password-input">
               <input type={showPasswords.new ? 'text' : 'password'} value={formData.newPassword} onChange={(e) => setFormData(prev => ({ ...prev, newPassword: e.target.value }))} placeholder="Enter new password" />
-              <button type="button" className="cs-toggle-pw" onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}>{showPasswords.new ? '🙈' : '👁️'}</button>
+              <button type="button" className="cs-toggle-pw" onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}>{showPasswords.new ? <EyeOff size={16} /> : <Eye size={16} />}</button>
             </div>
             {formData.newPassword && (
               <div className="cs-pw-strength">
@@ -550,7 +551,7 @@ const ChangePasswordModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
             <label>Confirm New Password</label>
             <div className="cs-password-input">
               <input type={showPasswords.confirm ? 'text' : 'password'} value={formData.confirmPassword} onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))} placeholder="Confirm new password" />
-              <button type="button" className="cs-toggle-pw" onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}>{showPasswords.confirm ? '🙈' : '👁️'}</button>
+              <button type="button" className="cs-toggle-pw" onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}>{showPasswords.confirm ? <EyeOff size={16} /> : <Eye size={16} />}</button>
             </div>
             {errors.confirmPassword && <span className="cs-error-text">{errors.confirmPassword}</span>}
           </div>
@@ -616,20 +617,20 @@ const TwoFactorModal: React.FC<{ isOpen: boolean; onClose: () => void; onEnable:
       <div className="cs-modal cs-tfa-modal" onClick={e => e.stopPropagation()}>
         <div className="cs-modal-header">
           <h2>Two-Factor Authentication</h2>
-          <button className="cs-modal-close" onClick={onClose}>✕</button>
+          <button className="cs-modal-close" onClick={onClose}><X size={18} /></button>
         </div>
         <div className="cs-modal-body cs-tfa-body">
           {step === 'intro' && (
             <div className="cs-tfa-intro">
-              <div className="cs-tfa-icon">🔐</div>
+              <div className="cs-tfa-icon"><ShieldCheck size={32} /></div>
               <h3>Add an extra layer of security</h3>
               <p>Two-factor authentication adds an additional layer of security to your account by requiring a verification code in addition to your password.</p>
               <div className="cs-tfa-benefits">
-                <div className="cs-benefit"><span>🛡️</span><span>Protect against unauthorized access</span></div>
-                <div className="cs-benefit"><span>📱</span><span>Use any authenticator app</span></div>
-                <div className="cs-benefit"><span>⚡</span><span>Quick and easy setup</span></div>
+                <div className="cs-benefit"><span><Shield size={16} /></span><span>Protect against unauthorized access</span></div>
+                <div className="cs-benefit"><span><Smartphone size={16} /></span><span>Use any authenticator app</span></div>
+                <div className="cs-benefit"><span><Zap size={16} /></span><span>Quick and easy setup</span></div>
               </div>
-              <button className="cs-btn-primary" onClick={() => setStep('qr')}>Get Started →</button>
+              <button className="cs-btn-primary" onClick={() => setStep('qr')}>Get Started <ArrowRight size={14} /></button>
             </div>
           )}
           {step === 'qr' && (
@@ -648,9 +649,9 @@ const TwoFactorModal: React.FC<{ isOpen: boolean; onClose: () => void; onEnable:
               <div className="cs-manual-code">
                 <p>Or enter this code manually:</p>
                 <code>ABCD-EFGH-IJKL-MNOP</code>
-                <button className="cs-copy-code" onClick={() => { navigator.clipboard.writeText('ABCDEFGHIJKLMNOP'); showToast('Code copied!', 'success'); }}>📋 Copy</button>
+                <button className="cs-copy-code" onClick={() => { navigator.clipboard.writeText('ABCDEFGHIJKLMNOP'); showToast('Code copied!', 'success'); }}><ClipboardList size={14} /> Copy</button>
               </div>
-              <button className="cs-btn-primary" onClick={() => setStep('verify')}>I've scanned the code →</button>
+              <button className="cs-btn-primary" onClick={() => setStep('verify')}>I've scanned the code <ArrowRight size={14} /></button>
             </div>
           )}
           {step === 'verify' && (
@@ -704,24 +705,24 @@ const DeleteAccountModal: React.FC<{ isOpen: boolean; onClose: () => void; onDel
     <div className="cs-modal-overlay" onClick={onClose}>
       <div className="cs-modal cs-delete-modal" onClick={e => e.stopPropagation()}>
         <div className="cs-modal-header danger">
-          <h2>⚠️ Delete Account</h2>
-          <button className="cs-modal-close" onClick={onClose}>✕</button>
+          <h2><AlertTriangle size={18} /> Delete Account</h2>
+          <button className="cs-modal-close" onClick={onClose}><X size={18} /></button>
         </div>
         <div className="cs-modal-body">
           <div className="cs-delete-warning">
-            <div className="cs-warning-icon">🗑️</div>
+            <div className="cs-warning-icon"><Trash2 size={32} /></div>
             <h3>Are you absolutely sure?</h3>
             <p>This action <strong>cannot be undone</strong>. This will permanently delete your account and remove all your data from our servers.</p>
           </div>
           <div className="cs-delete-consequences">
             <h4>You will lose access to:</h4>
             <ul>
-              <li>📦 All your order history</li>
-              <li>💳 Saved payment methods</li>
-              <li>📍 Saved addresses</li>
-              <li>👛 Wallet balance (₹1,250)</li>
-              <li>🎁 Reward points & cashback</li>
-              <li>❤️ Wishlist items</li>
+              <li><Package size={14} /> All your order history</li>
+              <li><CreditCard size={14} /> Saved payment methods</li>
+              <li><MapPin size={14} /> Saved addresses</li>
+              <li><Wallet size={14} /> Wallet balance (₹1,250)</li>
+              <li><Gift size={14} /> Reward points & cashback</li>
+              <li><Heart size={14} /> Wishlist items</li>
             </ul>
           </div>
           <div className="cs-form-group">
@@ -833,18 +834,18 @@ const CustomerSettings: React.FC = () => {
   const handleRevokeDevice = (_deviceId: string) => { showToast('Device removed from trusted devices', 'success'); };
 
   const sections = [
-    { id: 'profile', label: 'Profile', icon: '👤' },
-    { id: 'notifications', label: 'Notifications', icon: '🔔' },
-    { id: 'privacy', label: 'Privacy', icon: '🔒' },
-    { id: 'preferences', label: 'Preferences', icon: '⚙️' },
-    { id: 'security', label: 'Security', icon: '🛡️' },
-    { id: 'connected', label: 'Connected Accounts', icon: '🔗' },
-    { id: 'help', label: 'Help & Support', icon: '❓' },
-    { id: 'about', label: 'About', icon: 'ℹ️' }
+    { id: 'profile', label: 'Profile', icon: <User size={16} /> },
+    { id: 'notifications', label: 'Notifications', icon: <Bell size={16} /> },
+    { id: 'privacy', label: 'Privacy', icon: <Lock size={16} /> },
+    { id: 'preferences', label: 'Preferences', icon: <SettingsIcon size={16} /> },
+    { id: 'security', label: 'Security', icon: <Shield size={16} /> },
+    { id: 'connected', label: 'Connected Accounts', icon: <Link size={16} /> },
+    { id: 'help', label: 'Help & Support', icon: <HelpCircle size={16} /> },
+    { id: 'about', label: 'About', icon: <Info size={16} /> }
   ];
 
   if (!user) return (
-    <div className="cs-loading"><div className="cs-loader"><span className="cs-loader-icon">⚙️</span><p>Loading settings...</p></div></div>
+    <div className="cs-loading"><div className="cs-loader"><span className="cs-loader-icon"><SettingsIcon size={20} /></span><p>Loading settings...</p></div></div>
   );
 
   return (
@@ -854,9 +855,9 @@ const CustomerSettings: React.FC = () => {
       {/* Header */}
       <header className="cs-header">
         <div className="cs-header-content">
-          <button className="cs-back-btn" onClick={() => navigate('/customer-home')}>← <span className="cs-back-text">Back</span></button>
-          <div className="cs-header-title"><h1><span>⚙️</span> Settings</h1></div>
-          <button className="cs-logout-btn" onClick={handleLogout}>🚪 Logout</button>
+          <button className="cs-back-btn" onClick={() => navigate('/customer-home')}><ArrowLeft size={14} /> <span className="cs-back-text">Back</span></button>
+          <div className="cs-header-title"><h1><span><SettingsIcon size={20} /></span> Settings</h1></div>
+          <button className="cs-logout-btn" onClick={handleLogout}><LogOut size={14} /> Logout</button>
         </div>
       </header>
 
@@ -873,7 +874,7 @@ const CustomerSettings: React.FC = () => {
           </nav>
           <div className="cs-sidebar-footer">
             <button className="cs-delete-btn" onClick={() => setShowDeleteModal(true)}>
-              <span>🗑️</span><span>Delete Account</span>
+              <span><Trash2 size={14} /></span><span>Delete Account</span>
             </button>
           </div>
         </aside>
@@ -899,17 +900,17 @@ const CustomerSettings: React.FC = () => {
               {/* Notifications */}
               {activeSection === 'notifications' && (
                 <div className="cs-section">
-                  <SectionHeader icon="🔔" title="Notification Preferences" description="Control how and when you receive notifications" />
+                  <SectionHeader icon={<Bell size={18} />} title="Notification Preferences" description="Control how and when you receive notifications" />
                   <div className="cs-card">
                     <h3 className="cs-card-title">Notification Channels</h3>
                     <div className="cs-settings-list">
-                      <SettingItem icon="📱" title="Push Notifications" description="Receive notifications on your device">
+                      <SettingItem icon={<Smartphone size={16} />} title="Push Notifications" description="Receive notifications on your device">
                         <ToggleSwitch checked={notifications.pushEnabled} onChange={(checked) => setNotifications(prev => ({ ...prev, pushEnabled: checked }))} />
                       </SettingItem>
-                      <SettingItem icon="📧" title="Email Notifications" description="Receive updates via email">
+                      <SettingItem icon={<Mail size={16} />} title="Email Notifications" description="Receive updates via email">
                         <ToggleSwitch checked={notifications.emailEnabled} onChange={(checked) => setNotifications(prev => ({ ...prev, emailEnabled: checked }))} />
                       </SettingItem>
-                      <SettingItem icon="💬" title="SMS Notifications" description="Receive updates via SMS">
+                      <SettingItem icon={<MessageSquare size={16} />} title="SMS Notifications" description="Receive updates via SMS">
                         <ToggleSwitch checked={notifications.smsEnabled} onChange={(checked) => setNotifications(prev => ({ ...prev, smsEnabled: checked }))} />
                       </SettingItem>
                     </div>
@@ -917,22 +918,22 @@ const CustomerSettings: React.FC = () => {
                   <div className="cs-card">
                     <h3 className="cs-card-title">Notification Types</h3>
                     <div className="cs-settings-list">
-                      <SettingItem icon="📦" title="Order Updates" description="Status changes, delivery updates">
+                      <SettingItem icon={<Package size={16} />} title="Order Updates" description="Status changes, delivery updates">
                         <ToggleSwitch checked={notifications.orderUpdates} onChange={(checked) => setNotifications(prev => ({ ...prev, orderUpdates: checked }))} />
                       </SettingItem>
-                      <SettingItem icon="🚚" title="Delivery Updates" description="Real-time delivery tracking">
+                      <SettingItem icon={<Truck size={16} />} title="Delivery Updates" description="Real-time delivery tracking">
                         <ToggleSwitch checked={notifications.deliveryUpdates} onChange={(checked) => setNotifications(prev => ({ ...prev, deliveryUpdates: checked }))} />
                       </SettingItem>
-                      <SettingItem icon="🏷️" title="Promotional Offers" description="Discounts, deals, and special offers">
+                      <SettingItem icon={<Tag size={16} />} title="Promotional Offers" description="Discounts, deals, and special offers">
                         <ToggleSwitch checked={notifications.promotionalOffers} onChange={(checked) => setNotifications(prev => ({ ...prev, promotionalOffers: checked }))} />
                       </SettingItem>
-                      <SettingItem icon="💰" title="Price Alerts" description="Price drops on wishlist items">
+                      <SettingItem icon={<Wallet size={16} />} title="Price Alerts" description="Price drops on wishlist items">
                         <ToggleSwitch checked={notifications.priceAlerts} onChange={(checked) => setNotifications(prev => ({ ...prev, priceAlerts: checked }))} />
                       </SettingItem>
-                      <SettingItem icon="✨" title="New Arrivals" description="New products from favorite farmers">
+                      <SettingItem icon={<Sparkles size={16} />} title="New Arrivals" description="New products from favorite farmers">
                         <ToggleSwitch checked={notifications.newArrivals} onChange={(checked) => setNotifications(prev => ({ ...prev, newArrivals: checked }))} />
                       </SettingItem>
-                      <SettingItem icon="📰" title="Weekly Digest" description="Summary of deals and recommendations">
+                      <SettingItem icon={<Newspaper size={16} />} title="Weekly Digest" description="Summary of deals and recommendations">
                         <ToggleSwitch checked={notifications.weeklyDigest} onChange={(checked) => setNotifications(prev => ({ ...prev, weeklyDigest: checked }))} />
                       </SettingItem>
                     </div>
@@ -943,17 +944,17 @@ const CustomerSettings: React.FC = () => {
               {/* Privacy */}
               {activeSection === 'privacy' && (
                 <div className="cs-section">
-                  <SectionHeader icon="🔒" title="Privacy Settings" description="Manage your data and privacy preferences" />
+                  <SectionHeader icon={<Lock size={18} />} title="Privacy Settings" description="Manage your data and privacy preferences" />
                   <div className="cs-card">
                     <h3 className="cs-card-title">Data & Personalization</h3>
                     <div className="cs-settings-list">
-                      <SettingItem icon="🎯" title="Personalized Recommendations" description="Get product suggestions based on your activity">
+                      <SettingItem icon={<Target size={16} />} title="Personalized Recommendations" description="Get product suggestions based on your activity">
                         <ToggleSwitch checked={privacy.personalizedRecommendations} onChange={(checked) => setPrivacy(prev => ({ ...prev, personalizedRecommendations: checked }))} />
                       </SettingItem>
-                      <SettingItem icon="📍" title="Location Access" description="Use location for nearby farmers and delivery">
+                      <SettingItem icon={<MapPin size={16} />} title="Location Access" description="Use location for nearby farmers and delivery">
                         <ToggleSwitch checked={privacy.locationAccess} onChange={(checked) => setPrivacy(prev => ({ ...prev, locationAccess: checked }))} />
                       </SettingItem>
-                      <SettingItem icon="📊" title="Analytics" description="Help us improve by sharing usage data">
+                      <SettingItem icon={<BarChart3 size={16} />} title="Analytics" description="Help us improve by sharing usage data">
                         <ToggleSwitch checked={privacy.allowAnalytics} onChange={(checked) => setPrivacy(prev => ({ ...prev, allowAnalytics: checked }))} />
                       </SettingItem>
                     </div>
@@ -961,10 +962,10 @@ const CustomerSettings: React.FC = () => {
                   <div className="cs-card">
                     <h3 className="cs-card-title">Marketing & Communications</h3>
                     <div className="cs-settings-list">
-                      <SettingItem icon="📧" title="Marketing Emails" description="Receive promotional emails and newsletters">
+                      <SettingItem icon={<Mail size={16} />} title="Marketing Emails" description="Receive promotional emails and newsletters">
                         <ToggleSwitch checked={privacy.marketingEmails} onChange={(checked) => setPrivacy(prev => ({ ...prev, marketingEmails: checked }))} />
                       </SettingItem>
-                      <SettingItem icon="🤝" title="Share Data with Partners" description="Allow sharing data with trusted partners">
+                      <SettingItem icon={<Handshake size={16} />} title="Share Data with Partners" description="Allow sharing data with trusted partners">
                         <ToggleSwitch checked={privacy.shareDataWithPartners} onChange={(checked) => setPrivacy(prev => ({ ...prev, shareDataWithPartners: checked }))} />
                       </SettingItem>
                     </div>
@@ -972,9 +973,9 @@ const CustomerSettings: React.FC = () => {
                   <div className="cs-card">
                     <h3 className="cs-card-title">Data Management</h3>
                     <div className="cs-settings-list">
-                      <SettingItem icon="📥" title="Download My Data" description="Get a copy of all your data" onClick={() => showToast('Preparing your data download...', 'info')} />
-                      <SettingItem icon="🧹" title="Clear Search History" description="Remove all your search history" onClick={() => { localStorage.removeItem('searchHistory'); showToast('Search history cleared', 'success'); }} />
-                      <SettingItem icon="🗑️" title="Clear Browsing Data" description="Remove recently viewed items and cache" onClick={() => { localStorage.removeItem('browsingData'); showToast('Browsing data cleared', 'success'); }} />
+                      <SettingItem icon={<Download size={16} />} title="Download My Data" description="Get a copy of all your data" onClick={() => showToast('Preparing your data download...', 'info')} />
+                      <SettingItem icon={<Eraser size={16} />} title="Clear Search History" description="Remove all your search history" onClick={() => { localStorage.removeItem('searchHistory'); showToast('Search history cleared', 'success'); }} />
+                      <SettingItem icon={<Trash2 size={16} />} title="Clear Browsing Data" description="Remove recently viewed items and cache" onClick={() => { localStorage.removeItem('browsingData'); showToast('Browsing data cleared', 'success'); }} />
                     </div>
                   </div>
                 </div>
@@ -983,25 +984,25 @@ const CustomerSettings: React.FC = () => {
               {/* Preferences */}
               {activeSection === 'preferences' && (
                 <div className="cs-section">
-                  <SectionHeader icon="⚙️" title="App Preferences" description="Customize your app experience" />
+                  <SectionHeader icon={<SettingsIcon size={18} />} title="App Preferences" description="Customize your app experience" />
                   <div className="cs-card">
                     <h3 className="cs-card-title">Appearance</h3>
                     <div className="cs-settings-list">
-                      <SettingItem icon="🎨" title="Theme" description="Choose your preferred theme">
+                      <SettingItem icon={<Palette size={16} />} title="Theme" description="Choose your preferred theme">
                         <select className="cs-select" value={preferences.theme} onChange={(e) => setPreferences(prev => ({ ...prev, theme: e.target.value as AppPreferences['theme'] }))}>
                           <option value="system">System</option>
                           <option value="light">Light</option>
                           <option value="dark">Dark</option>
                         </select>
                       </SettingItem>
-                      <SettingItem icon="🔤" title="Font Size" description="Adjust text size for readability">
+                      <SettingItem icon={<Type size={16} />} title="Font Size" description="Adjust text size for readability">
                         <select className="cs-select" value={preferences.fontSize} onChange={(e) => setPreferences(prev => ({ ...prev, fontSize: e.target.value as AppPreferences['fontSize'] }))}>
                           <option value="small">Small</option>
                           <option value="medium">Medium</option>
                           <option value="large">Large</option>
                         </select>
                       </SettingItem>
-                      <SettingItem icon="✨" title="Reduce Motion" description="Minimize animations throughout the app">
+                      <SettingItem icon={<Sparkles size={16} />} title="Reduce Motion" description="Minimize animations throughout the app">
                         <ToggleSwitch checked={preferences.reduceMotion} onChange={(checked) => setPreferences(prev => ({ ...prev, reduceMotion: checked }))} />
                       </SettingItem>
                     </div>
@@ -1009,17 +1010,17 @@ const CustomerSettings: React.FC = () => {
                   <div className="cs-card">
                     <h3 className="cs-card-title">Regional Settings</h3>
                     <div className="cs-settings-list">
-                      <SettingItem icon="🌐" title="Language" description="Choose your preferred language">
+                      <SettingItem icon={<Globe size={16} />} title="Language" description="Choose your preferred language">
                         <select className="cs-select" value={preferences.language} onChange={(e) => setPreferences(prev => ({ ...prev, language: e.target.value }))}>
                           {LANGUAGES.map(lang => <option key={lang.code} value={lang.code}>{lang.name} ({lang.native})</option>)}
                         </select>
                       </SettingItem>
-                      <SettingItem icon="💱" title="Currency" description="Set your preferred currency">
+                      <SettingItem icon={<DollarSign size={16} />} title="Currency" description="Set your preferred currency">
                         <select className="cs-select" value={preferences.currency} onChange={(e) => setPreferences(prev => ({ ...prev, currency: e.target.value }))}>
                           {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.symbol} {c.name}</option>)}
                         </select>
                       </SettingItem>
-                      <SettingItem icon="⚖️" title="Measurement Unit" description="Choose weight measurement units">
+                      <SettingItem icon={<Scale size={16} />} title="Measurement Unit" description="Choose weight measurement units">
                         <select className="cs-select" value={preferences.measurementUnit} onChange={(e) => setPreferences(prev => ({ ...prev, measurementUnit: e.target.value as 'kg' | 'lb' }))}>
                           <option value="kg">Kilograms (kg)</option>
                           <option value="lb">Pounds (lb)</option>
@@ -1030,10 +1031,10 @@ const CustomerSettings: React.FC = () => {
                   <div className="cs-card">
                     <h3 className="cs-card-title">Media & Data</h3>
                     <div className="cs-settings-list">
-                      <SettingItem icon="▶️" title="Auto-play Videos" description="Automatically play videos in feed">
+                      <SettingItem icon={<Play size={16} />} title="Auto-play Videos" description="Automatically play videos in feed">
                         <ToggleSwitch checked={preferences.autoPlayVideos} onChange={(checked) => setPreferences(prev => ({ ...prev, autoPlayVideos: checked }))} />
                       </SettingItem>
-                      <SettingItem icon="🖼️" title="High Quality Images" description="Load high-resolution images (uses more data)">
+                      <SettingItem icon={<Image size={16} />} title="High Quality Images" description="Load high-resolution images (uses more data)">
                         <ToggleSwitch checked={preferences.highQualityImages} onChange={(checked) => setPreferences(prev => ({ ...prev, highQualityImages: checked }))} />
                       </SettingItem>
                     </div>
@@ -1044,18 +1045,18 @@ const CustomerSettings: React.FC = () => {
               {/* Security */}
               {activeSection === 'security' && (
                 <div className="cs-section">
-                  <SectionHeader icon="🛡️" title="Security Settings" description="Manage your account security and access" />
+                  <SectionHeader icon={<Shield size={18} />} title="Security Settings" description="Manage your account security and access" />
                   <div className="cs-card">
                     <h3 className="cs-card-title">Authentication</h3>
                     <div className="cs-settings-list">
-                      <SettingItem icon="🔑" title="Change Password" description="Update your account password" onClick={() => setShowPasswordModal(true)} />
-                      <SettingItem icon="🔐" title="Two-Factor Authentication" description={security.twoFactorEnabled ? 'Enabled - Your account is secure' : 'Add extra security to your account'} badge={security.twoFactorEnabled ? 'Enabled' : undefined}>
+                      <SettingItem icon={<Key size={16} />} title="Change Password" description="Update your account password" onClick={() => setShowPasswordModal(true)} />
+                      <SettingItem icon={<ShieldCheck size={16} />} title="Two-Factor Authentication" description={security.twoFactorEnabled ? 'Enabled - Your account is secure' : 'Add extra security to your account'} badge={security.twoFactorEnabled ? 'Enabled' : undefined}>
                         <ToggleSwitch checked={security.twoFactorEnabled} onChange={() => security.twoFactorEnabled ? showToast('Please disable 2FA from your authenticator app', 'warning') : setShowTFAModal(true)} />
                       </SettingItem>
-                      <SettingItem icon="🔔" title="Login Alerts" description="Get notified of new sign-ins">
+                      <SettingItem icon={<Bell size={16} />} title="Login Alerts" description="Get notified of new sign-ins">
                         <ToggleSwitch checked={security.loginAlerts} onChange={() => showToast('Login alerts updated', 'success')} />
                       </SettingItem>
-                      <SettingItem icon="👆" title="Biometric Login" description="Use fingerprint or face ID to login">
+                      <SettingItem icon={<Fingerprint size={16} />} title="Biometric Login" description="Use fingerprint or face ID to login">
                         <ToggleSwitch checked={security.biometricEnabled} onChange={() => showToast('Biometric settings updated', 'success')} />
                       </SettingItem>
                     </div>
@@ -1066,7 +1067,7 @@ const CustomerSettings: React.FC = () => {
                     <div className="cs-devices-list">
                       {security.trustedDevices.map(device => (
                         <div key={device.id} className={`cs-device-item ${device.isCurrent ? 'current' : ''}`}>
-                          <span className="cs-device-icon">{device.type === 'mobile' ? '📱' : device.type === 'tablet' ? '📲' : '💻'}</span>
+                          <span className="cs-device-icon">{device.type === 'mobile' ? <Smartphone size={14} /> : device.type === 'tablet' ? <Tablet size={14} /> : <Laptop size={14} />}</span>
                           <div className="cs-device-info">
                             <div className="cs-device-name">{device.name} {device.isCurrent && <span className="cs-current-badge">Current</span>}</div>
                             <div className="cs-device-meta">{device.location} · {getRelativeTime(device.lastActive)}</div>
@@ -1081,7 +1082,7 @@ const CustomerSettings: React.FC = () => {
                     <div className="cs-login-history">
                       {security.loginHistory.map(login => (
                         <div key={login.id} className={`cs-login-item ${login.status}`}>
-                          <div className="cs-login-status-icon">{login.status === 'success' ? '✓' : '✕'}</div>
+                          <div className="cs-login-status-icon">{login.status === 'success' ? <Check size={12} /> : <X size={12} />}</div>
                           <div className="cs-login-info">
                             <div className="cs-login-device">{login.device}</div>
                             <div className="cs-login-meta">{login.location} · {login.ip} · {getRelativeTime(login.time)}</div>
@@ -1097,7 +1098,7 @@ const CustomerSettings: React.FC = () => {
               {/* Connected Accounts */}
               {activeSection === 'connected' && (
                 <div className="cs-section">
-                  <SectionHeader icon="🔗" title="Connected Accounts" description="Manage linked social and third-party accounts" />
+                  <SectionHeader icon={<Link size={18} />} title="Connected Accounts" description="Manage linked social and third-party accounts" />
                   <div className="cs-card">
                     <h3 className="cs-card-title">Social Logins</h3>
                     <div className="cs-accounts-list">
@@ -1145,14 +1146,14 @@ const CustomerSettings: React.FC = () => {
               {/* Help & Support */}
               {activeSection === 'help' && (
                 <div className="cs-section">
-                  <SectionHeader icon="❓" title="Help & Support" description="Get help and contact our support team" />
+                  <SectionHeader icon={<HelpCircle size={18} />} title="Help & Support" description="Get help and contact our support team" />
                   <div className="cs-card">
                     <h3 className="cs-card-title">Quick Help</h3>
                     <div className="cs-settings-list">
-                      <SettingItem icon="📚" title="Help Center" description="Browse help articles and guides" onClick={() => window.open('/help', '_blank')} />
-                      <SettingItem icon="💬" title="Live Chat" description="Chat with our support team" badge="Online" onClick={() => showToast('Opening chat...', 'info')} />
-                      <SettingItem icon="📧" title="Email Support" description="support@annam.com" onClick={() => window.location.href = 'mailto:support@annam.com'} />
-                      <SettingItem icon="📞" title="Call Us" description="1800-XXX-XXXX (Toll Free)" onClick={() => window.location.href = 'tel:1800XXXXXXX'} />
+                      <SettingItem icon={<BookOpen size={16} />} title="Help Center" description="Browse help articles and guides" onClick={() => window.open('/help', '_blank')} />
+                      <SettingItem icon={<MessageSquare size={16} />} title="Live Chat" description="Chat with our support team" badge="Online" onClick={() => showToast('Opening chat...', 'info')} />
+                      <SettingItem icon={<Mail size={16} />} title="Email Support" description="support@annam.com" onClick={() => window.location.href = 'mailto:support@annam.com'} />
+                      <SettingItem icon={<Phone size={16} />} title="Call Us" description="1800-XXX-XXXX (Toll Free)" onClick={() => window.location.href = 'tel:1800XXXXXXX'} />
                     </div>
                   </div>
                   <div className="cs-card">
@@ -1162,9 +1163,9 @@ const CustomerSettings: React.FC = () => {
                   <div className="cs-card">
                     <h3 className="cs-card-title">Feedback</h3>
                     <div className="cs-settings-list">
-                      <SettingItem icon="⭐" title="Rate the App" description="Tell us what you think" onClick={() => showToast('Thanks for your feedback!', 'success')} />
-                      <SettingItem icon="💡" title="Suggest a Feature" description="Help us improve with your ideas" onClick={() => showToast('Opening feedback form...', 'info')} />
-                      <SettingItem icon="🐛" title="Report a Bug" description="Let us know if something isn't working" onClick={() => showToast('Opening bug report...', 'info')} />
+                      <SettingItem icon={<Star size={16} />} title="Rate the App" description="Tell us what you think" onClick={() => showToast('Thanks for your feedback!', 'success')} />
+                      <SettingItem icon={<Lightbulb size={16} />} title="Suggest a Feature" description="Help us improve with your ideas" onClick={() => showToast('Opening feedback form...', 'info')} />
+                      <SettingItem icon={<Bug size={16} />} title="Report a Bug" description="Let us know if something isn't working" onClick={() => showToast('Opening bug report...', 'info')} />
                     </div>
                   </div>
                 </div>
@@ -1173,31 +1174,31 @@ const CustomerSettings: React.FC = () => {
               {/* About */}
               {activeSection === 'about' && (
                 <div className="cs-section">
-                  <SectionHeader icon="ℹ️" title="About Annam" description="App information and legal" />
+                  <SectionHeader icon={<Info size={18} />} title="About Annam" description="App information and legal" />
                   <div className="cs-about-hero">
-                    <div className="cs-about-logo"><span className="cs-logo-icon">🌾</span><span className="cs-logo-text">Annam</span></div>
+                    <div className="cs-about-logo"><span className="cs-logo-icon"><Wheat size={24} /></span><span className="cs-logo-text">Annam</span></div>
                     <p className="cs-about-tagline">Farm Fresh, Delivered with Care</p>
                     <div className="cs-app-version"><span>Version 2.5.1</span><button className="cs-update-btn" onClick={() => showToast('You are on the latest version!', 'success')}>Check for updates</button></div>
                   </div>
                   <div className="cs-card">
                     <h3 className="cs-card-title">Legal</h3>
                     <div className="cs-settings-list">
-                      <SettingItem icon="📄" title="Terms of Service" description="Read our terms and conditions" onClick={() => window.open('/terms', '_blank')} />
-                      <SettingItem icon="🔒" title="Privacy Policy" description="How we handle your data" onClick={() => window.open('/privacy', '_blank')} />
-                      <SettingItem icon="↩️" title="Refund Policy" description="Our return and refund terms" onClick={() => window.open('/refunds', '_blank')} />
-                      <SettingItem icon="📜" title="Licenses" description="Open source licenses" onClick={() => window.open('/licenses', '_blank')} />
+                      <SettingItem icon={<FileText size={16} />} title="Terms of Service" description="Read our terms and conditions" onClick={() => window.open('/terms', '_blank')} />
+                      <SettingItem icon={<Lock size={16} />} title="Privacy Policy" description="How we handle your data" onClick={() => window.open('/privacy', '_blank')} />
+                      <SettingItem icon={<Undo2 size={16} />} title="Refund Policy" description="Our return and refund terms" onClick={() => window.open('/refunds', '_blank')} />
+                      <SettingItem icon={<ScrollText size={16} />} title="Licenses" description="Open source licenses" onClick={() => window.open('/licenses', '_blank')} />
                     </div>
                   </div>
                   <div className="cs-card">
                     <h3 className="cs-card-title">Connect With Us</h3>
                     <div className="cs-social-links">
-                      <a href="#" className="cs-social-link">🐦 Twitter</a>
-                      <a href="#" className="cs-social-link">📸 Instagram</a>
-                      <a href="#" className="cs-social-link">💼 LinkedIn</a>
-                      <a href="#" className="cs-social-link">📘 Facebook</a>
+                      <a href="#" className="cs-social-link"><Twitter size={14} /> Twitter</a>
+                      <a href="#" className="cs-social-link"><Instagram size={14} /> Instagram</a>
+                      <a href="#" className="cs-social-link"><Linkedin size={14} /> LinkedIn</a>
+                      <a href="#" className="cs-social-link"><Facebook size={14} /> Facebook</a>
                     </div>
                   </div>
-                  <div className="cs-copyright"><p>© 2026 Annam. All rights reserved.</p><p>Made with ❤️ in India</p></div>
+                  <div className="cs-copyright"><p>© 2026 Annam. All rights reserved.</p><p>Made with <Heart size={12} /> in India</p></div>
                 </div>
               )}
             </>

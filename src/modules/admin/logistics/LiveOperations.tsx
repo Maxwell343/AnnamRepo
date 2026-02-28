@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Truck, Package, Clock, CheckCircle, Circle } from 'lucide-react';
 import './LiveOperations.css';
 
 interface LiveOrder {
@@ -63,28 +64,28 @@ const LiveOperations: React.FC = () => {
 
       <div className="live-operations__stats">
         <div className="live-stat-card">
-          <div className="live-stat-card__icon live-stat-card__icon--active">🚛</div>
+          <div className="live-stat-card__icon live-stat-card__icon--active"><Truck size={16} /></div>
           <div>
             <div className="live-stat-card__value">{activeCount}</div>
             <div className="live-stat-card__label">Active Deliveries</div>
           </div>
         </div>
         <div className="live-stat-card">
-          <div className="live-stat-card__icon live-stat-card__icon--transit">📦</div>
+          <div className="live-stat-card__icon live-stat-card__icon--transit"><Package size={16} /></div>
           <div>
             <div className="live-stat-card__value">{transitCount}</div>
             <div className="live-stat-card__label">In Transit</div>
           </div>
         </div>
         <div className="live-stat-card">
-          <div className="live-stat-card__icon live-stat-card__icon--pending">⏳</div>
+          <div className="live-stat-card__icon live-stat-card__icon--pending"><Clock size={16} /></div>
           <div>
             <div className="live-stat-card__value">{pendingCount}</div>
             <div className="live-stat-card__label">Pending / Delayed</div>
           </div>
         </div>
         <div className="live-stat-card">
-          <div className="live-stat-card__icon live-stat-card__icon--completed">✅</div>
+          <div className="live-stat-card__icon live-stat-card__icon--completed"><CheckCircle size={16} /></div>
           <div>
             <div className="live-stat-card__value">{deliveredCount}</div>
             <div className="live-stat-card__label">Delivered Today</div>
@@ -115,10 +116,10 @@ const LiveOperations: React.FC = () => {
                   <td>{order.driver}</td>
                   <td>
                     <span className={`live-orders__status live-orders__status--${order.status}`}>
-                      {order.status === 'pickup' && '🟡'}
-                      {order.status === 'transit' && '🔵'}
-                      {order.status === 'delivered' && '🟢'}
-                      {order.status === 'delayed' && '🔴'}
+                      {order.status === 'pickup' && <Circle size={12} fill="#eab308" color="#eab308" />}
+                      {order.status === 'transit' && <Circle size={12} fill="#3b82f6" color="#3b82f6" />}
+                      {order.status === 'delivered' && <Circle size={12} fill="#16a34a" color="#16a34a" />}
+                      {order.status === 'delayed' && <Circle size={12} fill="#dc2626" color="#dc2626" />}
                       {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                     </span>
                   </td>

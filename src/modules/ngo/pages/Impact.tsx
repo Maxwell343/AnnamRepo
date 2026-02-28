@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Truck, Globe, Star, UtensilsCrossed, Recycle, Trophy, ArrowLeft } from 'lucide-react';
 import './Impact.css';
+import { API_ENDPOINTS } from '../../../config/api';
 
 interface FarmerStats {
   points: number;
@@ -54,7 +56,7 @@ const ImpactPage: React.FC = () => {
       
       try {
         if (isDriver) {
-          const response = await fetch(`http://localhost:8000/api/analytics/driver/${user.id}`);
+          const response = await fetch(API_ENDPOINTS.driverAnalytics(user.id.toString()));
           const data = await response.json();
           
           if (response.ok) {
@@ -75,7 +77,7 @@ const ImpactPage: React.FC = () => {
             ]);
           }
         } else {
-          const response = await fetch(`http://localhost:8000/api/analytics/farmer/${user.id}`);
+          const response = await fetch(API_ENDPOINTS.farmerAnalytics(user.id.toString()));
           const data = await response.json();
           
           if (response.ok) {
@@ -146,9 +148,9 @@ const ImpactPage: React.FC = () => {
           onClick={() => navigate('/dashboard')}
           style={{float:'left', background:'none', border:'none', fontSize:'1.2rem', cursor:'pointer'}}
         >
-          ← Back
+          <ArrowLeft size={16} /> Back
         </button>
-        <h1>{isDriver ? '🚚 Driver Performance' : '🌍 My Green Impact'}</h1>
+        <h1>{isDriver ? <><Truck size={24} /> Driver Performance</> : <><Globe size={24} /> My Green Impact</>}</h1>
         <p>{isDriver ? 'Track your delivery performance and rankings' : 'Your contribution to a hunger-free world'}</p>
       </div>
 
@@ -175,7 +177,7 @@ const ImpactPage: React.FC = () => {
               </div>
             </div>
             <div className="carbon-badge">
-              <div style={{fontSize: '1.5rem', fontWeight:'bold'}}>{(userStats as any).rating} ⭐</div>
+              <div style={{fontSize: '1.5rem', fontWeight:'bold'}}>{(userStats as any).rating} <Star size={14} /></div>
               <div style={{fontSize: '0.8rem'}}>Avg Rating</div>
             </div>
           </div>
@@ -199,17 +201,17 @@ const ImpactPage: React.FC = () => {
       {!isDriver && (
         <div className="badges-grid">
           <div className="badge-card">
-            <span className="badge-icon">🍲</span>
+            <span className="badge-icon"><UtensilsCrossed size={20} /></span>
             <h3>Meal Hero</h3>
             <p>Donated over 100 meals</p>
           </div>
           <div className="badge-card">
-            <span className="badge-icon">♻️</span>
+            <span className="badge-icon"><Recycle size={20} /></span>
             <h3>Zero Waste</h3>
             <p>3 Months without waste</p>
           </div>
           <div className="badge-card" style={{opacity: 0.5}}>
-            <span className="badge-icon">🏆</span>
+            <span className="badge-icon"><Trophy size={20} /></span>
             <h3>Legend</h3>
             <p>Reach 5000 Points (Locked)</p>
           </div>
@@ -220,17 +222,17 @@ const ImpactPage: React.FC = () => {
       {isDriver && (
         <div className="badges-grid">
           <div className="badge-card">
-            <span className="badge-icon">🚚</span>
+            <span className="badge-icon"><Truck size={20} /></span>
             <h3>Delivery Master</h3>
             <p>Completed 100 deliveries</p>
           </div>
           <div className="badge-card">
-            <span className="badge-icon">⭐</span>
+            <span className="badge-icon"><Star size={20} /></span>
             <h3>5-Star Driver</h3>
             <p>Maintained 4.5+ rating</p>
           </div>
           <div className="badge-card" style={{opacity: 0.5}}>
-            <span className="badge-icon">🏆</span>
+            <span className="badge-icon"><Trophy size={20} /></span>
             <h3>Elite Driver</h3>
             <p>250+ Deliveries (Locked)</p>
           </div>
@@ -268,7 +270,7 @@ const ImpactPage: React.FC = () => {
                 </div>
                 <div style={{textAlign: 'right'}}>
                   <div style={{fontSize: '0.8rem', color: '#666'}}>Rating</div>
-                  <div className="lb-points">{(user as any).rating} ⭐</div>
+                  <div className="lb-points">{(user as any).rating} <Star size={14} /></div>
                 </div>
               </div>
             ) : (

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './Tracking.css';
+import { API_ENDPOINTS } from '../../../config/api';
+import { Truck, ArrowLeft, ArrowRight, Package, User, CheckCircle, Car, XCircle, MapPin, ShieldCheck, Check, Wheat, Phone, Building2 } from 'lucide-react';
 
 interface User {
   id: string;
@@ -57,7 +59,7 @@ const OrderTracking: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await fetch(`http://localhost:8000/api/listings/claimed/${user.id}`);
+      const response = await fetch(`${API_ENDPOINTS.marketplace.listings}?user_id=${user.id}`);
       const data = await response.json();
       
       if (response.ok) {
@@ -90,7 +92,7 @@ const OrderTracking: React.FC = () => {
     if (!orderId) return;
     
     try {
-      const response = await fetch(`http://localhost:8000/api/listings/${orderId}`);
+      const response = await fetch(API_ENDPOINTS.marketplace.listingById(orderId));
       const data = await response.json();
       
       if (response.ok) {
@@ -234,7 +236,7 @@ const OrderTracking: React.FC = () => {
           <div className="order-body">
             <div className="order-header" style={{ marginBottom: '1.5rem' }}>
               <div>
-                <h2 className="order-title" style={{ margin: 0 }}>🚚 Order Tracking</h2>
+                <h2 className="order-title" style={{ margin: 0 }}><Truck size={20} /> Order Tracking</h2>
                 <p style={{ color: '#666', marginTop: '0.5rem' }}>Track your active deliveries in real-time</p>
               </div>
               <button 
@@ -242,13 +244,13 @@ const OrderTracking: React.FC = () => {
                 onClick={() => navigate('/home')}
                 style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
               >
-                ← Back
+                <ArrowLeft size={14} /> Back
               </button>
             </div>
 
             {orders.length === 0 ? (
               <div className="empty-state" style={{ textAlign: 'center', padding: '3rem' }}>
-                <span style={{ fontSize: '4rem', display: 'block', marginBottom: '1rem' }}>📦</span>
+                <span style={{ fontSize: '4rem', display: 'block', marginBottom: '1rem' }}><Package size={48} /></span>
                 <h3 style={{ color: '#333', marginBottom: '0.5rem' }}>No Active Deliveries</h3>
                 <p style={{ color: '#666' }}>Orders with assigned drivers will appear here for tracking.</p>
                 <button 
@@ -296,7 +298,7 @@ const OrderTracking: React.FC = () => {
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      {ord.status === 'in_transit' ? '🚚' : '👨‍✈️'}
+                      {ord.status === 'in_transit' ? <Truck size={16} /> : <User size={16} />}
                     </div>
                     
                     <div style={{ flex: 1 }}>
@@ -314,11 +316,11 @@ const OrderTracking: React.FC = () => {
                           borderRadius: '20px',
                           fontWeight: '600'
                         }}>
-                          {ord.status === 'in_transit' ? '🚚 In Transit' : '✅ Driver Assigned'}
+                          {ord.status === 'in_transit' ? <><Truck size={12} /> In Transit</> : <><CheckCircle size={12} /> Driver Assigned</>}
                         </span>
                         {ord.driver_name && (
                           <span style={{ color: '#666' }}>
-                            🚗 {ord.driver_name}
+                            <Car size={14} /> {ord.driver_name}
                           </span>
                         )}
                       </div>
@@ -331,7 +333,7 @@ const OrderTracking: React.FC = () => {
                       alignItems: 'center',
                       gap: '0.25rem'
                     }}>
-                      Track →
+                      Track <ArrowRight size={14} />
                     </div>
                   </div>
                 ))}
@@ -354,7 +356,7 @@ const OrderTracking: React.FC = () => {
       <div className="tracking-container">
         <div className="tracking-card">
           <div className="error-state">
-            <span className="error-icon">❌</span>
+            <span className="error-icon"><XCircle size={32} /></span>
             <h3>{error || 'Order not found'}</h3>
             <button className="btn-back" onClick={() => navigate('/home')}>
               Back to Home
@@ -376,7 +378,7 @@ const OrderTracking: React.FC = () => {
         {/* Map Visualization Placeholder */}
         <div className="map-placeholder">
           <div className="map-content">
-            <span className="map-icon">📍</span>
+            <span className="map-icon"><MapPin size={20} /></span>
             <span className="map-text">Live Tracking</span>
             {order.status === 'in_transit' && (
               <div className="live-indicator">
@@ -405,7 +407,7 @@ const OrderTracking: React.FC = () => {
           {/* OTP Section - Only show when driver is assigned */}
           {order.status !== 'claimed' && order.status !== 'delivered' && (
             <div className="otp-section">
-              <span className="otp-label">🔐 Secure Verification Code</span>
+              <span className="otp-label"><ShieldCheck size={14} /> Secure Verification Code</span>
               <div className="otp-code">{order.otp}</div>
               <p className="otp-instruction">
                 {isDriver 
@@ -421,7 +423,7 @@ const OrderTracking: React.FC = () => {
           <div className="timeline">
             <div className={`timeline-item ${getStepStatus('claimed')}`}>
               <div className="timeline-dot">
-                {getStepStatus('claimed') === 'completed' ? '✓' : '1'}
+                {getStepStatus('claimed') === 'completed' ? <Check size={14} /> : '1'}
               </div>
               <div className="timeline-content">
                 <div className="timeline-title">Donation Claimed</div>
@@ -436,7 +438,7 @@ const OrderTracking: React.FC = () => {
             
             <div className={`timeline-item ${getStepStatus('assigned')}`}>
               <div className="timeline-dot">
-                {getStepStatus('assigned') === 'completed' ? '✓' : '2'}
+                {getStepStatus('assigned') === 'completed' ? <Check size={14} /> : '2'}
               </div>
               <div className="timeline-content">
                 <div className="timeline-title">Driver Assigned</div>
@@ -453,7 +455,7 @@ const OrderTracking: React.FC = () => {
 
             <div className={`timeline-item ${getStepStatus('in_transit')}`}>
               <div className="timeline-dot">
-                {getStepStatus('in_transit') === 'completed' ? '✓' : '3'}
+                {getStepStatus('in_transit') === 'completed' ? <Check size={14} /> : '3'}
               </div>
               <div className="timeline-content">
                 <div className="timeline-title">In Transit</div>
@@ -470,7 +472,7 @@ const OrderTracking: React.FC = () => {
 
             <div className={`timeline-item ${getStepStatus('delivered')}`}>
               <div className="timeline-dot">
-                {getStepStatus('delivered') === 'completed' ? '✓' : '4'}
+                {getStepStatus('delivered') === 'completed' ? <Check size={14} /> : '4'}
               </div>
               <div className="timeline-content">
                 <div className="timeline-title">Delivered</div>
@@ -491,7 +493,7 @@ const OrderTracking: React.FC = () => {
             {/* Pickup Details */}
             <div className="detail-card">
               <div className="detail-header">
-                <span className="detail-icon">🌾</span>
+                <span className="detail-icon"><Wheat size={16} /></span>
                 <span className="detail-label">Pickup Location</span>
               </div>
               <div className="detail-content">
@@ -499,7 +501,7 @@ const OrderTracking: React.FC = () => {
                 <div className="detail-address">{order.pickup_location || order.pickup_address || 'Address not specified'}</div>
                 {order.farmer_phone && (
                   <a href={`tel:${order.farmer_phone}`} className="detail-phone">
-                    📞 {order.farmer_phone}
+                    <Phone size={14} /> {order.farmer_phone}
                   </a>
                 )}
               </div>
@@ -508,7 +510,7 @@ const OrderTracking: React.FC = () => {
             {/* Delivery Details */}
             <div className="detail-card">
               <div className="detail-header">
-                <span className="detail-icon">🏢</span>
+                <span className="detail-icon"><Building2 size={16} /></span>
                 <span className="detail-label">Delivery Location</span>
               </div>
               <div className="detail-content">
@@ -516,7 +518,7 @@ const OrderTracking: React.FC = () => {
                 <div className="detail-address">{order.ngo_address || 'Address not specified'}</div>
                 {order.ngo_phone && (
                   <a href={`tel:${order.ngo_phone}`} className="detail-phone">
-                    📞 {order.ngo_phone}
+                    <Phone size={14} /> {order.ngo_phone}
                   </a>
                 )}
               </div>
@@ -526,21 +528,21 @@ const OrderTracking: React.FC = () => {
             {order.driver_name && !isDriver && (
               <div className="detail-card driver-card">
                 <div className="detail-header">
-                  <span className="detail-icon">🚚</span>
+                  <span className="detail-icon"><Truck size={16} /></span>
                   <span className="detail-label">Driver</span>
                 </div>
                 <div className="detail-content">
                   <div className="driver-info-row">
-                    <div className="driver-avatar">👨‍✈️</div>
+                    <div className="driver-avatar"><User size={20} /></div>
                     <div className="driver-details">
                       <div className="detail-name">{order.driver_name}</div>
                       {order.vehicle_number && (
-                        <div className="vehicle-number">🚗 {order.vehicle_number}</div>
+                        <div className="vehicle-number"><Car size={14} /> {order.vehicle_number}</div>
                       )}
                     </div>
                     {order.driver_phone && (
                       <a href={`tel:${order.driver_phone}`} className="call-btn">
-                        📞 Call
+                        <Phone size={14} /> Call
                       </a>
                     )}
                   </div>
@@ -556,7 +558,7 @@ const OrderTracking: React.FC = () => {
           </div>
 
           <button className="btn-back" onClick={() => navigate(isNGO ? '/claimed-donations' : '/home')}>
-            ← Back
+            <ArrowLeft size={14} /> Back
           </button>
         </div>
       </div>

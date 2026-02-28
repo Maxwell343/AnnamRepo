@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Users, User, Package, Scale, CheckCircle, Tag, CreditCard,
+  ClipboardList, AlertTriangle, Settings, DollarSign, Globe,
+  Car, Siren, BarChart3, Radio, Database, HardDrive, Zap,
+  CircleDot, Clock, Truck, XCircle, Wheat, Building2, Store,
+  Search, Bell, PartyPopper, RefreshCw, Sun, Moon, Trophy,
+  Map, ArrowUp, ArrowDown, Milk, Sprout, ShoppingBag, Cog
+} from 'lucide-react';
 import './AdminDashboard.css';
 
 // Types
@@ -11,7 +19,7 @@ interface StatCard {
   change: string;
   changeValue: number;
   positive: boolean;
-  icon: string;
+  icon: React.ReactNode;
   iconClass: string;
   trend: number[];
   description: string;
@@ -19,7 +27,7 @@ interface StatCard {
 
 interface ActivityItem {
   id: string;
-  icon: string;
+  icon: React.ReactNode;
   text: React.ReactNode;
   time: string;
   timestamp: Date;
@@ -31,7 +39,7 @@ interface ActivityItem {
 interface Alert {
   id: string;
   type: 'warning' | 'critical' | 'info' | 'success';
-  icon: string;
+  icon: React.ReactNode;
   message: string;
   timestamp: Date;
   dismissible: boolean;
@@ -40,7 +48,7 @@ interface Alert {
 
 interface QuickAction {
   id: string;
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   description: string;
   color: string;
@@ -54,20 +62,20 @@ interface SystemMetric {
   max: number;
   unit: string;
   status: 'healthy' | 'warning' | 'critical';
-  icon: string;
+  icon: React.ReactNode;
 }
 
 interface OrderStatus {
   status: string;
   count: number;
   color: string;
-  icon: string;
+  icon: React.ReactNode;
 }
 
 interface TopPerformer {
   id: string;
   name: string;
-  avatar: string;
+  avatar: React.ReactNode;
   role: string;
   metric: string;
   value: string;
@@ -223,21 +231,21 @@ const DonutChart: React.FC<{ data: OrderStatus[] }> = ({ data }) => {
 };
 
 // Revenue data by tab
-const revenueDataMap: Record<RevenueTab, { bars: number[]; labels: string[]; summary: { total: string; avg: string; avgChange: string; txns: string; txnsChange: string; totalChange: string } }> = {
+const revenueDataMap: Record<RevenueTab, { bars: number[]; labels: string[]; summary: { total: string; avg: string; avgChange: React.ReactNode; txns: string; txnsChange: React.ReactNode; totalChange: React.ReactNode } }> = {
   daily: {
     bars: [45, 62, 38, 75, 52, 68, 80, 55, 72, 90, 65, 78, 82, 60, 70, 88, 50, 76, 84, 58, 66, 92, 74, 86, 48, 70, 95, 64, 78, 100],
     labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30'],
-    summary: { total: '₹4,28,000', avg: '₹14,267', avgChange: '↑ 8%', txns: '342', txnsChange: '↑ 15%', totalChange: '↑ 23% vs last month' }
+    summary: { total: '₹4,28,000', avg: '₹14,267', avgChange: <><ArrowUp size={12} /> 8%</>, txns: '342', txnsChange: <><ArrowUp size={12} /> 15%</>, totalChange: <><ArrowUp size={12} /> 23% vs last month</> }
   },
   weekly: {
     bars: [60, 78, 85, 72, 65, 80, 45, 90, 75, 88, 95, 68],
     labels: ['W1 Jan', 'W2 Jan', 'W3 Jan', 'W4 Jan', 'W1 Feb', 'W2 Feb', 'W3 Feb', 'W4 Feb', 'W1 Mar', 'W2 Mar', 'W3 Mar', 'W4 Mar'],
-    summary: { total: '₹12,84,000', avg: '₹1,07,000', avgChange: '↑ 12%', txns: '1,026', txnsChange: '↑ 18%', totalChange: '↑ 19% vs last quarter' }
+    summary: { total: '₹12,84,000', avg: '₹1,07,000', avgChange: <><ArrowUp size={12} /> 12%</>, txns: '1,026', txnsChange: <><ArrowUp size={12} /> 18%</>, totalChange: <><ArrowUp size={12} /> 19% vs last quarter</> }
   },
   monthly: {
     bars: [65, 80, 45, 90, 75, 85, 95, 70, 88, 92, 78, 100],
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    summary: { total: '₹51,36,000', avg: '₹4,28,000', avgChange: '↑ 23%', txns: '4,104', txnsChange: '↑ 22%', totalChange: '↑ 31% vs last year' }
+    summary: { total: '₹51,36,000', avg: '₹4,28,000', avgChange: <><ArrowUp size={12} /> 23%</>, txns: '4,104', txnsChange: <><ArrowUp size={12} /> 22%</>, totalChange: <><ArrowUp size={12} /> 31% vs last year</> }
   }
 };
 
@@ -284,12 +292,12 @@ const AdminDashboard: React.FC = () => {
 
   // Quick Actions
   const quickActions: (QuickAction & { route: string })[] = [
-    { id: '1', icon: '👥', label: 'Manage Users', description: 'View and edit user accounts', color: '#3b82f6', badge: 12, route: '/admin/users' },
-    { id: '2', icon: '📦', label: 'Orders', description: 'Track and manage orders', color: '#10b981', badge: 156, route: '/admin/orders' },
-    { id: '3', icon: '⚖️', label: 'Disputes', description: 'Resolve customer disputes', color: '#f59e0b', badge: 7, route: '/admin/disputes' },
-    { id: '4', icon: '✅', label: 'KYC Approvals', description: 'Verify user documents', color: '#8b5cf6', badge: 23, route: '/admin/users' },
-    { id: '5', icon: '🏷️', label: 'Listings', description: 'Moderate product listings', color: '#ec4899', badge: 45, route: '/admin/listings' },
-    { id: '6', icon: '💳', label: 'Payouts', description: 'Process payments', color: '#06b6d4', badge: 8, route: '/admin/payouts' },
+    { id: '1', icon: <Users size={16} />, label: 'Manage Users', description: 'View and edit user accounts', color: '#3b82f6', badge: 12, route: '/admin/users' },
+    { id: '2', icon: <Package size={16} />, label: 'Orders', description: 'Track and manage orders', color: '#10b981', badge: 156, route: '/admin/orders' },
+    { id: '3', icon: <Scale size={16} />, label: 'Disputes', description: 'Resolve customer disputes', color: '#f59e0b', badge: 7, route: '/admin/disputes' },
+    { id: '4', icon: <CheckCircle size={16} />, label: 'KYC Approvals', description: 'Verify user documents', color: '#8b5cf6', badge: 23, route: '/admin/users' },
+    { id: '5', icon: <Tag size={16} />, label: 'Listings', description: 'Moderate product listings', color: '#ec4899', badge: 45, route: '/admin/listings' },
+    { id: '6', icon: <CreditCard size={16} />, label: 'Payouts', description: 'Process payments', color: '#06b6d4', badge: 8, route: '/admin/payouts' },
   ];
 
   // Time range options
@@ -302,14 +310,14 @@ const AdminDashboard: React.FC = () => {
   ];
 
   // Activity filter options
-  const activityFilters: { value: ActivityFilter; label: string; icon: string }[] = [
-    { value: 'all', label: 'All', icon: '📋' },
-    { value: 'user', label: 'Users', icon: '👤' },
-    { value: 'order', label: 'Orders', icon: '📦' },
-    { value: 'dispute', label: 'Disputes', icon: '⚠️' },
-    { value: 'kyc', label: 'KYC', icon: '✅' },
-    { value: 'listing', label: 'Listings', icon: '🏷️' },
-    { value: 'system', label: 'System', icon: '⚙️' },
+  const activityFilters: { value: ActivityFilter; label: string; icon: React.ReactNode }[] = [
+    { value: 'all', label: 'All', icon: <ClipboardList size={14} /> },
+    { value: 'user', label: 'Users', icon: <User size={14} /> },
+    { value: 'order', label: 'Orders', icon: <Package size={14} /> },
+    { value: 'dispute', label: 'Disputes', icon: <AlertTriangle size={14} /> },
+    { value: 'kyc', label: 'KYC', icon: <CheckCircle size={14} /> },
+    { value: 'listing', label: 'Listings', icon: <Tag size={14} /> },
+    { value: 'system', label: 'System', icon: <Settings size={14} /> },
   ];
 
   // Load dashboard data
@@ -329,7 +337,7 @@ const AdminDashboard: React.FC = () => {
           change: '+12%', 
           changeValue: 12,
           positive: true, 
-          icon: '👥', 
+          icon: <Users size={16} />, 
           iconClass: 'users',
           trend: [2100, 2250, 2380, 2520, 2650, 2720, 2847],
           description: 'Active registered users on the platform'
@@ -342,7 +350,7 @@ const AdminDashboard: React.FC = () => {
           change: '+8%', 
           changeValue: 8,
           positive: true, 
-          icon: '📦', 
+          icon: <Package size={16} />, 
           iconClass: 'orders',
           trend: [120, 135, 142, 138, 150, 148, 156],
           description: 'Orders currently being processed'
@@ -355,7 +363,7 @@ const AdminDashboard: React.FC = () => {
           change: '+23%', 
           changeValue: 23,
           positive: true, 
-          icon: '💰', 
+          icon: <DollarSign size={16} />, 
           iconClass: 'revenue',
           trend: [280000, 310000, 350000, 380000, 395000, 410000, 420000],
           description: 'Month-to-date revenue collected'
@@ -368,7 +376,7 @@ const AdminDashboard: React.FC = () => {
           change: '+15%', 
           changeValue: 15,
           positive: true, 
-          icon: '🌍', 
+          icon: <Globe size={16} />, 
           iconClass: 'impact',
           trend: [8500, 9200, 10100, 10800, 11400, 12000, 12450],
           description: 'Kilograms of food waste prevented'
@@ -381,7 +389,7 @@ const AdminDashboard: React.FC = () => {
           change: '-3', 
           changeValue: -3,
           positive: true, 
-          icon: '⚖️', 
+          icon: <Scale size={16} />, 
           iconClass: 'disputes',
           trend: [15, 12, 10, 11, 9, 8, 7],
           description: 'Disputes awaiting resolution'
@@ -394,7 +402,7 @@ const AdminDashboard: React.FC = () => {
           change: '+5', 
           changeValue: 5,
           positive: true, 
-          icon: '🚗', 
+          icon: <Car size={16} />, 
           iconClass: 'drivers',
           trend: [32, 34, 36, 37, 39, 41, 42],
           description: 'Drivers currently online'
@@ -405,7 +413,7 @@ const AdminDashboard: React.FC = () => {
       setRecentActivity([
         { 
           id: '1', 
-          icon: '👤', 
+          icon: <User size={16} />, 
           text: <><strong>Ramesh Kumar</strong> registered as a new farmer</>, 
           time: '5 min ago',
           timestamp: new Date(Date.now() - 5 * 60 * 1000),
@@ -414,7 +422,7 @@ const AdminDashboard: React.FC = () => {
         },
         { 
           id: '2', 
-          icon: '📦', 
+          icon: <Package size={16} />, 
           text: <><strong>Order #1234</strong> marked as delivered</>, 
           time: '12 min ago',
           timestamp: new Date(Date.now() - 12 * 60 * 1000),
@@ -423,7 +431,7 @@ const AdminDashboard: React.FC = () => {
         },
         { 
           id: '3', 
-          icon: '⚠️', 
+          icon: <AlertTriangle size={16} />, 
           text: <>Dispute raised on <strong>Order #1198</strong></>, 
           time: '25 min ago',
           timestamp: new Date(Date.now() - 25 * 60 * 1000),
@@ -433,7 +441,7 @@ const AdminDashboard: React.FC = () => {
         },
         { 
           id: '4', 
-          icon: '✅', 
+          icon: <CheckCircle size={16} />, 
           text: <>KYC approved for <strong>Priya Devi</strong></>, 
           time: '1 hour ago',
           timestamp: new Date(Date.now() - 60 * 60 * 1000),
@@ -442,7 +450,7 @@ const AdminDashboard: React.FC = () => {
         },
         { 
           id: '5', 
-          icon: '🏷️', 
+          icon: <Tag size={16} />, 
           text: <>New listing <strong>"Organic Basmati"</strong> submitted for review</>, 
           time: '2 hours ago',
           timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
@@ -452,7 +460,7 @@ const AdminDashboard: React.FC = () => {
         },
         { 
           id: '6', 
-          icon: '💳', 
+          icon: <CreditCard size={16} />, 
           text: <>Payout of <strong>₹15,000</strong> processed for Farmer Collective</>, 
           time: '3 hours ago',
           timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000),
@@ -461,7 +469,7 @@ const AdminDashboard: React.FC = () => {
         },
         { 
           id: '7', 
-          icon: '🚗', 
+          icon: <Car size={16} />, 
           text: <>Driver <strong>Suresh M.</strong> completed 50 deliveries</>, 
           time: '4 hours ago',
           timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
@@ -470,7 +478,7 @@ const AdminDashboard: React.FC = () => {
         },
         { 
           id: '8', 
-          icon: '⚙️', 
+          icon: <Settings size={16} />, 
           text: <>System backup completed successfully</>, 
           time: '5 hours ago',
           timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000),
@@ -484,7 +492,7 @@ const AdminDashboard: React.FC = () => {
         {
           id: '1',
           type: 'warning',
-          icon: '⚠️',
+          icon: <AlertTriangle size={16} />,
           message: '3 listings pending moderation for over 24 hours',
           timestamp: new Date(),
           dismissible: true,
@@ -493,7 +501,7 @@ const AdminDashboard: React.FC = () => {
         {
           id: '2',
           type: 'critical',
-          icon: '🚨',
+          icon: <Siren size={16} />,
           message: '2 drivers have unresolved payout failures',
           timestamp: new Date(),
           dismissible: true,
@@ -502,7 +510,7 @@ const AdminDashboard: React.FC = () => {
         {
           id: '3',
           type: 'info',
-          icon: '📊',
+          icon: <BarChart3 size={16} />,
           message: 'Weekly analytics report is ready for download',
           timestamp: new Date(),
           dismissible: true,
@@ -512,28 +520,28 @@ const AdminDashboard: React.FC = () => {
 
       // System Metrics
       setSystemMetrics([
-        { id: '1', label: 'API Response', value: 120, max: 500, unit: 'ms', status: 'healthy', icon: '📡' },
-        { id: '2', label: 'Database', value: 87, max: 100, unit: '%', status: 'warning', icon: '🗄️' },
-        { id: '3', label: 'Memory', value: 62, max: 100, unit: '%', status: 'healthy', icon: '💾' },
-        { id: '4', label: 'CPU Usage', value: 45, max: 100, unit: '%', status: 'healthy', icon: '⚡' },
-        { id: '5', label: 'Uptime', value: 99.9, max: 100, unit: '%', status: 'healthy', icon: '🟢' },
+        { id: '1', label: 'API Response', value: 120, max: 500, unit: 'ms', status: 'healthy', icon: <Radio size={16} /> },
+        { id: '2', label: 'Database', value: 87, max: 100, unit: '%', status: 'warning', icon: <Database size={16} /> },
+        { id: '3', label: 'Memory', value: 62, max: 100, unit: '%', status: 'healthy', icon: <HardDrive size={16} /> },
+        { id: '4', label: 'CPU Usage', value: 45, max: 100, unit: '%', status: 'healthy', icon: <Zap size={16} /> },
+        { id: '5', label: 'Uptime', value: 99.9, max: 100, unit: '%', status: 'healthy', icon: <CircleDot size={16} /> },
       ]);
 
       // Order Statuses
       setOrderStatuses([
-        { status: 'Pending', count: 45, color: '#f59e0b', icon: '⏳' },
-        { status: 'Processing', count: 62, color: '#3b82f6', icon: '⚙️' },
-        { status: 'In Transit', count: 38, color: '#8b5cf6', icon: '🚚' },
-        { status: 'Delivered', count: 156, color: '#10b981', icon: '✅' },
-        { status: 'Cancelled', count: 12, color: '#ef4444', icon: '❌' },
+        { status: 'Pending', count: 45, color: '#f59e0b', icon: <Clock size={16} /> },
+        { status: 'Processing', count: 62, color: '#3b82f6', icon: <Cog size={16} /> },
+        { status: 'In Transit', count: 38, color: '#8b5cf6', icon: <Truck size={16} /> },
+        { status: 'Delivered', count: 156, color: '#10b981', icon: <CheckCircle size={16} /> },
+        { status: 'Cancelled', count: 12, color: '#ef4444', icon: <XCircle size={16} /> },
       ]);
 
       // Top Performers
       setTopPerformers([
-        { id: '1', name: 'Ramesh Farms', avatar: '👨‍🌾', role: 'Farmer', metric: 'Revenue', value: '₹1.2L', trend: 23 },
-        { id: '2', name: 'Suresh M.', avatar: '🚗', role: 'Driver', metric: 'Deliveries', value: '287', trend: 15 },
-        { id: '3', name: 'Green Valley Co.', avatar: '🏢', role: 'Supplier', metric: 'Orders', value: '156', trend: 18 },
-        { id: '4', name: 'Priya Store', avatar: '🏪', role: 'Buyer', metric: 'Purchases', value: '₹85K', trend: 12 },
+        { id: '1', name: 'Ramesh Farms', avatar: <Wheat size={16} />, role: 'Farmer', metric: 'Revenue', value: '₹1.2L', trend: 23 },
+        { id: '2', name: 'Suresh M.', avatar: <Car size={16} />, role: 'Driver', metric: 'Deliveries', value: '287', trend: 15 },
+        { id: '3', name: 'Green Valley Co.', avatar: <Building2 size={16} />, role: 'Supplier', metric: 'Orders', value: '156', trend: 18 },
+        { id: '4', name: 'Priya Store', avatar: <Store size={16} />, role: 'Buyer', metric: 'Purchases', value: '₹85K', trend: 12 },
       ]);
 
       setLastUpdated(new Date());
@@ -637,7 +645,7 @@ const AdminDashboard: React.FC = () => {
         <div className="header-left">
           <div className="header-title-section">
             <h1 className="header-title">
-              <span className="header-icon">📊</span>
+              <span className="header-icon"><BarChart3 size={20} /></span>
               Dashboard
             </h1>
             <p className="header-subtitle">
@@ -649,7 +657,7 @@ const AdminDashboard: React.FC = () => {
         <div className="header-right">
           {/* Search */}
           <div className="header-search">
-            <span className="search-icon">🔍</span>
+            <span className="search-icon"><Search size={16} /></span>
             <input
               type="text"
               placeholder="Search anything..."
@@ -694,7 +702,7 @@ const AdminDashboard: React.FC = () => {
                 className="notification-btn"
                 onClick={() => setShowNotifications(!showNotifications)}
               >
-                🔔
+                <Bell size={18} />
                 {alerts.length > 0 && (
                   <span className="notification-badge">{alerts.length}</span>
                 )}
@@ -709,7 +717,7 @@ const AdminDashboard: React.FC = () => {
                   <div className="notifications-list">
                     {alerts.length === 0 ? (
                       <div className="notifications-empty">
-                        <span>🎉</span>
+                        <span><PartyPopper size={20} /></span>
                         <p>No new notifications</p>
                       </div>
                     ) : (
@@ -748,7 +756,7 @@ const AdminDashboard: React.FC = () => {
               disabled={isRefreshing}
               title="Refresh data"
             >
-              🔄
+              <RefreshCw size={16} />
             </button>
 
             {/* Dark Mode Toggle */}
@@ -757,7 +765,7 @@ const AdminDashboard: React.FC = () => {
               onClick={() => setDarkMode(!darkMode)}
               title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              {darkMode ? '☀️' : '🌙'}
+              {darkMode ? <Sun size={16} /> : <Moon size={16} />}
             </button>
           </div>
 
@@ -826,7 +834,7 @@ const AdminDashboard: React.FC = () => {
                 <AnimatedCounter value={stat.value} />
               </span>
               <span className={`admin-stat-card__change ${stat.positive ? 'positive' : 'negative'}`}>
-                {stat.positive ? '↑' : '↓'} {stat.change}
+                {stat.positive ? <ArrowUp size={12} /> : <ArrowDown size={12} />} {stat.change}
               </span>
             </div>
             <div className="admin-stat-card__chart">
@@ -894,7 +902,7 @@ const AdminDashboard: React.FC = () => {
         <div className="admin-dashboard__card activity-card">
           <div className="admin-dashboard__card-header">
             <h3 className="admin-dashboard__card-title">
-              <span>📋</span> Recent Activity
+              <span><ClipboardList size={16} /></span> Recent Activity
             </h3>
             <div className="card-header-actions">
               <div className="activity-filters">
@@ -917,7 +925,7 @@ const AdminDashboard: React.FC = () => {
           <div className={`activity-list ${showAllActivity ? 'expanded' : ''}`}>
             {filteredActivities.length === 0 ? (
               <div className="activity-empty">
-                <span>🔍</span>
+                <span><Search size={20} /></span>
                 <p>No activities match your filter</p>
               </div>
             ) : (
@@ -954,7 +962,7 @@ const AdminDashboard: React.FC = () => {
         <div className="admin-dashboard__card orders-card">
           <div className="admin-dashboard__card-header">
             <h3 className="admin-dashboard__card-title">
-              <span>📦</span> Order Status
+              <span><Package size={16} /></span> Order Status
             </h3>
             <button className="admin-dashboard__card-action" onClick={() => setShowOrderDetails(!showOrderDetails)}>
               {showOrderDetails ? 'Chart View' : 'Details'}
@@ -1000,7 +1008,7 @@ const AdminDashboard: React.FC = () => {
         <div className="admin-dashboard__card revenue-card">
           <div className="admin-dashboard__card-header">
             <h3 className="admin-dashboard__card-title">
-              <span>💰</span> Revenue Overview
+              <span><DollarSign size={16} /></span> Revenue Overview
             </h3>
             <div className="card-header-tabs">
               {(['daily', 'weekly', 'monthly'] as RevenueTab[]).map(tab => (
@@ -1056,7 +1064,7 @@ const AdminDashboard: React.FC = () => {
         <div className="admin-dashboard__card system-card">
           <div className="admin-dashboard__card-header">
             <h3 className="admin-dashboard__card-title">
-              <span>⚡</span> System Health
+              <span><Zap size={16} /></span> System Health
             </h3>
             <span className="system-status-badge healthy">All Systems Operational</span>
           </div>
@@ -1089,7 +1097,7 @@ const AdminDashboard: React.FC = () => {
         <div className="admin-dashboard__card performers-card">
           <div className="admin-dashboard__card-header">
             <h3 className="admin-dashboard__card-title">
-              <span>🏆</span> Top Performers
+              <span><Trophy size={16} /></span> Top Performers
             </h3>
             <button className="admin-dashboard__card-action" onClick={() => setShowAllPerformers(!showAllPerformers)}>
               {showAllPerformers ? 'Show Less' : 'View All'}
@@ -1097,10 +1105,10 @@ const AdminDashboard: React.FC = () => {
           </div>
           <div className="performers-list">
             {(showAllPerformers ? [...topPerformers, 
-              { id: '5', name: 'Anita Dairy', avatar: '🐄', role: 'Farmer', metric: 'Volume', value: '₹72K', trend: 10 },
-              { id: '6', name: 'Kisan Express', avatar: '🚚', role: 'Driver', metric: 'Deliveries', value: '198', trend: 8 },
-              { id: '7', name: 'Fresh Mart', avatar: '🏬', role: 'Buyer', metric: 'Purchases', value: '₹65K', trend: 14 },
-              { id: '8', name: 'Organic Fields', avatar: '🌱', role: 'Supplier', metric: 'Orders', value: '112', trend: 9 },
+              { id: '5', name: 'Anita Dairy', avatar: <Milk size={16} />, role: 'Farmer', metric: 'Volume', value: '₹72K', trend: 10 },
+              { id: '6', name: 'Kisan Express', avatar: <Truck size={16} />, role: 'Driver', metric: 'Deliveries', value: '198', trend: 8 },
+              { id: '7', name: 'Fresh Mart', avatar: <ShoppingBag size={16} />, role: 'Buyer', metric: 'Purchases', value: '₹65K', trend: 14 },
+              { id: '8', name: 'Organic Fields', avatar: <Sprout size={16} />, role: 'Supplier', metric: 'Orders', value: '112', trend: 9 },
             ] : topPerformers).map((performer, index) => (
               <div 
                 key={performer.id} 
@@ -1115,7 +1123,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="performer-item__metric">
                   <span className="performer-item__value">{performer.value}</span>
-                  <span className="performer-item__trend positive">↑ {performer.trend}%</span>
+                  <span className="performer-item__trend positive"><ArrowUp size={12} /> {performer.trend}%</span>
                 </div>
               </div>
             ))}
@@ -1126,7 +1134,7 @@ const AdminDashboard: React.FC = () => {
         <div className="admin-dashboard__card geo-card">
           <div className="admin-dashboard__card-header">
             <h3 className="admin-dashboard__card-title">
-              <span>🗺️</span> Geographic Distribution
+              <span><Map size={16} /></span> Geographic Distribution
             </h3>
             <button className="admin-dashboard__card-action" onClick={() => setShowGeoMap(true)}>View Map</button>
           </div>
@@ -1171,7 +1179,7 @@ const AdminDashboard: React.FC = () => {
         <div className="geo-map-overlay" onClick={() => setShowGeoMap(false)}>
           <div className="geo-map-modal" onClick={(e) => e.stopPropagation()}>
             <div className="geo-map-modal__header">
-              <h3>🗺️ Geographic Distribution Map</h3>
+              <h3><Map size={16} /> Geographic Distribution Map</h3>
               <button className="geo-map-modal__close" onClick={() => setShowGeoMap(false)}>×</button>
             </div>
             <div className="geo-map-modal__body">

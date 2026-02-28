@@ -1,4 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  Clock, User, Package, Truck, Check, X, AlertTriangle, Circle, Heart, Building2,
+  ArrowUp, ArrowDown, ArrowLeft, ArrowRight, MapPin, Flag, Eye, ClipboardList,
+  ScrollText, Phone, Search, Download, SlidersHorizontal, List, LayoutGrid,
+  CheckSquare, HelpCircle, Info, Trash2, Map,
+} from 'lucide-react';
 import './OrderControlPanel.css';
 
 // ============ Types ============
@@ -100,27 +106,27 @@ interface FilterState {
 }
 
 // ============ Constants ============
-const STATUS_CONFIG: Record<OrderStatus, { icon: string; color: string; bgColor: string; label: string }> = {
-  pending: { icon: '⏳', color: '#d97706', bgColor: '#fef3c7', label: 'Pending' },
-  assigned: { icon: '👤', color: '#3b82f6', bgColor: '#dbeafe', label: 'Assigned' },
-  'picked-up': { icon: '📦', color: '#8b5cf6', bgColor: '#ede9fe', label: 'Picked Up' },
-  'in-transit': { icon: '🚚', color: '#06b6d4', bgColor: '#cffafe', label: 'In Transit' },
-  delivered: { icon: '✓', color: '#16a34a', bgColor: '#dcfce7', label: 'Delivered' },
-  cancelled: { icon: '✕', color: '#6b7280', bgColor: '#f3f4f6', label: 'Cancelled' },
-  failed: { icon: '⚠', color: '#dc2626', bgColor: '#fee2e2', label: 'Failed' },
+const STATUS_CONFIG: Record<OrderStatus, { icon: React.ReactNode; color: string; bgColor: string; label: string }> = {
+  pending: { icon: <Clock size={14} />, color: '#d97706', bgColor: '#fef3c7', label: 'Pending' },
+  assigned: { icon: <User size={14} />, color: '#3b82f6', bgColor: '#dbeafe', label: 'Assigned' },
+  'picked-up': { icon: <Package size={14} />, color: '#8b5cf6', bgColor: '#ede9fe', label: 'Picked Up' },
+  'in-transit': { icon: <Truck size={14} />, color: '#06b6d4', bgColor: '#cffafe', label: 'In Transit' },
+  delivered: { icon: <Check size={14} />, color: '#16a34a', bgColor: '#dcfce7', label: 'Delivered' },
+  cancelled: { icon: <X size={14} />, color: '#6b7280', bgColor: '#f3f4f6', label: 'Cancelled' },
+  failed: { icon: <AlertTriangle size={14} />, color: '#dc2626', bgColor: '#fee2e2', label: 'Failed' },
 };
 
-const PRIORITY_CONFIG: Record<OrderPriority, { icon: string; color: string; bgColor: string; label: string }> = {
-  urgent: { icon: '🔴', color: '#dc2626', bgColor: '#fee2e2', label: 'Urgent' },
-  high: { icon: '🟠', color: '#ea580c', bgColor: '#ffedd5', label: 'High' },
-  medium: { icon: '🟡', color: '#d97706', bgColor: '#fef3c7', label: 'Medium' },
-  low: { icon: '🟢', color: '#16a34a', bgColor: '#dcfce7', label: 'Low' },
+const PRIORITY_CONFIG: Record<OrderPriority, { icon: React.ReactNode; color: string; bgColor: string; label: string }> = {
+  urgent: { icon: <Circle size={14} fill="#dc2626" color="#dc2626" />, color: '#dc2626', bgColor: '#fee2e2', label: 'Urgent' },
+  high: { icon: <Circle size={14} fill="#ea580c" color="#ea580c" />, color: '#ea580c', bgColor: '#ffedd5', label: 'High' },
+  medium: { icon: <Circle size={14} fill="#d97706" color="#d97706" />, color: '#d97706', bgColor: '#fef3c7', label: 'Medium' },
+  low: { icon: <Circle size={14} fill="#16a34a" color="#16a34a" />, color: '#16a34a', bgColor: '#dcfce7', label: 'Low' },
 };
 
-const CUSTOMER_TYPE_CONFIG: Record<string, { icon: string; color: string }> = {
-  individual: { icon: '👤', color: '#6b7280' },
-  ngo: { icon: '💚', color: '#16a34a' },
-  business: { icon: '🏢', color: '#3b82f6' },
+const CUSTOMER_TYPE_CONFIG: Record<string, { icon: React.ReactNode; color: string }> = {
+  individual: { icon: <User size={14} />, color: '#6b7280' },
+  ngo: { icon: <Heart size={14} />, color: '#16a34a' },
+  business: { icon: <Building2 size={14} />, color: '#3b82f6' },
 };
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];
@@ -408,7 +414,7 @@ const getTimeUntil = (dateString: string): string => {
 
 // ============ Sub Components ============
 const StatCard: React.FC<{
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   value: number | string;
   trend?: { value: number; isPositive: boolean };
@@ -429,7 +435,7 @@ const StatCard: React.FC<{
     </div>
     {trend && (
       <div className={`ocp-stat-card__trend ${trend.isPositive ? 'positive' : 'negative'}`}>
-        {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
+        {trend.isPositive ? <ArrowUp size={14} /> : <ArrowDown size={14} />} {Math.abs(trend.value)}%
       </div>
     )}
   </div>
@@ -484,12 +490,12 @@ const OrderRow: React.FC<{
       <td>
         <div className="ocp-row__route">
           <div className="ocp-row__route-point">
-            <span className="ocp-row__route-icon pickup">📍</span>
+            <span className="ocp-row__route-icon pickup"><MapPin size={14} /></span>
             <span className="ocp-row__route-address">{order.pickup.address.split(',')[0]}</span>
           </div>
           <div className="ocp-row__route-line" />
           <div className="ocp-row__route-point">
-            <span className="ocp-row__route-icon dropoff">🏁</span>
+            <span className="ocp-row__route-icon dropoff"><Flag size={14} /></span>
             <span className="ocp-row__route-address">{order.dropoff.address.split(',')[0]}</span>
           </div>
         </div>
@@ -507,7 +513,7 @@ const OrderRow: React.FC<{
           </div>
         ) : (
           <span className="ocp-row__unassigned">
-            <span className="icon">⚠️</span>
+            <span className="icon"><AlertTriangle size={14} /></span>
             Unassigned
           </span>
         )}
@@ -532,20 +538,20 @@ const OrderRow: React.FC<{
         <div className="ocp-row__total">
           <span className="ocp-row__amount">{formatCurrency(order.total)}</span>
           <span className={`ocp-row__payment ${order.paymentStatus}`}>
-            {order.paymentStatus === 'paid' ? '✓ Paid' : order.paymentStatus}
+            {order.paymentStatus === 'paid' ? <><Check size={12} /> Paid</> : order.paymentStatus}
           </span>
         </div>
       </td>
       <td>
         {order.estimatedDelivery && order.status !== 'delivered' && order.status !== 'cancelled' && (
           <div className="ocp-row__eta">
-            <span className="icon">🕐</span>
+            <span className="icon"><Clock size={14} /></span>
             <span className="time">{getTimeUntil(order.estimatedDelivery)}</span>
           </div>
         )}
         {order.actualDelivery && order.status === 'delivered' && (
           <div className="ocp-row__delivered">
-            <span className="icon">✓</span>
+            <span className="icon"><Check size={14} /></span>
             <span className="time">{formatTime(order.actualDelivery)}</span>
           </div>
         )}
@@ -557,7 +563,7 @@ const OrderRow: React.FC<{
             onClick={() => onView(order)}
             title="View Details"
           >
-            👁️
+            <Eye size={14} />
           </button>
           {canAssign && (
             <button
@@ -565,7 +571,7 @@ const OrderRow: React.FC<{
               onClick={() => onAssign(order)}
               title="Assign Driver"
             >
-              🚚
+              <Truck size={14} />
             </button>
           )}
           {canUpdateStatus && (
@@ -581,7 +587,7 @@ const OrderRow: React.FC<{
               }}
               title="Update Status"
             >
-              ➡️
+              <ArrowRight size={14} />
             </button>
           )}
           {canCancel && (
@@ -590,7 +596,7 @@ const OrderRow: React.FC<{
               onClick={() => onCancel(order.id)}
               title="Cancel Order"
             >
-              ✕
+              <X size={14} />
             </button>
           )}
         </div>
@@ -632,11 +638,11 @@ const KanbanCard: React.FC<{
 
       <div className="ocp-kanban-card__route">
         <div className="pickup">
-          <span>📍</span>
+          <span><MapPin size={14} /></span>
           <span>{order.pickup.address.split(',')[0]}</span>
         </div>
         <div className="dropoff">
-          <span>🏁</span>
+          <span><Flag size={14} /></span>
           <span>{order.dropoff.address.split(',')[0]}</span>
         </div>
       </div>
@@ -749,15 +755,15 @@ const OrderDetailsModal: React.FC<{
               </span>
             </div>
           </div>
-          <button className="ocp-modal__close" onClick={onClose}>✕</button>
+          <button className="ocp-modal__close" onClick={onClose}><X size={16} /></button>
         </div>
 
         <div className="ocp-modal__tabs">
           {[
-            { key: 'details', label: 'Details', icon: '📋' },
-            { key: 'items', label: 'Items', icon: '📦' },
-            { key: 'timeline', label: 'Timeline', icon: '📜' },
-            { key: 'tracking', label: 'Tracking', icon: '📍' },
+            { key: 'details', label: 'Details', icon: <ClipboardList size={14} /> },
+            { key: 'items', label: 'Items', icon: <Package size={14} /> },
+            { key: 'timeline', label: 'Timeline', icon: <ScrollText size={14} /> },
+            { key: 'tracking', label: 'Tracking', icon: <MapPin size={14} /> },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -802,7 +808,7 @@ const OrderDetailsModal: React.FC<{
               <div className="ocp-detail-section">
                 <h4>Pickup Location</h4>
                 <div className="ocp-location-card">
-                  <div className="ocp-location-icon pickup">📍</div>
+                  <div className="ocp-location-icon pickup"><MapPin size={16} /></div>
                   <div className="ocp-location-info">
                     <span className="address">{order.pickup.address}</span>
                     <span className="city">{order.pickup.city}</span>
@@ -818,7 +824,7 @@ const OrderDetailsModal: React.FC<{
               <div className="ocp-detail-section">
                 <h4>Delivery Location</h4>
                 <div className="ocp-location-card">
-                  <div className="ocp-location-icon dropoff">🏁</div>
+                  <div className="ocp-location-icon dropoff"><Flag size={16} /></div>
                   <div className="ocp-location-info">
                     <span className="address">{order.dropoff.address}</span>
                     <span className="city">{order.dropoff.city}</span>
@@ -846,7 +852,7 @@ const OrderDetailsModal: React.FC<{
                       </span>
                       <span className="rating">⭐ {order.driver.rating}</span>
                     </div>
-                    <button className="ocp-call-btn">📞 Call</button>
+                    <button className="ocp-call-btn"><Phone size={14} /> Call</button>
                   </div>
                 </div>
               )}
@@ -968,7 +974,7 @@ const OrderDetailsModal: React.FC<{
             <div className="ocp-order-tracking">
               <div className="ocp-tracking-map">
                 <div className="ocp-tracking-placeholder">
-                  <span className="icon">🗺️</span>
+                  <span className="icon"><Map size={24} /></span>
                   <p>Live tracking map would appear here</p>
                   <p className="sub">Integrated with Google Maps or Mapbox</p>
                 </div>
@@ -999,7 +1005,7 @@ const OrderDetailsModal: React.FC<{
           </button>
           {!order.driver && order.status === 'pending' && (
             <button className="ocp-btn ocp-btn--primary" onClick={() => onAssign(order)}>
-              🚚 Assign Driver
+              <Truck size={14} /> Assign Driver
             </button>
           )}
           {canUpdateStatus && (
@@ -1007,7 +1013,7 @@ const OrderDetailsModal: React.FC<{
               className="ocp-btn ocp-btn--primary"
               onClick={() => onUpdateStatus(order.id, nextStatusMap[order.status])}
             >
-              ➡️ Mark as {STATUS_CONFIG[nextStatusMap[order.status]].label}
+              <ArrowRight size={14} /> Mark as {STATUS_CONFIG[nextStatusMap[order.status]].label}
             </button>
           )}
           {['pending', 'assigned'].includes(order.status) && (
@@ -1015,7 +1021,7 @@ const OrderDetailsModal: React.FC<{
               className="ocp-btn ocp-btn--danger"
               onClick={() => onCancel(order.id)}
             >
-              ✕ Cancel Order
+              <X size={14} /> Cancel Order
             </button>
           )}
         </div>
@@ -1058,11 +1064,11 @@ const DriverAssignmentModal: React.FC<{
               For order {order.orderId} to {order.customer.name}
             </p>
           </div>
-          <button className="ocp-modal__close" onClick={onClose}>✕</button>
+          <button className="ocp-modal__close" onClick={onClose}><X size={16} /></button>
         </div>
 
         <div className="ocp-driver-search">
-          <span className="icon">🔍</span>
+          <span className="icon"><Search size={14} /></span>
           <input
             type="text"
             placeholder="Search drivers..."
@@ -1074,7 +1080,7 @@ const DriverAssignmentModal: React.FC<{
         <div className="ocp-modal__content">
           <div className="ocp-driver-section">
             <h4 className="ocp-driver-section__title available">
-              <span>✓</span> Available ({availableDrivers.length})
+              <span><Check size={14} /></span> Available ({availableDrivers.length})
             </h4>
             <div className="ocp-driver-list">
               {availableDrivers.map((driver) => (
@@ -1090,14 +1096,14 @@ const DriverAssignmentModal: React.FC<{
                   <div className="ocp-driver-option__info">
                     <span className="name">{driver.name}</span>
                     <span className="vehicle">{driver.vehicleType} • {driver.vehicleNumber}</span>
-                    <span className="location">📍 {driver.currentLocation}</span>
+                    <span className="location"><MapPin size={12} /> {driver.currentLocation}</span>
                   </div>
                   <div className="ocp-driver-option__stats">
                     <span className="rating">⭐ {driver.rating}</span>
                     <span className="completed">{driver.completedToday} today</span>
                   </div>
                   <div className="ocp-driver-option__check">
-                    {selectedDriverId === driver.id && <span>✓</span>}
+                    {selectedDriverId === driver.id && <span><Check size={14} /></span>}
                   </div>
                 </div>
               ))}
@@ -1110,7 +1116,7 @@ const DriverAssignmentModal: React.FC<{
           {busyDrivers.length > 0 && (
             <div className="ocp-driver-section">
               <h4 className="ocp-driver-section__title busy">
-                <span>🚚</span> Busy ({busyDrivers.length})
+                <span><Truck size={14} /></span> Busy ({busyDrivers.length})
               </h4>
               <div className="ocp-driver-list">
                 {busyDrivers.map((driver) => (
@@ -1125,7 +1131,7 @@ const DriverAssignmentModal: React.FC<{
                     <div className="ocp-driver-option__info">
                       <span className="name">{driver.name}</span>
                       <span className="vehicle">{driver.vehicleType} • {driver.vehicleNumber}</span>
-                      <span className="location">📍 {driver.currentLocation}</span>
+                      <span className="location"><MapPin size={12} /> {driver.currentLocation}</span>
                     </div>
                     <div className="ocp-driver-option__stats">
                       <span className="rating">⭐ {driver.rating}</span>
@@ -1196,7 +1202,7 @@ const ConfirmDialog: React.FC<{
     <div className="ocp-confirm-overlay" onClick={onCancel}>
       <div className="ocp-confirm-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="ocp-confirm-dialog__icon" data-variant={confirmVariant}>
-          {confirmVariant === 'danger' ? '⚠️' : confirmVariant === 'warning' ? '❓' : 'ℹ️'}
+          {confirmVariant === 'danger' ? <AlertTriangle size={20} /> : confirmVariant === 'warning' ? <HelpCircle size={20} /> : <Info size={20} />}
         </div>
         <h3 className="ocp-confirm-dialog__title">{title}</h3>
         <p className="ocp-confirm-dialog__message">{message}</p>
@@ -1229,10 +1235,10 @@ const ToastContainer: React.FC<{ toasts: Toast[]; onDismiss: (id: string) => voi
     {toasts.map((toast) => (
       <div key={toast.id} className={`ocp-toast ocp-toast--${toast.type}`}>
         <span className="ocp-toast__icon">
-          {toast.type === 'success' && '✓'}
-          {toast.type === 'error' && '✕'}
-          {toast.type === 'warning' && '⚠'}
-          {toast.type === 'info' && 'ℹ'}
+          {toast.type === 'success' && <Check size={14} />}
+          {toast.type === 'error' && <X size={14} />}
+          {toast.type === 'warning' && <AlertTriangle size={14} />}
+          {toast.type === 'info' && <Info size={14} />}
         </span>
         <span className="ocp-toast__message">{toast.message}</span>
         <button className="ocp-toast__close" onClick={() => onDismiss(toast.id)}>
@@ -1371,7 +1377,7 @@ const ManualOrderModal: React.FC<{
             <h2 className="ocp-modal__title">Create Manual Order</h2>
             <p className="ocp-modal__subtitle">Fill in the details to create a new order</p>
           </div>
-          <button className="ocp-modal__close" onClick={onClose}>✕</button>
+          <button className="ocp-modal__close" onClick={onClose}><X size={16} /></button>
         </div>
 
         {/* Steps indicator */}
@@ -1431,9 +1437,9 @@ const ManualOrderModal: React.FC<{
                       border: '1px solid #d1d5db', fontSize: 14, outline: 'none', background: '#fff',
                     }}
                   >
-                    <option value="individual">👤 Individual</option>
-                    <option value="ngo">💚 NGO</option>
-                    <option value="business">🏢 Business</option>
+                    <option value="individual">Individual</option>
+                    <option value="ngo">NGO</option>
+                    <option value="business">Business</option>
                   </select>
                 </div>
                 <div>
@@ -1446,10 +1452,10 @@ const ManualOrderModal: React.FC<{
                       border: '1px solid #d1d5db', fontSize: 14, outline: 'none', background: '#fff',
                     }}
                   >
-                    <option value="low">🟢 Low</option>
-                    <option value="medium">🟡 Medium</option>
-                    <option value="high">🟠 High</option>
-                    <option value="urgent">🔴 Urgent</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
                   </select>
                 </div>
                 <div>
@@ -1492,9 +1498,9 @@ const ManualOrderModal: React.FC<{
                       border: '1px solid #d1d5db', fontSize: 14, outline: 'none', background: '#fff',
                     }}
                   >
-                    <option value="Cash">💵 Cash</option>
-                    <option value="Online">💳 Online</option>
-                    <option value="UPI">📱 UPI</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Online">Online</option>
+                    <option value="UPI">UPI</option>
                   </select>
                 </div>
               </div>
@@ -1507,7 +1513,7 @@ const ManualOrderModal: React.FC<{
               {/* Pickup */}
               <div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 18 }}>📍</span> Pickup Location
+                  <span style={{ fontSize: 18 }}><MapPin size={18} /></span> Pickup Location
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                   <div style={{ gridColumn: '1 / -1' }}>
@@ -1576,7 +1582,7 @@ const ManualOrderModal: React.FC<{
               {/* Dropoff */}
               <div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 18 }}>🏁</span> Delivery Location
+                  <span style={{ fontSize: 18 }}><Flag size={18} /></span> Delivery Location
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                   <div style={{ gridColumn: '1 / -1' }}>
@@ -1742,7 +1748,7 @@ const ManualOrderModal: React.FC<{
                     }}
                     title="Remove item"
                   >
-                    🗑️
+                    <Trash2 size={14} />
                   </button>
                 </div>
               ))}
@@ -1811,20 +1817,20 @@ const ManualOrderModal: React.FC<{
         <div className="ocp-modal__footer" style={{ display: 'flex', justifyContent: 'space-between' }}>
           <div>
             {activeStep > 1 && (
-              <button className="ocp-btn ocp-btn--secondary" onClick={handleBack}>← Back</button>
+              <button className="ocp-btn ocp-btn--secondary" onClick={handleBack}><ArrowLeft size={14} /> Back</button>
             )}
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <button className="ocp-btn ocp-btn--secondary" onClick={onClose}>Cancel</button>
             {activeStep < 3 ? (
-              <button className="ocp-btn ocp-btn--primary" onClick={handleNext}>Next →</button>
+              <button className="ocp-btn ocp-btn--primary" onClick={handleNext}>Next <ArrowRight size={14} /></button>
             ) : (
               <button
                 className="ocp-btn ocp-btn--primary"
                 onClick={handleSubmit}
                 disabled={isLoading}
               >
-                {isLoading ? 'Creating...' : '✓ Create Order'}
+                {isLoading ? 'Creating...' : <><Check size={14} /> Create Order</>}
               </button>
             )}
           </div>
@@ -2367,39 +2373,39 @@ const OrderControlPanel: React.FC = () => {
       {/* Statistics */}
       <div className="ocp-stats">
         <StatCard
-          icon="📦"
+          icon={<Package size={16} />}
           label="Total Orders"
           value={statistics.total}
           color="#3b82f6"
         />
         <StatCard
-          icon="⏳"
+          icon={<Clock size={16} />}
           label="Pending"
           value={statistics.pending}
           color="#d97706"
           onClick={() => setFilters((prev) => ({ ...prev, status: 'pending' }))}
         />
         <StatCard
-          icon="🚚"
+          icon={<Truck size={16} />}
           label="In Transit"
           value={statistics.inTransit}
           color="#06b6d4"
         />
         <StatCard
-          icon="✓"
+          icon={<Check size={16} />}
           label="Delivered"
           value={statistics.delivered}
           color="#16a34a"
         />
         <StatCard
-          icon="🔴"
+          icon={<Circle size={16} fill="#dc2626" color="#dc2626" />}
           label="Urgent"
           value={statistics.urgent}
           color="#dc2626"
           onClick={() => setFilters((prev) => ({ ...prev, priority: 'urgent' }))}
         />
         <StatCard
-          icon="⚠️"
+          icon={<AlertTriangle size={16} />}
           label="Unassigned"
           value={statistics.unassigned}
           color="#ea580c"
@@ -2417,7 +2423,7 @@ const OrderControlPanel: React.FC = () => {
         </div>
         <div className="ocp-header__right">
           <button className="ocp-btn ocp-btn--secondary" onClick={handleExport}>
-            📥 Export
+            <Download size={14} /> Export
           </button>
           <button className="ocp-btn ocp-btn--primary" onClick={() => setShowManualOrderModal(true)}>
             + Manual Order
@@ -2429,7 +2435,7 @@ const OrderControlPanel: React.FC = () => {
       <div className="ocp-toolbar">
         <div className="ocp-toolbar__left">
           <div className="ocp-search">
-            <span className="ocp-search__icon">🔍</span>
+            <span className="ocp-search__icon"><Search size={14} /></span>
             <input
               type="text"
               className="ocp-search__input"
@@ -2451,7 +2457,7 @@ const OrderControlPanel: React.FC = () => {
             className={`ocp-filter-toggle ${showFilters ? 'active' : ''}`}
             onClick={() => setShowFilters(!showFilters)}
           >
-            <span>🎛️</span>
+            <span><SlidersHorizontal size={14} /></span>
             Filters
             {hasActiveFilters && <span className="ocp-filter-badge">!</span>}
           </button>
@@ -2466,7 +2472,7 @@ const OrderControlPanel: React.FC = () => {
             <option value="all">All Status</option>
             {Object.entries(STATUS_CONFIG).map(([key, config]) => (
               <option key={key} value={key}>
-                {config.icon} {config.label}
+                {config.label}
               </option>
             ))}
           </select>
@@ -2479,7 +2485,7 @@ const OrderControlPanel: React.FC = () => {
             <option value="all">All Priority</option>
             {Object.entries(PRIORITY_CONFIG).map(([key, config]) => (
               <option key={key} value={key}>
-                {config.icon} {config.label}
+                {config.label}
               </option>
             ))}
           </select>
@@ -2490,14 +2496,14 @@ const OrderControlPanel: React.FC = () => {
               onClick={() => setViewMode('table')}
               title="Table View"
             >
-              ☰
+              <List size={14} />
             </button>
             <button
               className={`ocp-view-btn ${viewMode === 'kanban' ? 'active' : ''}`}
               onClick={() => setViewMode('kanban')}
               title="Kanban View"
             >
-              ▦
+              <LayoutGrid size={14} />
             </button>
           </div>
 
@@ -2509,7 +2515,7 @@ const OrderControlPanel: React.FC = () => {
                 setSelectedIds(new Set());
               }}
             >
-              ☑️ {selectionMode ? 'Exit' : 'Select'}
+              <CheckSquare size={14} /> {selectionMode ? 'Exit' : 'Select'}
             </button>
           )}
         </div>
@@ -2586,7 +2592,7 @@ const OrderControlPanel: React.FC = () => {
           </span>
           <div className="ocp-bulk-actions__buttons">
             <button className="ocp-bulk-btn ocp-bulk-btn--danger" onClick={handleBulkCancel}>
-              ✕ Cancel Selected
+              <X size={14} /> Cancel Selected
             </button>
             <button
               className="ocp-bulk-btn"
@@ -2617,25 +2623,25 @@ const OrderControlPanel: React.FC = () => {
                   )}
                   <th className="sortable" onClick={() => handleSort('orderId')}>
                     Order
-                    {sortField === 'orderId' && <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
+                    {sortField === 'orderId' && <span className="sort-indicator">{sortOrder === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}</span>}
                   </th>
                   <th className="sortable" onClick={() => handleSort('customer')}>
                     Customer
-                    {sortField === 'customer' && <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
+                    {sortField === 'customer' && <span className="sort-indicator">{sortOrder === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}</span>}
                   </th>
                   <th>Route</th>
                   <th>Driver</th>
                   <th className="sortable" onClick={() => handleSort('priority')}>
                     Priority
-                    {sortField === 'priority' && <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
+                    {sortField === 'priority' && <span className="sort-indicator">{sortOrder === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}</span>}
                   </th>
                   <th className="sortable" onClick={() => handleSort('status')}>
                     Status
-                    {sortField === 'status' && <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
+                    {sortField === 'status' && <span className="sort-indicator">{sortOrder === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}</span>}
                   </th>
                   <th className="sortable" onClick={() => handleSort('total')}>
                     Total
-                    {sortField === 'total' && <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
+                    {sortField === 'total' && <span className="sort-indicator">{sortOrder === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}</span>}
                   </th>
                   <th>ETA</th>
                   <th>Actions</th>
@@ -2646,7 +2652,7 @@ const OrderControlPanel: React.FC = () => {
                   <tr>
                     <td colSpan={selectionMode ? 10 : 9}>
                       <div className="ocp-empty-state">
-                        <span className="icon">📦</span>
+                        <span className="icon"><Package size={24} /></span>
                         <h3>No orders found</h3>
                         <p>Try adjusting your filters or search query</p>
                         {hasActiveFilters && (

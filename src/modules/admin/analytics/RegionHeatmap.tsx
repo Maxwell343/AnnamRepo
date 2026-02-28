@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { jsPDF } from 'jspdf';
+import {
+  ArrowUp, ArrowDown, Package, DollarSign, Users, Truck,
+  TrendingUp, Star, X, Map, Download, Scale, Search,
+  SlidersHorizontal, Receipt, Clock, Award, BarChart3,
+  Circle, MapPin, LayoutGrid, CircleDot
+} from 'lucide-react';
 import './RegionHeatmap.css';
 
 interface Region {
@@ -401,7 +407,7 @@ const RegionHeatmap: React.FC = () => {
               <div className="heatmap-cell__value">{getMetricDisplay(region)}</div>
               <div className="heatmap-cell__growth">
                 <span className={`growth-indicator ${region.growth >= 0 ? 'positive' : 'negative'}`}>
-                  {region.growth >= 0 ? '↑' : '↓'} {Math.abs(region.growth)}%
+                  {region.growth >= 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />} {Math.abs(region.growth)}%
                 </span>
               </div>
             </div>
@@ -580,14 +586,14 @@ const RegionHeatmap: React.FC = () => {
                   stroke={region.growth >= 0 ? '#6ee7b7' : '#fca5a5'}
                   strokeWidth="1"
                 />
-                <text
-                  x="22" y="13"
-                  className="bubble-growth-text"
-                  textAnchor="middle"
-                  fill={region.growth >= 0 ? '#047857' : '#dc2626'}
-                >
-                  {region.growth >= 0 ? '↑' : '↓'}{Math.abs(region.growth)}%
-                </text>
+                <foreignObject x="0" y="0" width="44" height="18">
+                  <span
+                    className="bubble-growth-text"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', color: region.growth >= 0 ? '#047857' : '#dc2626', fontSize: '9px', fontWeight: 700 }}
+                  >
+                    {region.growth >= 0 ? <ArrowUp size={10} /> : <ArrowDown size={10} />}{Math.abs(region.growth)}%
+                  </span>
+                </foreignObject>
               </g>
 
               {/* Invisible stable hit area — captures all pointer events */}
@@ -619,29 +625,29 @@ const RegionHeatmap: React.FC = () => {
           <div className="map-tooltip__header">{tooltip.region.name}</div>
           <div className="map-tooltip__content">
             <div className="map-tooltip__row">
-              <span>📦 Orders</span>
+              <span><Package size={14} /> Orders</span>
               <span>{tooltip.region.orders}</span>
             </div>
             <div className="map-tooltip__row">
-              <span>💰 Revenue</span>
+              <span><DollarSign size={14} /> Revenue</span>
               <span>{tooltip.region.revenueDisplay}</span>
             </div>
             <div className="map-tooltip__row">
-              <span>👨‍🌾 Farmers</span>
+              <span><Users size={14} /> Farmers</span>
               <span>{tooltip.region.farmers}</span>
             </div>
             <div className="map-tooltip__row">
-              <span>🚗 Drivers</span>
+              <span><Truck size={14} /> Drivers</span>
               <span>{tooltip.region.drivers}</span>
             </div>
             <div className="map-tooltip__row">
-              <span>📈 Growth</span>
+              <span><TrendingUp size={14} /> Growth</span>
               <span className={tooltip.region.growth >= 0 ? 'positive' : 'negative'}>
                 {tooltip.region.growth >= 0 ? '+' : ''}{tooltip.region.growth}%
               </span>
             </div>
             <div className="map-tooltip__row">
-              <span>⭐ Rating</span>
+              <span><Star size={14} /> Rating</span>
               <span>{tooltip.region.satisfaction}</span>
             </div>
           </div>
@@ -700,7 +706,7 @@ const RegionHeatmap: React.FC = () => {
             </div>
             <div className="bar-row__growth">
               <span className={region.growth >= 0 ? 'positive' : 'negative'}>
-                {region.growth >= 0 ? '↑' : '↓'} {Math.abs(region.growth)}%
+                {region.growth >= 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />} {Math.abs(region.growth)}%
               </span>
             </div>
           </div>
@@ -851,14 +857,14 @@ const RegionHeatmap: React.FC = () => {
                     x="0" y="0" width="40" height="16" rx="8"
                     fill={region.growth >= 0 ? '#d1fae5' : '#fee2e2'}
                   />
-                  <text
-                    x="20" y="12"
-                    className="india-map__growth"
-                    textAnchor="middle"
-                    fill={region.growth >= 0 ? '#059669' : '#dc2626'}
-                  >
-                    {region.growth >= 0 ? '↑' : '↓'}{Math.abs(region.growth)}%
-                  </text>
+                  <foreignObject x="0" y="0" width="40" height="16">
+                    <span
+                      className="india-map__growth"
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', color: region.growth >= 0 ? '#059669' : '#dc2626', fontSize: '8px', fontWeight: 700 }}
+                    >
+                      {region.growth >= 0 ? <ArrowUp size={9} /> : <ArrowDown size={9} />}{Math.abs(region.growth)}%
+                    </span>
+                  </foreignObject>
                 </g>
 
                 {/* Pulse for high-activity regions */}
@@ -912,7 +918,7 @@ const RegionHeatmap: React.FC = () => {
               </div>
               <div className="map-tooltip__row">
                 <span>Rating</span>
-                <span>⭐ {tooltip.region.satisfaction}</span>
+                <span><Star size={14} /> {tooltip.region.satisfaction}</span>
               </div>
             </div>
           </div>
@@ -931,7 +937,7 @@ const RegionHeatmap: React.FC = () => {
         <div className="comparison-panel__header">
           <h3>Comparing {compareData.length} Regions</h3>
           <button className="comparison-panel__close" onClick={() => setCompareRegions([])}>
-            ✕
+            <X size={16} />
           </button>
         </div>
         <div className="comparison-grid">
@@ -958,7 +964,7 @@ const RegionHeatmap: React.FC = () => {
                 </div>
                 <div className="comparison-metric">
                   <span className="comparison-metric__label">Satisfaction</span>
-                  <span className="comparison-metric__value">⭐ {region.satisfaction}</span>
+                  <span className="comparison-metric__value"><Star size={14} /> {region.satisfaction}</span>
                 </div>
               </div>
             </div>
@@ -985,7 +991,7 @@ const RegionHeatmap: React.FC = () => {
       <header className="region-heatmap__header">
         <div className="header-left">
           <h1 className="header-title">
-            <span className="header-icon">🗺️</span>
+            <span className="header-icon"><Map size={24} /></span>
             Region Heatmap
           </h1>
           <p className="header-subtitle">
@@ -1007,7 +1013,7 @@ const RegionHeatmap: React.FC = () => {
           </div>
           
           <button className="action-btn" onClick={handleExport}>
-            <span className="action-btn__icon">📥</span>
+            <span className="action-btn__icon"><Download size={16} /></span>
             Export
           </button>
           
@@ -1018,7 +1024,7 @@ const RegionHeatmap: React.FC = () => {
               if (compareMode) setCompareRegions([]);
             }}
           >
-            <span className="action-btn__icon">⚖️</span>
+            <span className="action-btn__icon"><Scale size={16} /></span>
             {compareMode ? 'Exit Compare' : 'Compare'}
           </button>
         </div>
@@ -1028,7 +1034,7 @@ const RegionHeatmap: React.FC = () => {
       <div className="controls-bar">
         <div className="controls-left">
           <div className="search-box">
-            <span className="search-icon">🔍</span>
+            <span className="search-icon"><Search size={16} /></span>
             <input
               type="text"
               placeholder="Search regions..."
@@ -1037,7 +1043,7 @@ const RegionHeatmap: React.FC = () => {
               className="search-input"
             />
             {searchQuery && (
-              <button className="search-clear" onClick={() => setSearchQuery('')}>✕</button>
+              <button className="search-clear" onClick={() => setSearchQuery('')}><X size={14} /></button>
             )}
           </div>
           
@@ -1047,28 +1053,28 @@ const RegionHeatmap: React.FC = () => {
               onClick={() => setViewMode('map')}
               title="Map View"
             >
-              🗺️
+              <Map size={16} />
             </button>
             <button
               className={`view-btn ${viewMode === 'heatmap' ? 'active' : ''}`}
               onClick={() => setViewMode('heatmap')}
               title="Grid View"
             >
-              ▦
+              <LayoutGrid size={16} />
             </button>
             <button
               className={`view-btn ${viewMode === 'bubbles' ? 'active' : ''}`}
               onClick={() => setViewMode('bubbles')}
               title="Bubble Map"
             >
-              ◉
+              <CircleDot size={16} />
             </button>
             <button
               className={`view-btn ${viewMode === 'bars' ? 'active' : ''}`}
               onClick={() => setViewMode('bars')}
               title="Bar Chart"
             >
-              ▤
+              <BarChart3 size={16} />
             </button>
           </div>
         </div>
@@ -1104,7 +1110,7 @@ const RegionHeatmap: React.FC = () => {
               className="sort-order-btn"
               onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
             >
-              {sortOrder === 'desc' ? '↓' : '↑'}
+              {sortOrder === 'desc' ? <ArrowDown size={14} /> : <ArrowUp size={14} />}
             </button>
           </div>
           
@@ -1112,7 +1118,7 @@ const RegionHeatmap: React.FC = () => {
             className={`filter-btn ${showFilters ? 'active' : ''}`}
             onClick={() => setShowFilters(!showFilters)}
           >
-            <span>⚙️</span> Filters
+            <span><SlidersHorizontal size={16} /></span> Filters
             {heatFilter.length < 3 && (
               <span className="filter-badge">{3 - heatFilter.length}</span>
             )}
@@ -1144,7 +1150,7 @@ const RegionHeatmap: React.FC = () => {
       {/* Compare Mode Banner */}
       {compareMode && (
         <div className="compare-banner">
-          <span className="compare-banner__icon">⚖️</span>
+          <span className="compare-banner__icon"><Scale size={16} /></span>
           <span>Compare Mode: Select up to 3 regions to compare ({compareRegions.length}/3 selected)</span>
         </div>
       )}
@@ -1160,50 +1166,50 @@ const RegionHeatmap: React.FC = () => {
                   <span className={`region-report__heat region-report__heat--${selected.heat}`} />
                   <h2 className="region-report__name">{selected.name}</h2>
                   <span className={`region-report__growth ${selected.growth >= 0 ? 'positive' : 'negative'}`}>
-                    {selected.growth >= 0 ? '↑' : '↓'} {Math.abs(selected.growth)}%
+                    {selected.growth >= 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />} {Math.abs(selected.growth)}%
                   </span>
                 </div>
-                <button className="region-report__close" onClick={() => setSelectedRegion(null)}>✕ Back to Map</button>
+                <button className="region-report__close" onClick={() => setSelectedRegion(null)}><X size={14} /> Back to Map</button>
               </div>
 
               <div className="region-report__stats">
                 <div className="region-report__stat">
-                  <span className="region-report__stat-icon">📦</span>
+                  <span className="region-report__stat-icon"><Package size={20} /></span>
                   <div className="region-report__stat-info">
                     <span className="region-report__stat-value">{selected.orders}</span>
                     <span className="region-report__stat-label">Total Orders</span>
                   </div>
                 </div>
                 <div className="region-report__stat">
-                  <span className="region-report__stat-icon">💰</span>
+                  <span className="region-report__stat-icon"><DollarSign size={20} /></span>
                   <div className="region-report__stat-info">
                     <span className="region-report__stat-value">{selected.revenueDisplay}</span>
                     <span className="region-report__stat-label">Revenue</span>
                   </div>
                 </div>
                 <div className="region-report__stat">
-                  <span className="region-report__stat-icon">👨‍🌾</span>
+                  <span className="region-report__stat-icon"><Users size={20} /></span>
                   <div className="region-report__stat-info">
                     <span className="region-report__stat-value">{selected.farmers}</span>
                     <span className="region-report__stat-label">Farmers</span>
                   </div>
                 </div>
                 <div className="region-report__stat">
-                  <span className="region-report__stat-icon">🚗</span>
+                  <span className="region-report__stat-icon"><Truck size={20} /></span>
                   <div className="region-report__stat-info">
                     <span className="region-report__stat-value">{selected.drivers}</span>
                     <span className="region-report__stat-label">Drivers</span>
                   </div>
                 </div>
                 <div className="region-report__stat">
-                  <span className="region-report__stat-icon">🧾</span>
+                  <span className="region-report__stat-icon"><Receipt size={20} /></span>
                   <div className="region-report__stat-info">
                     <span className="region-report__stat-value">₹{selected.avgOrderValue}</span>
                     <span className="region-report__stat-label">Avg Order</span>
                   </div>
                 </div>
                 <div className="region-report__stat">
-                  <span className="region-report__stat-icon">⏱️</span>
+                  <span className="region-report__stat-icon"><Clock size={20} /></span>
                   <div className="region-report__stat-info">
                     <span className="region-report__stat-value">{selected.deliveryTime} min</span>
                     <span className="region-report__stat-label">Delivery Time</span>
@@ -1224,7 +1230,7 @@ const RegionHeatmap: React.FC = () => {
                     <span>Growth: <strong className={selected.growth >= 0 ? 'positive' : 'negative'}>
                       {selected.growth >= 0 ? '+' : ''}{selected.growth}%
                     </strong></span>
-                    <span>Rating: <strong>⭐ {selected.satisfaction}</strong></span>
+                    <span>Rating: <strong><Star size={14} /> {selected.satisfaction}</strong></span>
                   </div>
                 </div>
 
@@ -1233,7 +1239,7 @@ const RegionHeatmap: React.FC = () => {
                   <div className="region-report__products">
                     {selected.topProducts.map((product, i) => (
                       <span key={product} className="region-report__product-tag">
-                        {['🥇', '🥈', '🥉'][i]} {product}
+                        {[<Award key="g" size={14} color="#FFD700" />, <Award key="s" size={14} color="#C0C0C0" />, <Award key="b" size={14} color="#CD7F32" />][i]} {product}
                       </span>
                     ))}
                   </div>
@@ -1243,15 +1249,15 @@ const RegionHeatmap: React.FC = () => {
                   <h4>Quick Insights</h4>
                   <div className="region-report__insights">
                     <div className="region-report__insight">
-                      <span className="region-report__insight-icon">📊</span>
+                      <span className="region-report__insight-icon"><BarChart3 size={16} /></span>
                       <span>Revenue per farmer: <strong>₹{Math.round(selected.revenue / selected.farmers).toLocaleString('en-IN')}</strong></span>
                     </div>
                     <div className="region-report__insight">
-                      <span className="region-report__insight-icon">📈</span>
+                      <span className="region-report__insight-icon"><TrendingUp size={16} /></span>
                       <span>Orders per driver: <strong>{Math.round(selected.orders / selected.drivers)}</strong></span>
                     </div>
                     <div className="region-report__insight">
-                      <span className="region-report__insight-icon">{selected.heat === 'high' ? '🟢' : selected.heat === 'medium' ? '🟡' : '🔴'}</span>
+                      <span className="region-report__insight-icon">{selected.heat === 'high' ? <Circle size={16} fill="#10b981" color="#10b981" /> : selected.heat === 'medium' ? <Circle size={16} fill="#f59e0b" color="#f59e0b" /> : <Circle size={16} fill="#ef4444" color="#ef4444" />}</span>
                       <span>Activity level: <strong style={{ textTransform: 'capitalize' }}>{selected.heat}</strong></span>
                     </div>
                   </div>
@@ -1297,7 +1303,7 @@ const RegionHeatmap: React.FC = () => {
                           `Avg Order Value: ₹${selected.avgOrderValue}`,
                           `Delivery Time: ${selected.deliveryTime} min`,
                           `Growth: ${selected.growth >= 0 ? '+' : ''}${selected.growth}%`,
-                          `Customer Rating: ⭐ ${selected.satisfaction}`
+                          `Customer Rating: ${selected.satisfaction}`
                         ];
                         
                         metrics.forEach((metric) => {
@@ -1314,7 +1320,7 @@ const RegionHeatmap: React.FC = () => {
                         doc.setFontSize(10);
                         doc.setTextColor(60, 60, 60);
                         selected.topProducts.forEach((product, idx) => {
-                          const medals = ['🥇', '🥈', '🥉'];
+                          const medals = ['#1', '#2', '#3'];
                           doc.text(`${medals[idx]} ${product}`, 30, yPosition);
                           yPosition += 8;
                         });
@@ -1373,7 +1379,7 @@ const RegionHeatmap: React.FC = () => {
               
               {filteredRegions.length === 0 && (
                 <div className="empty-state">
-                  <div className="empty-state__icon">🔍</div>
+                  <div className="empty-state__icon"><Search size={48} /></div>
                   <h3>No regions found</h3>
                   <p>Try adjusting your search or filters</p>
                   <button 
@@ -1420,7 +1426,7 @@ const RegionHeatmap: React.FC = () => {
             </div>
             <div className="overview-grid">
               <div className="overview-item">
-                <div className="overview-item__icon">📍</div>
+                <div className="overview-item__icon"><MapPin size={20} /></div>
                 <div className="overview-item__content">
                   <div className="overview-item__value">
                     <AnimatedCounter value={mockRegions.length} />
@@ -1429,7 +1435,7 @@ const RegionHeatmap: React.FC = () => {
                 </div>
               </div>
               <div className="overview-item">
-                <div className="overview-item__icon">📦</div>
+                <div className="overview-item__icon"><Package size={20} /></div>
                 <div className="overview-item__content">
                   <div className="overview-item__value">
                     <AnimatedCounter value={totals.orders} />
@@ -1438,7 +1444,7 @@ const RegionHeatmap: React.FC = () => {
                 </div>
               </div>
               <div className="overview-item">
-                <div className="overview-item__icon">👨‍🌾</div>
+                <div className="overview-item__icon"><Users size={20} /></div>
                 <div className="overview-item__content">
                   <div className="overview-item__value">
                     <AnimatedCounter value={totals.farmers} />
@@ -1447,7 +1453,7 @@ const RegionHeatmap: React.FC = () => {
                 </div>
               </div>
               <div className="overview-item">
-                <div className="overview-item__icon">🚗</div>
+                <div className="overview-item__icon"><Truck size={20} /></div>
                 <div className="overview-item__content">
                   <div className="overview-item__value">
                     <AnimatedCounter value={totals.drivers} />
@@ -1486,7 +1492,7 @@ const RegionHeatmap: React.FC = () => {
                   <div className="region-item__right">
                     <div className="region-item__value">{getMetricDisplay(region)}</div>
                     <div className={`region-item__growth ${region.growth >= 0 ? 'positive' : 'negative'}`}>
-                      {region.growth >= 0 ? '↑' : '↓'} {Math.abs(region.growth)}%
+                      {region.growth >= 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />} {Math.abs(region.growth)}%
                     </div>
                   </div>
                 </div>

@@ -1,5 +1,10 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  BarChart3, Users, Package, Tag, Radio, ClipboardList,
+  Wallet, CreditCard, FileText, Scale, TrendingUp, Globe,
+  Map, Wheat
+} from 'lucide-react';
 
 interface AdminSidebarProps {
   collapsed: boolean;
@@ -8,7 +13,7 @@ interface AdminSidebarProps {
 
 interface NavItem {
   label: string;
-  icon: string;
+  icon: React.ReactNode;
   path: string;
   badge?: number;
 }
@@ -22,44 +27,44 @@ const navSections: NavSection[] = [
   {
     title: 'Overview',
     items: [
-      { label: 'Dashboard', icon: '📊', path: '/admin' },
+      { label: 'Dashboard', icon: <BarChart3 size={20} />, path: '/admin' },
     ],
   },
   {
     title: 'Management',
     items: [
-      { label: 'Users & KYC', icon: '👥', path: '/admin/users' },
-      { label: 'Listings', icon: '📦', path: '/admin/listings' },
-      { label: 'Categories', icon: '🏷️', path: '/admin/categories' },
+      { label: 'Users & KYC', icon: <Users size={20} />, path: '/admin/users' },
+      { label: 'Listings', icon: <Package size={20} />, path: '/admin/listings' },
+      { label: 'Categories', icon: <Tag size={20} />, path: '/admin/categories' },
     ],
   },
   {
     title: 'Operations',
     items: [
-      { label: 'Live Operations', icon: '🔴', path: '/admin/operations' },
-      { label: 'Order Control', icon: '📋', path: '/admin/orders' },
+      { label: 'Live Operations', icon: <Radio size={20} />, path: '/admin/operations' },
+      { label: 'Order Control', icon: <ClipboardList size={20} />, path: '/admin/orders' },
     ],
   },
   {
     title: 'Finance',
     items: [
-      { label: 'Financial Overview', icon: '💰', path: '/admin/finance' },
-      { label: 'Driver Payouts', icon: '💳', path: '/admin/payouts' },
-      { label: 'Transactions', icon: '📄', path: '/admin/transactions' },
+      { label: 'Financial Overview', icon: <Wallet size={20} />, path: '/admin/finance' },
+      { label: 'Driver Payouts', icon: <CreditCard size={20} />, path: '/admin/payouts' },
+      { label: 'Transactions', icon: <FileText size={20} />, path: '/admin/transactions' },
     ],
   },
   {
     title: 'Support',
     items: [
-      { label: 'Dispute Center', icon: '⚖️', path: '/admin/disputes' },
+      { label: 'Dispute Center', icon: <Scale size={20} />, path: '/admin/disputes' },
     ],
   },
   {
     title: 'Intelligence',
     items: [
-      { label: 'Analytics', icon: '📈', path: '/admin/analytics' },
-      { label: 'Impact Metrics', icon: '🌍', path: '/admin/impact' },
-      { label: 'Region Heatmap', icon: '🗺️', path: '/admin/heatmap' },
+      { label: 'Analytics', icon: <TrendingUp size={20} />, path: '/admin/analytics' },
+      { label: 'Impact Metrics', icon: <Globe size={20} />, path: '/admin/impact' },
+      { label: 'Region Heatmap', icon: <Map size={20} />, path: '/admin/heatmap' },
     ],
   },
 ];
@@ -77,7 +82,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onClose }) => {
     <aside className="admin-sidebar">
       {/* Brand */}
       <div className="admin-sidebar__brand">
-        <span className="admin-sidebar__brand-icon">🌾</span>
+        <span className="admin-sidebar__brand-icon"><Wheat size={28} /></span>
         {!collapsed && (
           <div className="admin-sidebar__brand-text">
             <span className="admin-sidebar__brand-name">Annam</span>

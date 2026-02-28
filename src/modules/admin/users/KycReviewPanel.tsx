@@ -1,4 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import {
+  CreditCard, Home, Car, ClipboardList, Camera, Building,
+  Eye, Clock, Check, X, AlertTriangle,
+  ZoomIn, ZoomOut, RotateCw, Undo2, Download,
+  Search, RefreshCw, FileText, ScrollText, Info,
+  Pencil, ArrowLeft,
+} from 'lucide-react';
 import './KycReviewPanel.css';
 
 // ============ Types ============
@@ -67,13 +74,13 @@ const REJECTION_REASONS = [
   { id: 'other', label: 'Other reason' },
 ];
 
-const DOCUMENT_TYPE_CONFIG: Record<KycDocument['type'], { icon: string; label: string }> = {
-  id_proof: { icon: '🪪', label: 'ID Proof' },
-  address_proof: { icon: '🏠', label: 'Address Proof' },
-  license: { icon: '🚗', label: 'Driving License' },
-  registration: { icon: '📋', label: 'Registration Certificate' },
-  photo: { icon: '📸', label: 'Photo' },
-  bank_statement: { icon: '🏦', label: 'Bank Statement' },
+const DOCUMENT_TYPE_CONFIG: Record<KycDocument['type'], { icon: React.ReactNode; label: string }> = {
+  id_proof: { icon: <CreditCard size={16} />, label: 'ID Proof' },
+  address_proof: { icon: <Home size={16} />, label: 'Address Proof' },
+  license: { icon: <Car size={16} />, label: 'Driving License' },
+  registration: { icon: <ClipboardList size={16} />, label: 'Registration Certificate' },
+  photo: { icon: <Camera size={16} />, label: 'Photo' },
+  bank_statement: { icon: <Building size={16} />, label: 'Bank Statement' },
 };
 
 const ROLE_REQUIRED_DOCS: Record<string, KycDocument['type'][]> = {
@@ -117,7 +124,7 @@ const DocumentCard: React.FC<{
           </div>
         )}
         <div className="kyc-document__overlay">
-          <span>👁️ View</span>
+          <span><Eye size={16} /> View</span>
         </div>
       </div>
       
@@ -125,10 +132,10 @@ const DocumentCard: React.FC<{
         <div className="kyc-document__header">
           <span className="kyc-document__type">{config.label}</span>
           <span className={`kyc-document__status status--${document.status}`}>
-            {document.status === 'pending' && '⏳'}
-            {document.status === 'verified' && '✓'}
-            {document.status === 'rejected' && '✕'}
-            {document.status === 'expired' && '⚠'}
+            {document.status === 'pending' && <Clock size={14} />}
+            {document.status === 'verified' && <Check size={14} />}
+            {document.status === 'rejected' && <X size={14} />}
+            {document.status === 'expired' && <AlertTriangle size={14} />}
             {document.status.charAt(0).toUpperCase() + document.status.slice(1)}
           </span>
         </div>
@@ -150,7 +157,7 @@ const DocumentCard: React.FC<{
         
         {document.rejectionReason && (
           <div className="kyc-document__rejection">
-            <span className="rejection-icon">⚠️</span>
+            <span className="rejection-icon"><AlertTriangle size={14} /></span>
             <span className="rejection-text">{document.rejectionReason}</span>
           </div>
         )}
@@ -164,7 +171,7 @@ const DocumentCard: React.FC<{
                 onVerify(document.id);
               }}
             >
-              ✓ Verify
+              <Check size={14} /> Verify
             </button>
             <button
               className="kyc-document__btn kyc-document__btn--reject"
@@ -173,7 +180,7 @@ const DocumentCard: React.FC<{
                 onReject(document.id);
               }}
             >
-              ✕ Reject
+              <X size={14} /> Reject
             </button>
           </div>
         )}
@@ -232,7 +239,7 @@ const DocumentViewer: React.FC<{
               onClick={() => setZoom((z) => Math.max(z - 0.25, 0.5))}
               title="Zoom Out"
             >
-              ➖
+              <ZoomOut size={16} />
             </button>
             <span className="viewer-zoom">{Math.round(zoom * 100)}%</span>
             <button
@@ -240,7 +247,7 @@ const DocumentViewer: React.FC<{
               onClick={() => setZoom((z) => Math.min(z + 0.25, 3))}
               title="Zoom In"
             >
-              ➕
+              <ZoomIn size={16} />
             </button>
             <div className="viewer-divider" />
             <button
@@ -248,7 +255,7 @@ const DocumentViewer: React.FC<{
               onClick={() => setRotation((r) => (r + 90) % 360)}
               title="Rotate"
             >
-              🔄
+              <RotateCw size={16} />
             </button>
             <button
               className="viewer-control"
@@ -258,11 +265,11 @@ const DocumentViewer: React.FC<{
               }}
               title="Reset"
             >
-              ↩️
+              <Undo2 size={16} />
             </button>
             <div className="viewer-divider" />
             <button className="viewer-control viewer-close" onClick={onClose} title="Close">
-              ✕
+              <X size={16} />
             </button>
           </div>
         </div>
@@ -290,7 +297,7 @@ const DocumentViewer: React.FC<{
                 <div className="document-viewer__no-preview">
                   <span className="no-preview-icon">{config.icon}</span>
                   <span className="no-preview-text">Preview not available</span>
-                  <button className="no-preview-download">📥 Download to View</button>
+                  <button className="no-preview-download"><Download size={16} /> Download to View</button>
                 </div>
               )}
             </div>
@@ -325,13 +332,13 @@ const DocumentViewer: React.FC<{
                 className="document-viewer__btn document-viewer__btn--reject"
                 onClick={() => onReject(document.id)}
               >
-                ✕ Reject Document
+                <X size={14} /> Reject Document
               </button>
               <button
                 className="document-viewer__btn document-viewer__btn--verify"
                 onClick={() => onVerify(document.id)}
               >
-                ✓ Verify Document
+                <Check size={14} /> Verify Document
               </button>
             </div>
           )}
@@ -344,9 +351,9 @@ const DocumentViewer: React.FC<{
 const TimelineItem: React.FC<{ item: KycTimeline; isLast: boolean }> = ({ item, isLast }) => {
   const getStatusIcon = () => {
     switch (item.status) {
-      case 'success': return '✓';
-      case 'warning': return '⚠';
-      case 'error': return '✕';
+      case 'success': return <Check size={14} />;
+      case 'warning': return <AlertTriangle size={14} />;
+      case 'error': return <X size={14} />;
       default: return '•';
     }
   };
@@ -686,7 +693,7 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
             </div>
           </div>
           <button className="kyc-panel__close" onClick={onClose}>
-            <span>✕</span>
+            <span><X size={16} /></span>
           </button>
         </div>
 
@@ -695,11 +702,11 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
           <div className="kyc-status">
             <div className="kyc-status__header">
               <span className={`kyc-status__badge status--${kycData.status}`}>
-                {kycData.status === 'pending' && '⏳ Pending Review'}
-                {kycData.status === 'under_review' && '🔍 Under Review'}
-                {kycData.status === 'approved' && '✓ Approved'}
-                {kycData.status === 'rejected' && '✕ Rejected'}
-                {kycData.status === 'resubmission_required' && '🔄 Resubmission Required'}
+                {kycData.status === 'pending' && <><Clock size={14} /> Pending Review</>}
+                {kycData.status === 'under_review' && <><Search size={14} /> Under Review</>}
+                {kycData.status === 'approved' && <><Check size={14} /> Approved</>}
+                {kycData.status === 'rejected' && <><X size={14} /> Rejected</>}
+                {kycData.status === 'resubmission_required' && <><RefreshCw size={14} /> Resubmission Required</>}
               </span>
               <span className="kyc-status__date">
                 Submitted {new Date(kycData.submittedAt).toLocaleDateString()}
@@ -725,7 +732,7 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
             className={`kyc-panel__tab ${activeTab === 'documents' ? 'active' : ''}`}
             onClick={() => setActiveTab('documents')}
           >
-            <span className="tab-icon">📄</span>
+            <span className="tab-icon"><FileText size={16} /></span>
             Documents
             {pendingDocuments.length > 0 && (
               <span className="tab-badge">{pendingDocuments.length}</span>
@@ -735,14 +742,14 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
             className={`kyc-panel__tab ${activeTab === 'timeline' ? 'active' : ''}`}
             onClick={() => setActiveTab('timeline')}
           >
-            <span className="tab-icon">📜</span>
+            <span className="tab-icon"><ScrollText size={16} /></span>
             Timeline
           </button>
           <button
             className={`kyc-panel__tab ${activeTab === 'info' ? 'active' : ''}`}
             onClick={() => setActiveTab('info')}
           >
-            <span className="tab-icon">ℹ️</span>
+            <span className="tab-icon"><Info size={16} /></span>
             User Info
           </button>
         </div>
@@ -769,7 +776,7 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
                           setSelectedDocIds(new Set());
                         }}
                       >
-                        {reviewMode ? '✕ Exit Review Mode' : '✓ Review Mode'}
+                        {reviewMode ? <><X size={14} /> Exit Review Mode</> : <><Check size={14} /> Review Mode</>}
                       </button>
                       {reviewMode && (
                         <button
@@ -800,7 +807,7 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
                       >
                         <span className="required-icon">{config.icon}</span>
                         {config.label}
-                        {doc?.status === 'verified' && <span className="check">✓</span>}
+                        {doc?.status === 'verified' && <span className="check"><Check size={12} /></span>}
                       </span>
                     );
                   })}
@@ -836,13 +843,13 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
                         selectedDocIds.forEach((id) => handleVerifyDocument(id));
                       }}
                     >
-                      ✓ Verify Selected
+                      <Check size={14} /> Verify Selected
                     </button>
                     <button
                       className="bulk-btn bulk-btn--resubmit"
                       onClick={() => setShowRejectForm(true)}
                     >
-                      🔄 Request Resubmission
+                      <RefreshCw size={14} /> Request Resubmission
                     </button>
                   </div>
                 </div>
@@ -905,7 +912,7 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
         {/* Notes Section */}
         <div className="kyc-panel__notes">
           <label className="notes-label">
-            <span className="notes-icon">📝</span>
+            <span className="notes-icon"><Pencil size={16} /></span>
             Review Notes (Optional)
           </label>
           <textarea
@@ -931,7 +938,7 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
                   onClick={() => setShowRejectForm(true)}
                   disabled={isLoading}
                 >
-                  <span className="btn-icon">✕</span>
+                  <span className="btn-icon"><X size={14} /></span>
                   Reject KYC
                 </button>
                 <button
@@ -946,7 +953,7 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
                   }}
                   disabled={isLoading || pendingDocuments.length === kycData.documents.length}
                 >
-                  <span className="btn-icon">✓</span>
+                  <span className="btn-icon"><Check size={14} /></span>
                   {allDocsVerified ? 'Approve KYC' : 'Verify All & Approve'}
                 </button>
               </>
@@ -959,14 +966,14 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
                   setCustomReason('');
                 }}
               >
-                ← Back
+                <ArrowLeft size={14} /> Back
               </button>
             ) : (
               <button
                 className="kyc-btn kyc-btn--secondary"
                 onClick={() => setShowApproveConfirm(false)}
               >
-                ← Back
+                <ArrowLeft size={14} /> Back
               </button>
             )}
           </div>
@@ -977,7 +984,7 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
           <div className="kyc-rejection-form">
             <div className="rejection-form__header">
               <h3>
-                <span className="rejection-icon">⚠️</span>
+                <span className="rejection-icon"><AlertTriangle size={18} /></span>
                 Reject KYC Application
               </h3>
               <p>Select the reason(s) for rejection:</p>
@@ -995,7 +1002,7 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
                     onChange={() => handleToggleReason(reason.id)}
                   />
                   <span className="reason-checkbox">
-                    {selectedReasons.has(reason.id) ? '✓' : ''}
+                    {selectedReasons.has(reason.id) ? <Check size={12} /> : ''}
                   </span>
                   <span className="reason-label">{reason.label}</span>
                 </label>
@@ -1035,7 +1042,7 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
                     <span className="btn-spinner" />
                   ) : (
                     <>
-                      <span className="btn-icon">🔄</span>
+                      <span className="btn-icon"><RefreshCw size={14} /></span>
                       Request Resubmission
                     </>
                   )}
@@ -1054,7 +1061,7 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
                   <span className="btn-spinner" />
                 ) : (
                   <>
-                    <span className="btn-icon">✕</span>
+                    <span className="btn-icon"><X size={14} /></span>
                     Confirm Rejection
                   </>
                 )}
@@ -1067,7 +1074,7 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
         {showApproveConfirm && (
           <div className="kyc-approve-confirm">
             <div className="approve-confirm__content">
-              <div className="approve-confirm__icon">✓</div>
+              <div className="approve-confirm__icon"><Check size={24} /></div>
               <h3>Approve KYC Application</h3>
               <p>
                 You are about to approve the KYC application for <strong>{user.name}</strong>.
@@ -1111,7 +1118,7 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
                     <span className="btn-spinner" />
                   ) : (
                     <>
-                      <span className="btn-icon">✓</span>
+                      <span className="btn-icon"><Check size={14} /></span>
                       Confirm Approval
                     </>
                   )}

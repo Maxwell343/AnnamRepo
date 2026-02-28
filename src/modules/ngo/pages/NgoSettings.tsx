@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './NgoSettings.css';
+import { API_ENDPOINTS } from '../../../config/api';
+import { BookOpen, Hospital, Globe, UserRound, Baby, Accessibility, Home, UtensilsCrossed, PawPrint, Siren, Palette, Building, User, Target, ClipboardList, HeartHandshake, Globe2, Bell, Settings, Lock, Check, X, Mail, MapPin, BarChart3, Tag, FileText, Upload, Landmark, Smartphone, Sun, Moon, Monitor, Clock, Calendar, Wheat, Camera, ShieldCheck, Users, AlertTriangle } from 'lucide-react';
 
 interface FormData {
   // Admin Details
@@ -87,18 +89,18 @@ interface User {
 }
 
 const causeAreaOptions = [
-  { id: 'education', label: 'Education', icon: '📚' },
-  { id: 'healthcare', label: 'Healthcare', icon: '🏥' },
-  { id: 'environment', label: 'Environment', icon: '🌍' },
-  { id: 'women', label: 'Women Empowerment', icon: '👩' },
-  { id: 'children', label: 'Child Welfare', icon: '👶' },
-  { id: 'elderly', label: 'Elderly Care', icon: '👴' },
-  { id: 'disability', label: 'Disability Support', icon: '♿' },
-  { id: 'poverty', label: 'Poverty Alleviation', icon: '🏠' },
-  { id: 'hunger', label: 'Hunger & Nutrition', icon: '🍽️' },
-  { id: 'animals', label: 'Animal Welfare', icon: '🐾' },
-  { id: 'disaster', label: 'Disaster Relief', icon: '🆘' },
-  { id: 'arts', label: 'Arts & Culture', icon: '🎨' },
+  { id: 'education', label: 'Education', icon: <BookOpen size={16} /> },
+  { id: 'healthcare', label: 'Healthcare', icon: <Hospital size={16} /> },
+  { id: 'environment', label: 'Environment', icon: <Globe size={16} /> },
+  { id: 'women', label: 'Women Empowerment', icon: <UserRound size={16} /> },
+  { id: 'children', label: 'Child Welfare', icon: <Baby size={16} /> },
+  { id: 'elderly', label: 'Elderly Care', icon: <UserRound size={16} /> },
+  { id: 'disability', label: 'Disability Support', icon: <Accessibility size={16} /> },
+  { id: 'poverty', label: 'Poverty Alleviation', icon: <Home size={16} /> },
+  { id: 'hunger', label: 'Hunger & Nutrition', icon: <UtensilsCrossed size={16} /> },
+  { id: 'animals', label: 'Animal Welfare', icon: <PawPrint size={16} /> },
+  { id: 'disaster', label: 'Disaster Relief', icon: <Siren size={16} /> },
+  { id: 'arts', label: 'Arts & Culture', icon: <Palette size={16} /> },
 ];
 
 const NGOSettings: React.FC = () => {
@@ -183,16 +185,16 @@ const NGOSettings: React.FC = () => {
   });
 
   const sections = [
-    { id: 'organization', label: 'Organization', icon: '🏛️' },
-    { id: 'admin', label: 'Admin Profile', icon: '👤' },
-    { id: 'cause', label: 'Cause & Impact', icon: '🎯' },
-    { id: 'compliance', label: 'Compliance', icon: '📋' },
-    { id: 'payment', label: 'Donations', icon: '💝' },
-    { id: 'social', label: 'Social Media', icon: '🌐' },
-    { id: 'notifications', label: 'Notifications', icon: '🔔' },
-    { id: 'preferences', label: 'Preferences', icon: '⚙️' },
-    { id: 'branding', label: 'Branding', icon: '🎨' },
-    { id: 'security', label: 'Security', icon: '🔒' },
+    { id: 'organization', label: 'Organization', icon: <Building size={16} /> },
+    { id: 'admin', label: 'Admin Profile', icon: <User size={16} /> },
+    { id: 'cause', label: 'Cause & Impact', icon: <Target size={16} /> },
+    { id: 'compliance', label: 'Compliance', icon: <ClipboardList size={16} /> },
+    { id: 'payment', label: 'Donations', icon: <HeartHandshake size={16} /> },
+    { id: 'social', label: 'Social Media', icon: <Globe2 size={16} /> },
+    { id: 'notifications', label: 'Notifications', icon: <Bell size={16} /> },
+    { id: 'preferences', label: 'Preferences', icon: <Settings size={16} /> },
+    { id: 'branding', label: 'Branding', icon: <Palette size={16} /> },
+    { id: 'security', label: 'Security', icon: <Lock size={16} /> },
   ];
 
   useEffect(() => {
@@ -201,7 +203,7 @@ const NGOSettings: React.FC = () => {
     
     const fetchSettings = async (parsedUser: User & { id: number }) => {
       try {
-        const response = await fetch(`http://localhost:8000/api/settings/ngo/${parsedUser.id}`);
+        const response = await fetch(API_ENDPOINTS.ngoSettings(parsedUser.id.toString()));
         const data = await response.json();
         
         if (response.ok && data && Object.keys(data).length > 1) {
@@ -413,7 +415,7 @@ const NGOSettings: React.FC = () => {
       const parsedUser = savedUser ? JSON.parse(savedUser) : null;
       
       if (parsedUser?.id) {
-        const response = await fetch(`http://localhost:8000/api/settings/ngo/${parsedUser.id}`, {
+        const response = await fetch(API_ENDPOINTS.ngoSettings(parsedUser.id.toString()), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -593,7 +595,7 @@ const NGOSettings: React.FC = () => {
             {formData.logo ? (
               <img src={formData.logo} alt="Organization Logo" />
             ) : (
-              <span className="logo-placeholder">🏛️</span>
+              <span className="logo-placeholder"><Building size={32} /></span>
             )}
             <div className="logo-edit-overlay">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -607,13 +609,13 @@ const NGOSettings: React.FC = () => {
             <p>{formData.organizationEmail || 'No email'}</p>
             <div className="badges-row">
               <span className="role-badge ngo">
-                <span className="badge-icon">🏛️</span>
+                <span className="badge-icon"><Building size={14} /></span>
                 NGO
               </span>
               <span className={`verification-badge ${verificationStatus}`}>
-                {verificationStatus === 'verified' && '✓ Verified'}
-                {verificationStatus === 'pending' && '⏳ Pending'}
-                {verificationStatus === 'rejected' && '✕ Rejected'}
+                {verificationStatus === 'verified' && <><Check size={14} /> Verified</>}
+                {verificationStatus === 'pending' && <><Clock size={14} /> Pending</>}
+                {verificationStatus === 'rejected' && <><X size={14} /> Rejected</>}
               </span>
             </div>
           </div>
@@ -675,7 +677,7 @@ const NGOSettings: React.FC = () => {
                     Organization Name <span className="required">*</span>
                   </label>
                   <div className="input-wrapper">
-                    <span className="input-icon">🏛️</span>
+                    <span className="input-icon"><Building size={16} /></span>
                     <input 
                       type="text" 
                       id="organizationName"
@@ -686,7 +688,7 @@ const NGOSettings: React.FC = () => {
                       className={errors.organizationName ? 'error' : ''}
                     />
                     {formData.organizationName && !errors.organizationName && (
-                      <span className="input-success-icon">✓</span>
+                      <span className="input-success-icon"><Check size={14} /></span>
                     )}
                   </div>
                   {errors.organizationName && <span className="error-message">{errors.organizationName}</span>}
@@ -697,7 +699,7 @@ const NGOSettings: React.FC = () => {
                     Organization Email <span className="required">*</span>
                   </label>
                   <div className="input-wrapper">
-                    <span className="input-icon">📧</span>
+                    <span className="input-icon"><Mail size={16} /></span>
                     <input 
                       type="email" 
                       id="organizationEmail"
@@ -716,7 +718,7 @@ const NGOSettings: React.FC = () => {
                     Organization Phone
                   </label>
                   <div className="input-wrapper phone-input">
-                    <span className="phone-prefix">🇮🇳 +91</span>
+                    <span className="phone-prefix">+91</span>
                     <input 
                       type="tel" 
                       id="organizationPhone"
@@ -766,7 +768,7 @@ const NGOSettings: React.FC = () => {
                 <div className={`form-group ${errors.website ? 'has-error' : ''}`}>
                   <label htmlFor="website">Website</label>
                   <div className="input-wrapper">
-                    <span className="input-icon">🌐</span>
+                    <span className="input-icon"><Globe2 size={16} /></span>
                     <input 
                       type="url" 
                       id="website"
@@ -782,7 +784,7 @@ const NGOSettings: React.FC = () => {
                 <div className="form-group full-width">
                   <label htmlFor="address">Address</label>
                   <div className="input-wrapper">
-                    <span className="input-icon">📍</span>
+                    <span className="input-icon"><MapPin size={16} /></span>
                     <input 
                       type="text" 
                       id="address"
@@ -891,7 +893,7 @@ const NGOSettings: React.FC = () => {
                     Full Name <span className="required">*</span>
                   </label>
                   <div className="input-wrapper">
-                    <span className="input-icon">👤</span>
+                    <span className="input-icon"><User size={16} /></span>
                     <input 
                       type="text" 
                       id="adminName"
@@ -927,7 +929,7 @@ const NGOSettings: React.FC = () => {
                     Email Address <span className="required">*</span>
                   </label>
                   <div className="input-wrapper">
-                    <span className="input-icon">📧</span>
+                    <span className="input-icon"><Mail size={16} /></span>
                     <input 
                       type="email" 
                       id="adminEmail"
@@ -946,7 +948,7 @@ const NGOSettings: React.FC = () => {
                     Phone Number
                   </label>
                   <div className="input-wrapper phone-input">
-                    <span className="phone-prefix">🇮🇳 +91</span>
+                    <span className="phone-prefix">+91</span>
                     <input 
                       type="tel" 
                       id="adminPhone"
@@ -1016,7 +1018,7 @@ const NGOSettings: React.FC = () => {
                       <span className="cause-icon">{cause.icon}</span>
                       <span className="cause-label">{cause.label}</span>
                       {formData.causeAreas.includes(cause.id) && (
-                        <span className="cause-check">✓</span>
+                        <span className="cause-check"><Check size={14} /></span>
                       )}
                     </label>
                   ))}
@@ -1064,7 +1066,7 @@ const NGOSettings: React.FC = () => {
 
               {/* Impact Stats */}
               <div className="impact-stats-card">
-                <h3>📊 Your Impact</h3>
+                <h3><BarChart3 size={18} /> Your Impact</h3>
                 <div className="stats-grid">
                   <div className="stat-item">
                     <span className="stat-value">₹2.5L</span>
@@ -1104,7 +1106,7 @@ const NGOSettings: React.FC = () => {
                       Fully Compliant
                     </span>
                   ) : (
-                    <span className="status-badge pending">⏳ Verification Pending</span>
+                    <span className="status-badge pending"><Clock size={14} /> Verification Pending</span>
                   )}
                 </div>
               </div>
@@ -1112,13 +1114,13 @@ const NGOSettings: React.FC = () => {
               <div className="compliance-grid">
                 <div className="compliance-card">
                   <div className="compliance-header">
-                    <div className="compliance-icon">📋</div>
+                    <div className="compliance-icon"><ClipboardList size={20} /></div>
                     <div className="compliance-info">
                       <h4>Registration Number</h4>
                       <p>Society/Trust Registration</p>
                     </div>
                     <span className={`compliance-status ${formData.registrationNumber ? 'complete' : 'pending'}`}>
-                      {formData.registrationNumber ? '✓ Added' : '○ Pending'}
+                      {formData.registrationNumber ? <><Check size={12} /> Added</> : '○ Pending'}
                     </span>
                   </div>
                   <input 
@@ -1132,13 +1134,13 @@ const NGOSettings: React.FC = () => {
 
                 <div className="compliance-card">
                   <div className="compliance-header">
-                    <div className="compliance-icon">🏷️</div>
+                    <div className="compliance-icon"><Tag size={20} /></div>
                     <div className="compliance-info">
                       <h4>80G Certificate</h4>
                       <p>Tax exemption for donors</p>
                     </div>
                     <span className={`compliance-status ${formData.registration80G ? 'complete' : 'pending'}`}>
-                      {formData.registration80G ? '✓ Added' : '○ Pending'}
+                      {formData.registration80G ? <><Check size={12} /> Added</> : '○ Pending'}
                     </span>
                   </div>
                   <input 
@@ -1152,13 +1154,13 @@ const NGOSettings: React.FC = () => {
 
                 <div className="compliance-card">
                   <div className="compliance-header">
-                    <div className="compliance-icon">📄</div>
+                    <div className="compliance-icon"><FileText size={20} /></div>
                     <div className="compliance-info">
                       <h4>12A Certificate</h4>
                       <p>Income tax exemption</p>
                     </div>
                     <span className={`compliance-status ${formData.registration12A ? 'complete' : 'pending'}`}>
-                      {formData.registration12A ? '✓ Added' : '○ Pending'}
+                      {formData.registration12A ? <><Check size={12} /> Added</> : '○ Pending'}
                     </span>
                   </div>
                   <input 
@@ -1172,13 +1174,13 @@ const NGOSettings: React.FC = () => {
 
                 <div className="compliance-card">
                   <div className="compliance-header">
-                    <div className="compliance-icon">🌍</div>
+                    <div className="compliance-icon"><Globe size={20} /></div>
                     <div className="compliance-info">
                       <h4>FCRA Registration</h4>
                       <p>Foreign contributions</p>
                     </div>
                     <span className={`compliance-status ${formData.fcraNumber ? 'complete' : 'pending'}`}>
-                      {formData.fcraNumber ? '✓ Added' : '○ Optional'}
+                      {formData.fcraNumber ? <><Check size={12} /> Added</> : '○ Optional'}
                     </span>
                   </div>
                   <input 
@@ -1192,13 +1194,13 @@ const NGOSettings: React.FC = () => {
 
                 <div className={`compliance-card ${errors.panNumber ? 'has-error' : ''}`}>
                   <div className="compliance-header">
-                    <div className="compliance-icon">🪪</div>
+                    <div className="compliance-icon"><FileText size={20} /></div>
                     <div className="compliance-info">
                       <h4>PAN Number</h4>
                       <p>Organization PAN</p>
                     </div>
                     <span className={`compliance-status ${formData.panNumber ? 'complete' : 'pending'}`}>
-                      {formData.panNumber ? '✓ Added' : '○ Required'}
+                      {formData.panNumber ? <><Check size={12} /> Added</> : '○ Required'}
                     </span>
                   </div>
                   <input 
@@ -1217,13 +1219,13 @@ const NGOSettings: React.FC = () => {
 
                 <div className="compliance-card">
                   <div className="compliance-header">
-                    <div className="compliance-icon">📊</div>
+                    <div className="compliance-icon"><BarChart3 size={20} /></div>
                     <div className="compliance-info">
                       <h4>GST Number</h4>
                       <p>If applicable</p>
                     </div>
                     <span className={`compliance-status ${formData.gstNumber ? 'complete' : 'pending'}`}>
-                      {formData.gstNumber ? '✓ Added' : '○ Optional'}
+                      {formData.gstNumber ? <><Check size={12} /> Added</> : '○ Optional'}
                     </span>
                   </div>
                   <input 
@@ -1246,7 +1248,7 @@ const NGOSettings: React.FC = () => {
                 
                 <div className="document-upload-grid">
                   <div className="document-upload-card">
-                    <div className="upload-icon">📤</div>
+                    <div className="upload-icon"><Upload size={20} /></div>
                     <h4>Registration Certificate</h4>
                     <p>PDF, max 5MB</p>
                     <label className="upload-btn">
@@ -1255,7 +1257,7 @@ const NGOSettings: React.FC = () => {
                     </label>
                   </div>
                   <div className="document-upload-card">
-                    <div className="upload-icon">📤</div>
+                    <div className="upload-icon"><Upload size={20} /></div>
                     <h4>80G Certificate</h4>
                     <p>PDF, max 5MB</p>
                     <label className="upload-btn">
@@ -1264,7 +1266,7 @@ const NGOSettings: React.FC = () => {
                     </label>
                   </div>
                   <div className="document-upload-card">
-                    <div className="upload-icon">📤</div>
+                    <div className="upload-icon"><Upload size={20} /></div>
                     <h4>12A Certificate</h4>
                     <p>PDF, max 5MB</p>
                     <label className="upload-btn">
@@ -1300,7 +1302,7 @@ const NGOSettings: React.FC = () => {
                   <div className="form-group full-width">
                     <label htmlFor="bankAccountName">Account Holder Name</label>
                     <div className="input-wrapper">
-                      <span className="input-icon">🏛️</span>
+                      <span className="input-icon"><Building size={16} /></span>
                       <input 
                         type="text" 
                         id="bankAccountName"
@@ -1348,7 +1350,7 @@ const NGOSettings: React.FC = () => {
                   <div className={`form-group ${errors.bankAccountNumber ? 'has-error' : ''}`}>
                     <label htmlFor="bankAccountNumber">Account Number</label>
                     <div className="input-wrapper">
-                      <span className="input-icon">🏦</span>
+                      <span className="input-icon"><Landmark size={16} /></span>
                       <input 
                         type="text" 
                         id="bankAccountNumber"
@@ -1394,7 +1396,7 @@ const NGOSettings: React.FC = () => {
                   <div className="form-group full-width">
                     <label htmlFor="upiId">UPI ID</label>
                     <div className="input-wrapper">
-                      <span className="input-icon">📲</span>
+                      <span className="input-icon"><Smartphone size={16} /></span>
                       <input 
                         type="text" 
                         id="upiId"
@@ -1438,7 +1440,7 @@ const NGOSettings: React.FC = () => {
                   </div>
                   <div className="donation-list">
                     <div className="donation-item">
-                      <div className="donation-icon">💝</div>
+                      <div className="donation-icon"><HeartHandshake size={16} /></div>
                       <div className="donation-details">
                         <h4>Anonymous Donor</h4>
                         <p>2 hours ago</p>
@@ -1446,7 +1448,7 @@ const NGOSettings: React.FC = () => {
                       <div className="donation-amount">+₹5,000</div>
                     </div>
                     <div className="donation-item">
-                      <div className="donation-icon">💝</div>
+                      <div className="donation-icon"><HeartHandshake size={16} /></div>
                       <div className="donation-details">
                         <h4>Rahul Sharma</h4>
                         <p>Yesterday</p>
@@ -1454,7 +1456,7 @@ const NGOSettings: React.FC = () => {
                       <div className="donation-amount">+₹2,500</div>
                     </div>
                     <div className="donation-item">
-                      <div className="donation-icon">💝</div>
+                      <div className="donation-icon"><HeartHandshake size={16} /></div>
                       <div className="donation-details">
                         <h4>Priya Patel</h4>
                         <p>3 days ago</p>
@@ -1495,7 +1497,7 @@ const NGOSettings: React.FC = () => {
                     />
                   </div>
                   <span className={`social-status ${formData.facebook ? 'connected' : ''}`}>
-                    {formData.facebook ? '✓ Connected' : 'Not connected'}
+                    {formData.facebook ? <><Check size={12} /> Connected</> : 'Not connected'}
                   </span>
                 </div>
 
@@ -1516,7 +1518,7 @@ const NGOSettings: React.FC = () => {
                     />
                   </div>
                   <span className={`social-status ${formData.twitter ? 'connected' : ''}`}>
-                    {formData.twitter ? '✓ Connected' : 'Not connected'}
+                    {formData.twitter ? <><Check size={12} /> Connected</> : 'Not connected'}
                   </span>
                 </div>
 
@@ -1537,7 +1539,7 @@ const NGOSettings: React.FC = () => {
                     />
                   </div>
                   <span className={`social-status ${formData.instagram ? 'connected' : ''}`}>
-                    {formData.instagram ? '✓ Connected' : 'Not connected'}
+                    {formData.instagram ? <><Check size={12} /> Connected</> : 'Not connected'}
                   </span>
                 </div>
 
@@ -1558,7 +1560,7 @@ const NGOSettings: React.FC = () => {
                     />
                   </div>
                   <span className={`social-status ${formData.linkedin ? 'connected' : ''}`}>
-                    {formData.linkedin ? '✓ Connected' : 'Not connected'}
+                    {formData.linkedin ? <><Check size={12} /> Connected</> : 'Not connected'}
                   </span>
                 </div>
 
@@ -1579,7 +1581,7 @@ const NGOSettings: React.FC = () => {
                     />
                   </div>
                   <span className={`social-status ${formData.youtube ? 'connected' : ''}`}>
-                    {formData.youtube ? '✓ Connected' : 'Not connected'}
+                    {formData.youtube ? <><Check size={12} /> Connected</> : 'Not connected'}
                   </span>
                 </div>
               </div>
@@ -1688,7 +1690,7 @@ const NGOSettings: React.FC = () => {
                   
                   <div className="toggle-card">
                     <div className="toggle-icon donation">
-                      💝
+                      <HeartHandshake size={20} />
                     </div>
                     <div className="toggle-content">
                       <h4>Donation Alerts</h4>
@@ -1706,7 +1708,7 @@ const NGOSettings: React.FC = () => {
 
                   <div className="toggle-card">
                     <div className="toggle-icon volunteer">
-                      🙋
+                      <Users size={20} />
                     </div>
                     <div className="toggle-content">
                       <h4>Volunteer Alerts</h4>
@@ -1724,7 +1726,7 @@ const NGOSettings: React.FC = () => {
 
                   <div className="toggle-card">
                     <div className="toggle-icon report">
-                      📊
+                      <BarChart3 size={20} />
                     </div>
                     <div className="toggle-content">
                       <h4>Report Reminders</h4>
@@ -1772,25 +1774,25 @@ const NGOSettings: React.FC = () => {
 
               <div className="preferences-grid">
                 <div className="preference-card">
-                  <h3>🌐 Language</h3>
+                  <h3><Globe2 size={18} /> Language</h3>
                   <select 
                     name="language" 
                     value={formData.language}
                     onChange={handleChange}
                   >
-                    <option value="English">🇬🇧 English</option>
-                    <option value="Hindi">🇮🇳 Hindi (हिंदी)</option>
-                    <option value="Marathi">🇮🇳 Marathi (मराठी)</option>
-                    <option value="Tamil">🇮🇳 Tamil (தமிழ்)</option>
-                    <option value="Telugu">🇮🇳 Telugu (తెలుగు)</option>
-                    <option value="Kannada">🇮🇳 Kannada (ಕನ್ನಡ)</option>
-                    <option value="Bengali">🇮🇳 Bengali (বাংলা)</option>
-                    <option value="Gujarati">🇮🇳 Gujarati (ગુજરાતી)</option>
+                    <option value="English">English</option>
+                    <option value="Hindi">Hindi (हिंदी)</option>
+                    <option value="Marathi">Marathi (मराठी)</option>
+                    <option value="Tamil">Tamil (தமிழ்)</option>
+                    <option value="Telugu">Telugu (తెలుగు)</option>
+                    <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
+                    <option value="Bengali">Bengali (বাংলা)</option>
+                    <option value="Gujarati">Gujarati (ગુજરાતી)</option>
                   </select>
                 </div>
 
                 <div className="preference-card">
-                  <h3>🎨 Theme</h3>
+                  <h3><Palette size={18} /> Theme</h3>
                   <div className="theme-options">
                     <label className={`theme-option ${formData.theme === 'light' ? 'selected' : ''}`}>
                       <input
@@ -1800,7 +1802,7 @@ const NGOSettings: React.FC = () => {
                         checked={formData.theme === 'light'}
                         onChange={handleChange}
                       />
-                      <span className="theme-preview light">☀️</span>
+                      <span className="theme-preview light"><Sun size={16} /></span>
                       <span>Light</span>
                     </label>
                     <label className={`theme-option ${formData.theme === 'dark' ? 'selected' : ''}`}>
@@ -1811,7 +1813,7 @@ const NGOSettings: React.FC = () => {
                         checked={formData.theme === 'dark'}
                         onChange={handleChange}
                       />
-                      <span className="theme-preview dark">🌙</span>
+                      <span className="theme-preview dark"><Moon size={16} /></span>
                       <span>Dark</span>
                     </label>
                     <label className={`theme-option ${formData.theme === 'system' ? 'selected' : ''}`}>
@@ -1822,28 +1824,28 @@ const NGOSettings: React.FC = () => {
                         checked={formData.theme === 'system'}
                         onChange={handleChange}
                       />
-                      <span className="theme-preview system">💻</span>
+                      <span className="theme-preview system"><Monitor size={16} /></span>
                       <span>System</span>
                     </label>
                   </div>
                 </div>
 
                 <div className="preference-card">
-                  <h3>💰 Currency</h3>
+                  <h3><Landmark size={18} /> Currency</h3>
                   <select 
                     name="currency" 
                     value={formData.currency}
                     onChange={handleChange}
                   >
-                    <option value="INR">🇮🇳 INR (₹)</option>
-                    <option value="USD">🇺🇸 USD ($)</option>
-                    <option value="EUR">🇪🇺 EUR (€)</option>
-                    <option value="GBP">🇬🇧 GBP (£)</option>
+                    <option value="INR">INR (₹)</option>
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
                   </select>
                 </div>
 
                 <div className="preference-card">
-                  <h3>🕐 Timezone</h3>
+                  <h3><Clock size={18} /> Timezone</h3>
                   <select 
                     name="timezone" 
                     value={formData.timezone}
@@ -1857,7 +1859,7 @@ const NGOSettings: React.FC = () => {
                 </div>
 
                 <div className="preference-card">
-                  <h3>📅 Fiscal Year</h3>
+                  <h3><Calendar size={18} /> Fiscal Year</h3>
                   <select 
                     name="fiscalYearStart" 
                     value={formData.fiscalYearStart}
@@ -1895,7 +1897,7 @@ const NGOSettings: React.FC = () => {
                         onChange={handleCoverUpload}
                         hidden
                       />
-                      📷 Change Cover
+                      <Camera size={14} /> Change Cover
                     </label>
                   </div>
                   <div className="branding-logo-section">
@@ -1906,9 +1908,9 @@ const NGOSettings: React.FC = () => {
                       {formData.logo ? (
                         <img src={formData.logo} alt="Logo" />
                       ) : (
-                        <span>🏛️</span>
+                        <span><Building size={32} /></span>
                       )}
-                      <div className="logo-edit-overlay">📷</div>
+                      <div className="logo-edit-overlay"><Camera size={14} /></div>
                     </div>
                     <div className="branding-info">
                       <h3>{formData.organizationName || 'Your Organization'}</h3>
@@ -1933,7 +1935,7 @@ const NGOSettings: React.FC = () => {
                           checked={formData.primaryColor === color}
                           onChange={handleChange}
                         />
-                        {formData.primaryColor === color && <span className="check">✓</span>}
+                        {formData.primaryColor === color && <span className="check"><Check size={12} /></span>}
                       </label>
                     ))}
                     <label className="color-option custom">
@@ -1963,7 +1965,7 @@ const NGOSettings: React.FC = () => {
 
               <div className="security-options">
                 <div className="security-card">
-                  <div className="security-icon">🔐</div>
+                  <div className="security-icon"><ShieldCheck size={20} /></div>
                   <div className="security-content">
                     <h4>Change Password</h4>
                     <p>Update your password regularly to keep your account secure</p>
@@ -1972,7 +1974,7 @@ const NGOSettings: React.FC = () => {
                 </div>
 
                 <div className="security-card">
-                  <div className="security-icon">📱</div>
+                  <div className="security-icon"><Smartphone size={20} /></div>
                   <div className="security-content">
                     <h4>Two-Factor Authentication</h4>
                     <p>Add an extra layer of security to your account</p>
@@ -1981,7 +1983,7 @@ const NGOSettings: React.FC = () => {
                 </div>
 
                 <div className="security-card">
-                  <div className="security-icon">👥</div>
+                  <div className="security-icon"><Users size={20} /></div>
                   <div className="security-content">
                     <h4>Team Access</h4>
                     <p>Manage team member permissions and access levels</p>
@@ -1990,7 +1992,7 @@ const NGOSettings: React.FC = () => {
                 </div>
 
                 <div className="security-card">
-                  <div className="security-icon">📋</div>
+                  <div className="security-icon"><ClipboardList size={20} /></div>
                   <div className="security-content">
                     <h4>Login History</h4>
                     <p>View recent login activity on your account</p>
@@ -1999,7 +2001,7 @@ const NGOSettings: React.FC = () => {
                 </div>
 
                 <div className="security-card">
-                  <div className="security-icon">📤</div>
+                  <div className="security-icon"><Upload size={20} /></div>
                   <div className="security-content">
                     <h4>Export Data</h4>
                     <p>Download a copy of your organization data</p>
@@ -2011,7 +2013,7 @@ const NGOSettings: React.FC = () => {
               {/* Danger Zone */}
               <div className="danger-zone">
                 <div className="danger-header">
-                  <h3>⚠️ Danger Zone</h3>
+                  <h3><AlertTriangle size={18} /> Danger Zone</h3>
                   <p>Irreversible and destructive actions</p>
                 </div>
                 
@@ -2075,8 +2077,8 @@ const NGOSettings: React.FC = () => {
       {/* Toast Notification */}
       <div className={`toast ${showToast ? 'visible' : ''} ${toastType}`}>
         <div className="toast-icon">
-          {toastType === 'success' && '✓'}
-          {toastType === 'error' && '✕'}
+          {toastType === 'success' && <Check size={16} />}
+          {toastType === 'error' && <X size={16} />}
           {toastType === 'warning' && '!'}
         </div>
         <span className="toast-message">{toastMessage}</span>
@@ -2088,7 +2090,7 @@ const NGOSettings: React.FC = () => {
         <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
           <div className="modal delete-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <div className="modal-icon danger">⚠️</div>
+              <div className="modal-icon danger"><AlertTriangle size={32} /></div>
               <h2>Delete Organization Account</h2>
               <p>This action cannot be undone. All your data will be permanently deleted.</p>
             </div>
@@ -2147,7 +2149,7 @@ const NGOSettings: React.FC = () => {
                 {formData.logo ? (
                   <img src={formData.logo} alt="Logo" />
                 ) : (
-                  <div className="placeholder-logo">🏛️</div>
+                  <div className="placeholder-logo"><Building size={48} /></div>
                 )}
               </div>
               

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CustomerAddresses.css';
+import { Home, Building2, MapPin, Check, X, Info, AlertTriangle, Star, Pencil, Trash2, Smartphone, Flag, ChevronUp, ChevronDown, ArrowLeft, Search, MapPinned, Lightbulb } from 'lucide-react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 // ============================================
 // TYPES
@@ -44,10 +46,10 @@ interface FormErrors {
 // CONSTANTS
 // ============================================
 
-const ADDRESS_TYPES = [
-  { id: 'home', label: 'Home', icon: '🏠', description: 'Residential address' },
-  { id: 'work', label: 'Work', icon: '🏢', description: 'Office or workplace' },
-  { id: 'other', label: 'Other', icon: '📍', description: 'Friends, family, etc.' }
+const ADDRESS_TYPES: { id: string; label: string; icon: React.ReactNode; description: string }[] = [
+  { id: 'home', label: 'Home', icon: <Home size={16} />, description: 'Residential address' },
+  { id: 'work', label: 'Work', icon: <Building2 size={16} />, description: 'Office or workplace' },
+  { id: 'other', label: 'Other', icon: <MapPin size={16} />, description: 'Friends, family, etc.' }
 ];
 
 const INDIAN_STATES = [
@@ -85,12 +87,13 @@ const validatePhone = (phone: string): boolean => {
 
 // Toast notification
 const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
-  const icons = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠' };
+  const icons: Record<string, React.ReactNode> = { success: <Check size={14} />, error: <X size={14} />, info: <Info size={14} />, warning: <AlertTriangle size={14} /> };
   
   const toast = document.createElement('div');
   toast.className = `address-toast toast-${type}`;
+  const iconMarkup = renderToStaticMarkup(icons[type] as React.ReactElement);
   toast.innerHTML = `
-    <span class="toast-icon">${icons[type]}</span>
+    <span class="toast-icon">${iconMarkup}</span>
     <span class="toast-message">${message}</span>
   `;
   
@@ -232,7 +235,7 @@ const AddressCard: React.FC<{
 
   const getTypeIcon = () => {
     const type = ADDRESS_TYPES.find(t => t.id === address.type);
-    return type?.icon || '📍';
+    return type?.icon || <MapPin size={16} />;
   };
 
   return (
@@ -243,7 +246,7 @@ const AddressCard: React.FC<{
       {/* Default Badge */}
       {address.isDefault && (
         <div className="default-badge">
-          <span className="badge-icon">⭐</span>
+          <span className="badge-icon"><Star size={14} /></span>
           <span>Default</span>
         </div>
       )}
@@ -261,7 +264,7 @@ const AddressCard: React.FC<{
               onClick={() => onSetDefault(address.id)}
               title="Set as default"
             >
-              ⭐
+              <Star size={12} />
             </button>
           )}
           <button 
@@ -269,14 +272,14 @@ const AddressCard: React.FC<{
             onClick={() => onEdit(address)}
             title="Edit address"
           >
-            ✏️
+            <Pencil size={14} />
           </button>
           <button 
             className="action-btn delete-btn"
             onClick={() => setShowDeleteConfirm(true)}
             title="Delete address"
           >
-            🗑️
+            <Trash2 size={14} />
           </button>
         </div>
       </div>
@@ -285,7 +288,7 @@ const AddressCard: React.FC<{
       <div className="card-body">
         <div className="recipient-info">
           <span className="recipient-name">{address.fullName}</span>
-          <span className="recipient-phone">📱 {address.phone}</span>
+          <span className="recipient-phone"><Smartphone size={14} /> {address.phone}</span>
         </div>
         
         <div className="address-details">
@@ -295,7 +298,7 @@ const AddressCard: React.FC<{
           )}
           {address.landmark && (
             <p className="address-landmark">
-              <span className="landmark-icon">🏁</span>
+              <span className="landmark-icon"><Flag size={14} /></span>
               Near {address.landmark}
             </p>
           )}
@@ -312,7 +315,7 @@ const AddressCard: React.FC<{
         </span>
         {address.coordinates && (
           <span className="has-location">
-            <span className="location-icon">📍</span>
+            <span className="location-icon"><MapPin size={14} /></span>
             Location saved
           </span>
         )}
@@ -322,7 +325,7 @@ const AddressCard: React.FC<{
       {showDeleteConfirm && (
         <div className="delete-confirm-overlay" onClick={() => setShowDeleteConfirm(false)}>
           <div className="delete-confirm-modal" onClick={e => e.stopPropagation()}>
-            <div className="confirm-icon">🗑️</div>
+            <div className="confirm-icon"><Trash2 size={32} /></div>
             <h3>Delete Address?</h3>
             <p>Are you sure you want to delete this address? This action cannot be undone.</p>
             <div className="confirm-actions">
@@ -544,7 +547,7 @@ const AddressForm: React.FC<{
       <div className="address-form-container" onClick={e => e.stopPropagation()}>
         <div className="form-header">
           <h2>{address ? 'Edit Address' : 'Add New Address'}</h2>
-          <button className="close-form-btn" onClick={onCancel}>✕</button>
+          <button className="close-form-btn" onClick={onCancel}><X size={18} /></button>
         </div>
 
         <form ref={formRef} onSubmit={handleSubmit} className="address-form">
@@ -581,14 +584,14 @@ const AddressForm: React.FC<{
                 </>
               ) : (
                 <>
-                  <span className="location-icon">📍</span>
+                  <span className="location-icon"><MapPin size={16} /></span>
                   <span>Use my current location</span>
                 </>
               )}
             </button>
             {formData.coordinates && (
               <span className="location-detected">
-                ✓ Location detected
+                <Check size={14} /> Location detected
               </span>
             )}
           </div>
@@ -721,7 +724,7 @@ const AddressForm: React.FC<{
                   autoComplete="off"
                 />
                 <span className="dropdown-arrow" onClick={() => setShowStateDropdown(!showStateDropdown)}>
-                  {showStateDropdown ? '▲' : '▼'}
+                  {showStateDropdown ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 </span>
                 
                 {showStateDropdown && (
@@ -795,7 +798,7 @@ const AddressForm: React.FC<{
                 </>
               ) : (
                 <>
-                  <span className="btn-icon">✓</span>
+                  <span className="btn-icon"><Check size={14} /></span>
                   <span>{address ? 'Update Address' : 'Save Address'}</span>
                 </>
               )}
@@ -811,7 +814,7 @@ const AddressForm: React.FC<{
 const EmptyState: React.FC<{ onAddNew: () => void }> = ({ onAddNew }) => (
   <div className="empty-state">
     <div className="empty-illustration">
-      <div className="empty-icon">📍</div>
+      <div className="empty-icon"><MapPin size={40} /></div>
       <div className="empty-circles">
         <span className="circle c1" />
         <span className="circle c2" />
@@ -983,7 +986,7 @@ const CustomerAddresses: React.FC = () => {
     return (
       <div className="addresses-loading">
         <div className="loader">
-          <span className="loader-icon">📍</span>
+          <span className="loader-icon"><MapPin size={20} /></span>
           <p>Loading...</p>
         </div>
       </div>
@@ -1002,13 +1005,13 @@ const CustomerAddresses: React.FC = () => {
       <header className="addresses-header">
         <div className="header-content">
           <button className="back-btn" onClick={() => navigate('/customer-home')}>
-            <span>←</span>
+            <span><ArrowLeft size={16} /></span>
             <span>Back</span>
           </button>
           
           <div className="header-title">
             <h1>
-              <span className="title-icon">📍</span>
+              <span className="title-icon"><MapPin size={20} /></span>
               My Addresses
             </h1>
             <p>Manage your delivery addresses</p>
@@ -1024,25 +1027,25 @@ const CustomerAddresses: React.FC = () => {
       {/* Stats Bar */}
       <div className="stats-bar">
         <div className="stat-item" onClick={() => setFilterType('all')}>
-          <span className="stat-icon">📍</span>
+          <span className="stat-icon"><MapPin size={14} /></span>
           <span className="stat-value">{stats.total}</span>
           <span className="stat-label">Total</span>
         </div>
         <div className="stat-divider" />
         <div className="stat-item" onClick={() => setFilterType('home')}>
-          <span className="stat-icon">🏠</span>
+          <span className="stat-icon"><Home size={14} /></span>
           <span className="stat-value">{stats.home}</span>
           <span className="stat-label">Home</span>
         </div>
         <div className="stat-divider" />
         <div className="stat-item" onClick={() => setFilterType('work')}>
-          <span className="stat-icon">🏢</span>
+          <span className="stat-icon"><Building2 size={14} /></span>
           <span className="stat-value">{stats.work}</span>
           <span className="stat-label">Work</span>
         </div>
         <div className="stat-divider" />
         <div className="stat-item" onClick={() => setFilterType('other')}>
-          <span className="stat-icon">📌</span>
+          <span className="stat-icon"><MapPinned size={14} /></span>
           <span className="stat-value">{stats.other}</span>
           <span className="stat-label">Other</span>
         </div>
@@ -1054,7 +1057,7 @@ const CustomerAddresses: React.FC = () => {
         {addresses.length > 0 && (
           <div className="addresses-toolbar">
             <div className="search-box">
-              <span className="search-icon">🔍</span>
+              <span className="search-icon"><Search size={16} /></span>
               <input
                 type="text"
                 placeholder="Search addresses..."
@@ -1063,17 +1066,17 @@ const CustomerAddresses: React.FC = () => {
               />
               {searchQuery && (
                 <button className="clear-search" onClick={() => setSearchQuery('')}>
-                  ✕
+                  <X size={14} />
                 </button>
               )}
             </div>
 
             <div className="filter-tabs">
               {[
-                { id: 'all', label: 'All', icon: '📍' },
-                { id: 'home', label: 'Home', icon: '🏠' },
-                { id: 'work', label: 'Work', icon: '🏢' },
-                { id: 'other', label: 'Other', icon: '📌' }
+                { id: 'all', label: 'All', icon: <MapPin size={14} /> },
+                { id: 'home', label: 'Home', icon: <Home size={14} /> },
+                { id: 'work', label: 'Work', icon: <Building2 size={14} /> },
+                { id: 'other', label: 'Other', icon: <MapPinned size={14} /> }
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -1109,7 +1112,7 @@ const CustomerAddresses: React.FC = () => {
             <EmptyState onAddNew={handleAddNew} />
           ) : sortedAddresses.length === 0 ? (
             <div className="no-results">
-              <span className="no-results-icon">🔍</span>
+              <span className="no-results-icon"><Search size={32} /></span>
               <h3>No addresses found</h3>
               <p>Try adjusting your search or filter</p>
               <button 
@@ -1144,24 +1147,24 @@ const CustomerAddresses: React.FC = () => {
         {/* Tips Section */}
         {addresses.length > 0 && (
           <div className="tips-section">
-            <h3>💡 Quick Tips</h3>
+            <h3><Lightbulb size={16} /> Quick Tips</h3>
             <div className="tips-grid">
               <div className="tip-card">
-                <span className="tip-icon">⭐</span>
+                <span className="tip-icon"><Star size={14} /></span>
                 <div className="tip-content">
                   <h4>Set a default address</h4>
                   <p>Save time during checkout by setting your most-used address as default.</p>
                 </div>
               </div>
               <div className="tip-card">
-                <span className="tip-icon">📍</span>
+                <span className="tip-icon"><MapPin size={14} /></span>
                 <div className="tip-content">
                   <h4>Add landmarks</h4>
                   <p>Help our delivery partners find you faster by adding nearby landmarks.</p>
                 </div>
               </div>
               <div className="tip-card">
-                <span className="tip-icon">📱</span>
+                <span className="tip-icon"><Smartphone size={14} /></span>
                 <div className="tip-content">
                   <h4>Keep phone updated</h4>
                   <p>Ensure your phone number is correct for delivery updates.</p>

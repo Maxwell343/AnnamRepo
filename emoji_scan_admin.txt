@@ -1,0 +1,1032 @@
+﻿
+=== src\modules\admin\analytics\GlobalAnalytics.tsx (1070 lines) ===
+80: icon: '≡ƒæÑ',
+90: icon: '≡ƒôª',
+100: icon: '≡ƒÆ░',
+110: icon: '≡ƒÜ¢',
+120: icon: '≡ƒî┐',
+487: `${k.label}: ${k.value} (${k.change} ${k.dir === 'up' ? 'Γåù' : 'Γåÿ'})`,
+522: `${f.name} | ${f.location} | ${f.revenue} | ${f.orders} | Γ¡É${f.rating}`,
+533: `${d.name} | ${d.location} | ${d.deliveries} | ${d.onTime}% | Γ¡É${d.rating}`,
+591: {autoRefresh ? '≡ƒöä' : 'ΓÅ╕∩╕Å'}
+603: <span>≡ƒôè</span> Overview
+609: <span>≡ƒôê</span> Detailed
+632: ≡ƒôÑ Export
+637: <span>≡ƒôä</span> Export as CSV
+640: <span>≡ƒôè</span> Export as Excel
+643: <span>≡ƒôò</span> Export as PDF
+667: {kpi.dir === 'up' ? 'Γåù' : 'Γåÿ'} {kpi.change}
+714: <span>ΓÜû∩╕Å</span> Compare Periods
+720: <span>Γ£¿</span> Animations
+729: ≡ƒôê
+736: ≡ƒôè
+743: ≡ƒôë
+754: <span className="ga-chart__icon">≡ƒæÑ</span>
+758: Γ¢╢
+843: <span className="ga-chart__icon">≡ƒôª</span>
+847: Γ¢╢
+882: <span className="ga-chart__icon">≡ƒÑ¼</span>
+886: Γ¢╢
+917: <span className="ga-chart__icon">≡ƒÜ¢</span>
+921: Γ¢╢
+958: <span className="ga-table__icon">≡ƒî╛</span>
+961: <button className="ga-table__export">Export Γåô</button>
+986: <span className="ga-table__location">≡ƒôì {farmer.location}</span>
+992: <span>Γ¡É</span>
+998: {farmer.trend === 'up' ? 'Γåù' : farmer.trend === 'down' ? 'Γåÿ' : 'ΓåÆ'}
+1012: <span className="ga-table__icon">≡ƒÜù</span>
+1015: <button className="ga-table__export">Export Γåô</button>
+1039: <span className="ga-table__location">≡ƒôì {driver.location}</span>
+1055: <span>Γ¡É</span>
+
+=== src\modules\admin\analytics\ImpactMetrics.tsx (1021 lines) ===
+67: icon: '≡ƒÑù',
+76: icon: '≡ƒæ¿ΓÇì≡ƒæ⌐ΓÇì≡ƒæºΓÇì≡ƒæª',
+85: icon: '≡ƒîì',
+94: icon: '≡ƒñ¥',
+152: icon: '≡ƒÅå',
+161: icon: '≡ƒÄ»',
+171: icon: '≡ƒî▒',
+181: icon: '≡ƒñ¥',
+190: icon: '≡ƒÜ¢',
+208: logo: '≡ƒÅå',
+219: logo: '≡ƒÑê',
+230: logo: '≡ƒÑë',
+241: logo: '≡ƒñ¥',
+252: logo: '≡ƒì╜∩╕Å',
+263: logo: '≡ƒæ¿ΓÇì≡ƒì│',
+274: logo: '≡ƒñ▓',
+285: logo: '≡ƒî┐',
+296: logo: '≡ƒÅÖ∩╕Å',
+307: logo: '≡ƒî╛',
+515: ≡ƒîƒ IMPACT METRICS SUMMARY ≡ƒîƒ
+522: ≡ƒôê Key Achievements:
+523: Γ£à Milestones Achieved: ${milestones.filter((m) => m.status === 'achieved').length}/${milestones.length}
+524: ≡ƒÅå Top NGO Partner: ${ngos[0].name} (${ngos[0].food})
+577: ≡ƒÄë ≡ƒÄè ≡ƒÄê Achievement Unlocked! ≡ƒÄê ≡ƒÄè ≡ƒÄë
+595: <span>≡ƒôñ</span> Share Impact
+602: <span>≡ƒôÑ</span> Download Report
+610: <span>≡ƒôä</span> PDF
+616: <span>≡ƒôè</span> Excel
+622: <span>≡ƒôï</span> CSV
+658: <span className="im-hero-card__trend-icon">Γåù</span>
+696: <span>ΓÜû∩╕Å</span> Compare
+703: ≡ƒôê
+709: ≡ƒôè
+721: <span className="im-chart__icon">≡ƒôê</span>
+726: <button className="im-chart__fullscreen">Γ¢╢</button>
+797: <span className="im-chart__icon">≡ƒì╜∩╕Å</span>
+802: <button className="im-chart__fullscreen">Γ¢╢</button>
+848: <span className="im-milestones__icon">≡ƒÄ»</span>
+866: ? 'Γ£à Achieved'
+867: : '≡ƒöä In Progress'}
+891: ? 'Γ£à Achieved'
+899: <span className="im-milestone__date">≡ƒôà {milestone.date}</span>
+928: <span className="im-leaderboard__icon">≡ƒÅå</span>
+939: {showAllNGOs ? 'View Top 5 Γåæ' : 'View All NGOs ΓåÆ'}
+980: <span className="im-communities__icon">≡ƒÅÿ∩╕Å</span>
+1007: {ngo.trend === 'up' ? 'Γåù' : ngo.trend === 'down' ? 'Γåÿ' : 'ΓåÆ'}{' '}
+
+=== src\modules\admin\analytics\RegionHeatmap.tsx (1507 lines) ===
+404: {region.growth >= 0 ? 'Γåæ' : 'Γåô'} {Math.abs(region.growth)}%
+589: {region.growth >= 0 ? 'Γåæ' : 'Γåô'}{Math.abs(region.growth)}%
+622: <span>≡ƒôª Orders</span>
+626: <span>≡ƒÆ░ Revenue</span>
+630: <span>≡ƒæ¿ΓÇì≡ƒî╛ Farmers</span>
+634: <span>≡ƒÜù Drivers</span>
+638: <span>≡ƒôê Growth</span>
+644: <span>Γ¡É Rating</span>
+703: {region.growth >= 0 ? 'Γåæ' : 'Γåô'} {Math.abs(region.growth)}%
+860: {region.growth >= 0 ? 'Γåæ' : 'Γåô'}{Math.abs(region.growth)}%
+915: <span>Γ¡É {tooltip.region.satisfaction}</span>
+934: Γ£ò
+961: <span className="comparison-metric__value">Γ¡É {region.satisfaction}</span>
+988: <span className="header-icon">≡ƒù║∩╕Å</span>
+1010: <span className="action-btn__icon">≡ƒôÑ</span>
+1021: <span className="action-btn__icon">ΓÜû∩╕Å</span>
+1031: <span className="search-icon">≡ƒöì</span>
+1040: <button className="search-clear" onClick={() => setSearchQuery('')}>Γ£ò</button>
+1050: ≡ƒù║∩╕Å
+1057: Γûª
+1064: Γùë
+1071: Γûñ
+1107: {sortOrder === 'desc' ? 'Γåô' : 'Γåæ'}
+1115: <span>ΓÜÖ∩╕Å</span> Filters
+1147: <span className="compare-banner__icon">ΓÜû∩╕Å</span>
+1163: {selected.growth >= 0 ? 'Γåæ' : 'Γåô'} {Math.abs(selected.growth)}%
+1166: <button className="region-report__close" onClick={() => setSelectedRegion(null)}>Γ£ò Back to Map</button>
+1171: <span className="region-report__stat-icon">≡ƒôª</span>
+1178: <span className="region-report__stat-icon">≡ƒÆ░</span>
+1185: <span className="region-report__stat-icon">≡ƒæ¿ΓÇì≡ƒî╛</span>
+1192: <span className="region-report__stat-icon">≡ƒÜù</span>
+1199: <span className="region-report__stat-icon">≡ƒº╛</span>
+1206: <span className="region-report__stat-icon">ΓÅ▒∩╕Å</span>
+1227: <span>Rating: <strong>Γ¡É {selected.satisfaction}</strong></span>
+1236: {['≡ƒÑç', '≡ƒÑê', '≡ƒÑë'][i]} {product}
+1246: <span className="region-report__insight-icon">≡ƒôè</span>
+1250: <span className="region-report__insight-icon">≡ƒôê</span>
+1254: <span className="region-report__insight-icon">{selected.heat === 'high' ? '≡ƒƒó' : selected.heat === 'medium' ? '≡ƒƒí' : '≡ƒö┤'}</span>
+1300: `Customer Rating: Γ¡É ${selected.satisfaction}`
+1317: const medals = ['≡ƒÑç', '≡ƒÑê', '≡ƒÑë'];
+1376: <div className="empty-state__icon">≡ƒöì</div>
+1423: <div className="overview-item__icon">≡ƒôì</div>
+1432: <div className="overview-item__icon">≡ƒôª</div>
+1441: <div className="overview-item__icon">≡ƒæ¿ΓÇì≡ƒî╛</div>
+1450: <div className="overview-item__icon">≡ƒÜù</div>
+1489: {region.growth >= 0 ? 'Γåæ' : 'Γåô'} {Math.abs(region.growth)}%
+
+=== src\modules\admin\dashboard\AdminDashboard.tsx (1296 lines) ===
+230: summary: { total: 'Γé╣4,28,000', avg: 'Γé╣14,267', avgChange: 'Γåæ 8%', txns: '342', txnsChange: 'Γåæ 15%', totalChange: 'Γåæ 23% vs last month' }
+235: summary: { total: 'Γé╣12,84,000', avg: 'Γé╣1,07,000', avgChange: 'Γåæ 12%', txns: '1,026', txnsChange: 'Γåæ 18%', totalChange: 'Γåæ 19% vs last quarter' }
+240: summary: { total: 'Γé╣51,36,000', avg: 'Γé╣4,28,000', avgChange: 'Γåæ 23%', txns: '4,104', txnsChange: 'Γåæ 22%', totalChange: 'Γåæ 31% vs last year' }
+287: { id: '1', icon: '≡ƒæÑ', label: 'Manage Users', description: 'View and edit user accounts', color: '#3b82f6', badge: 12, route: '/admin/users' },
+288: { id: '2', icon: '≡ƒôª', label: 'Orders', description: 'Track and manage orders', color: '#10b981', badge: 156, route: '/admin/orders' },
+289: { id: '3', icon: 'ΓÜû∩╕Å', label: 'Disputes', description: 'Resolve customer disputes', color: '#f59e0b', badge: 7, route: '/admin/disputes' },
+290: { id: '4', icon: 'Γ£à', label: 'KYC Approvals', description: 'Verify user documents', color: '#8b5cf6', badge: 23, route: '/admin/users' },
+291: { id: '5', icon: '≡ƒÅ╖∩╕Å', label: 'Listings', description: 'Moderate product listings', color: '#ec4899', badge: 45, route: '/admin/listings' },
+292: { id: '6', icon: '≡ƒÆ│', label: 'Payouts', description: 'Process payments', color: '#06b6d4', badge: 8, route: '/admin/payouts' },
+306: { value: 'all', label: 'All', icon: '≡ƒôï' },
+307: { value: 'user', label: 'Users', icon: '≡ƒæñ' },
+308: { value: 'order', label: 'Orders', icon: '≡ƒôª' },
+309: { value: 'dispute', label: 'Disputes', icon: 'ΓÜá∩╕Å' },
+310: { value: 'kyc', label: 'KYC', icon: 'Γ£à' },
+311: { value: 'listing', label: 'Listings', icon: '≡ƒÅ╖∩╕Å' },
+312: { value: 'system', label: 'System', icon: 'ΓÜÖ∩╕Å' },
+332: icon: '≡ƒæÑ',
+345: icon: '≡ƒôª',
+358: icon: '≡ƒÆ░',
+371: icon: '≡ƒîì',
+384: icon: 'ΓÜû∩╕Å',
+397: icon: '≡ƒÜù',
+408: icon: '≡ƒæñ',
+417: icon: '≡ƒôª',
+426: icon: 'ΓÜá∩╕Å',
+436: icon: 'Γ£à',
+445: icon: '≡ƒÅ╖∩╕Å',
+455: icon: '≡ƒÆ│',
+464: icon: '≡ƒÜù',
+473: icon: 'ΓÜÖ∩╕Å',
+487: icon: 'ΓÜá∩╕Å',
+496: icon: '≡ƒÜ¿',
+505: icon: '≡ƒôè',
+515: { id: '1', label: 'API Response', value: 120, max: 500, unit: 'ms', status: 'healthy', icon: '≡ƒôí' },
+516: { id: '2', label: 'Database', value: 87, max: 100, unit: '%', status: 'warning', icon: '≡ƒùä∩╕Å' },
+517: { id: '3', label: 'Memory', value: 62, max: 100, unit: '%', status: 'healthy', icon: '≡ƒÆ╛' },
+518: { id: '4', label: 'CPU Usage', value: 45, max: 100, unit: '%', status: 'healthy', icon: 'ΓÜí' },
+519: { id: '5', label: 'Uptime', value: 99.9, max: 100, unit: '%', status: 'healthy', icon: '≡ƒƒó' },
+524: { status: 'Pending', count: 45, color: '#f59e0b', icon: 'ΓÅ│' },
+525: { status: 'Processing', count: 62, color: '#3b82f6', icon: 'ΓÜÖ∩╕Å' },
+526: { status: 'In Transit', count: 38, color: '#8b5cf6', icon: '≡ƒÜÜ' },
+527: { status: 'Delivered', count: 156, color: '#10b981', icon: 'Γ£à' },
+528: { status: 'Cancelled', count: 12, color: '#ef4444', icon: 'Γ¥î' },
+533: { id: '1', name: 'Ramesh Farms', avatar: '≡ƒæ¿ΓÇì≡ƒî╛', role: 'Farmer', metric: 'Revenue', value: 'Γé╣1.2L', trend: 23 },
+534: { id: '2', name: 'Suresh M.', avatar: '≡ƒÜù', role: 'Driver', metric: 'Deliveries', value: '287', trend: 15 },
+535: { id: '3', name: 'Green Valley Co.', avatar: '≡ƒÅó', role: 'Supplier', metric: 'Orders', value: '156', trend: 18 },
+536: { id: '4', name: 'Priya Store', avatar: '≡ƒÅ¬', role: 'Buyer', metric: 'Purchases', value: 'Γé╣85K', trend: 12 },
+640: <span className="header-icon">≡ƒôè</span>
+652: <span className="search-icon">≡ƒöì</span>
+697: ≡ƒöö
+712: <span>≡ƒÄë</span>
+751: ≡ƒöä
+760: {darkMode ? 'ΓÿÇ∩╕Å' : '≡ƒîÖ'}
+778: {liveUpdates && <span className="live-indicator">ΓùÅ Live</span>}
+829: {stat.positive ? 'Γåæ' : 'Γåô'} {stat.change}
+857: <button className="stat-details-btn" onClick={(e) => { e.stopPropagation(); navigate('/admin/analytics'); }}>View Full Report ΓåÆ</button>
+897: <span>≡ƒôï</span> Recent Activity
+920: <span>≡ƒöì</span>
+957: <span>≡ƒôª</span> Order Status
+990: Go to Order Control Panel ΓåÆ
+1003: <span>≡ƒÆ░</span> Revenue Overview
+1059: <span>ΓÜí</span> System Health
+1092: <span>≡ƒÅå</span> Top Performers
+1100: { id: '5', name: 'Anita Dairy', avatar: '≡ƒÉä', role: 'Farmer', metric: 'Volume', value: 'Γé╣72K', trend: 10 },
+1101: { id: '6', name: 'Kisan Express', avatar: '≡ƒÜÜ', role: 'Driver', metric: 'Deliveries', value: '198', trend: 8 },
+1102: { id: '7', name: 'Fresh Mart', avatar: '≡ƒÅ¼', role: 'Buyer', metric: 'Purchases', value: 'Γé╣65K', trend: 14 },
+1103: { id: '8', name: 'Organic Fields', avatar: '≡ƒî▒', role: 'Supplier', metric: 'Orders', value: '112', trend: 9 },
+1118: <span className="performer-item__trend positive">Γåæ {performer.trend}%</span>
+1129: <span>≡ƒù║∩╕Å</span> Geographic Distribution
+1174: <h3>≡ƒù║∩╕Å Geographic Distribution Map</h3>
+
+=== src\modules\admin\disputes\DisputeCenter.tsx (1412 lines) ===
+291: quality: { icon: '≡ƒìÄ', label: 'Quality', color: '#ef4444' },
+292: delivery: { icon: '≡ƒÜÜ', label: 'Delivery', color: '#3b82f6' },
+293: payment: { icon: '≡ƒÆ│', label: 'Payment', color: '#16a34a' },
+294: quantity: { icon: '≡ƒôª', label: 'Quantity', color: '#f59e0b' },
+295: no_show: { icon: '≡ƒæñ', label: 'No-Show', color: '#8b5cf6' },
+296: damage: { icon: '≡ƒÆö', label: 'Damage', color: '#ec4899' },
+297: other: { icon: 'Γ¥ô', label: 'Other', color: '#6b7280' },
+301: critical: { icon: '≡ƒö┤', label: 'Critical', color: '#dc2626' },
+302: high: { icon: '≡ƒƒá', label: 'High', color: '#f59e0b' },
+303: medium: { icon: '≡ƒƒí', label: 'Medium', color: '#eab308' },
+304: low: { icon: '≡ƒƒó', label: 'Low', color: '#16a34a' },
+308: open: { icon: '≡ƒö╡', label: 'Open', color: '#3b82f6' },
+309: investigating: { icon: '≡ƒöì', label: 'Investigating', color: '#8b5cf6' },
+310: awaiting_response: { icon: 'ΓÅ│', label: 'Awaiting Response', color: '#f59e0b' },
+311: resolved: { icon: 'Γ£à', label: 'Resolved', color: '#16a34a' },
+312: escalated: { icon: 'ΓÜá∩╕Å', label: 'Escalated', color: '#dc2626' },
+313: closed: { icon: '≡ƒöÆ', label: 'Closed', color: '#6b7280' },
+317: customer: '≡ƒæñ',
+318: ngo: '≡ƒñ¥',
+319: driver: '≡ƒÜù',
+320: farmer: '≡ƒî╛',
+321: vendor: '≡ƒÅ¡',
+322: platform: '≡ƒÅó',
+353: const icons: Record<string, string> = { success: 'Γ£à', error: 'Γ¥î', warning: 'ΓÜá∩╕Å', info: 'Γä╣∩╕Å' };
+362: <button className="dsp-toast__close" onClick={() => onDismiss(toast.id)}>Γ£ò</button>
+403: ΓÅ▒∩╕Å {sla.label}
+443: { key: 'details', label: 'Details', icon: '≡ƒôï' },
+444: { key: 'timeline', label: 'Timeline', icon: '≡ƒôà' },
+445: { key: 'messages', label: 'Messages', icon: '≡ƒÆ¼' },
+446: { key: 'resolution', label: 'Resolution', icon: 'Γ£à' },
+464: <button className="dsp-modal__close" onClick={onClose}>Γ£ò</button>
+516: <span>≡ƒôº {dispute.filedByEmail}</span>
+517: <span>≡ƒô▒ {dispute.filedByPhone}</span>
+556: <span className="dsp-evidence__icon">≡ƒôÄ</span>
+599: {event.type === 'status_change' && '≡ƒöä'}
+600: {event.type === 'message' && '≡ƒÆ¼'}
+601: {event.type === 'escalated' && 'ΓÜá∩╕Å'}
+602: {event.type === 'assigned' && '≡ƒæñ'}
+603: {event.type === 'resolved' && 'Γ£à'}
+604: {event.type === 'attachment' && '≡ƒôÄ'}
+664: {isInternal ? '≡ƒöÆ Internal Note' : '≡ƒÆ¼ Public Reply'}
+692: <div className="dsp-resolution-summary__icon">Γ£à</div>
+753: <span>ΓÜá∩╕Å</span>
+780: <span>≡ƒôº</span>
+784: <span>≡ƒô₧</span>
+788: <span>≡ƒÆ╕</span>
+792: <span>≡ƒôï</span>
+823: }}>≡ƒôÑ Export</button>
+826: ΓÜá∩╕Å Escalate
+1030: <h1 className="dsp-header__title">ΓÜû∩╕Å Dispute Center</h1>
+1035: {isExporting ? <><span className="dsp-btn-spinner" /> Exporting...</> : <>≡ƒôÑ Export Report</>}
+1037: <button className="dsp-btn dsp-btn--primary">Γ₧ò Log Dispute</button>
+1044: <div className="dsp-stat-card__icon">≡ƒö╡</div>
+1052: <div className="dsp-stat-card__icon">≡ƒöì</div>
+1060: <div className="dsp-stat-card__icon">ΓÜá∩╕Å</div>
+1069: <div className="dsp-stat-card__icon">Γ£à</div>
+1077: <div className="dsp-stat-card__icon">≡ƒö┤</div>
+1086: <div className="dsp-stat-card__icon">ΓÅ▒∩╕Å</div>
+1099: <span className="dsp-search__icon">≡ƒöì</span>
+1108: <button className="dsp-search__clear" onClick={() => { setSearch(''); searchRef.current?.focus(); }}>Γ£ò</button>
+1115: ≡ƒö╜ Filters
+1173: <button className="dsp-btn dsp-btn--sm dsp-btn--secondary">≡ƒæñ Bulk Assign</button>
+1174: <button className="dsp-btn dsp-btn--sm dsp-btn--primary" onClick={handleExportSelected}>≡ƒôÑ Export Selected</button>
+1197: Category {sortField === 'category' && <span className="dsp-sort-icon">{sortDir === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+1201: Priority {sortField === 'priority' && <span className="dsp-sort-icon">{sortDir === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+1204: Status {sortField === 'status' && <span className="dsp-sort-icon">{sortDir === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+1207: Updated {sortField === 'createdAt' && <span className="dsp-sort-icon">{sortDir === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+1252: {d.evidenceCount > 0 && <span className="dsp-subject-cell__attach">≡ƒôÄ{d.evidenceCount}</span>}
+1253: {d.tags.includes('urgent') && <span className="dsp-subject-cell__urgent">≡ƒöÑ</span>}
+1277: ≡ƒæü
+1284: {expandedRow === d.id ? 'Γû▓' : 'Γû╝'}
+1328: <button className="dsp-btn dsp-btn--sm dsp-btn--secondary">≡ƒÆ¼ Add Note</button>
+1341: <span className="dsp-empty-state__icon">≡ƒöì</span>
+
+=== src\modules\admin\disputes\DisputeDetails.tsx (1262 lines) ===
+211: { id: '1', name: 'rotten_tomatoes.jpg', type: 'image', size: '2.4 MB', uploadedBy: 'Ravi Sharma', uploadedAt: mockTimeline[1].timestamp, url: '#', thumbnail: '≡ƒìà' },
+212: { id: '2', name: 'wilted_spinach.jpg', type: 'image', size: '1.8 MB', uploadedBy: 'Ravi Sharma', uploadedAt: mockTimeline[1].timestamp, url: '#', thumbnail: '≡ƒÑ¼' },
+268: quality: { icon: '≡ƒìÄ', label: 'Quality Issue', color: '#ef4444' },
+269: delivery: { icon: '≡ƒÜÜ', label: 'Delivery Issue', color: '#3b82f6' },
+270: payment: { icon: '≡ƒÆ│', label: 'Payment Issue', color: '#16a34a' },
+271: quantity: { icon: '≡ƒôª', label: 'Quantity Issue', color: '#f59e0b' },
+272: no_show: { icon: '≡ƒæñ', label: 'No-Show', color: '#8b5cf6' },
+273: damage: { icon: '≡ƒÆö', label: 'Damage', color: '#ec4899' },
+274: other: { icon: 'Γ¥ô', label: 'Other', color: '#6b7280' },
+278: critical: { icon: '≡ƒö┤', label: 'Critical', color: '#dc2626' },
+279: high: { icon: '≡ƒƒá', label: 'High', color: '#f59e0b' },
+280: medium: { icon: '≡ƒƒí', label: 'Medium', color: '#eab308' },
+281: low: { icon: '≡ƒƒó', label: 'Low', color: '#16a34a' },
+285: open: { icon: '≡ƒö╡', label: 'Open', color: '#3b82f6' },
+286: investigating: { icon: '≡ƒöì', label: 'Investigating', color: '#8b5cf6' },
+287: awaiting_response: { icon: 'ΓÅ│', label: 'Awaiting Response', color: '#f59e0b' },
+288: resolved: { icon: 'Γ£à', label: 'Resolved', color: '#16a34a' },
+289: escalated: { icon: 'ΓÜá∩╕Å', label: 'Escalated', color: '#dc2626' },
+290: closed: { icon: '≡ƒöÆ', label: 'Closed', color: '#6b7280' },
+294: customer: '≡ƒæñ',
+295: ngo: '≡ƒñ¥',
+296: driver: '≡ƒÜù',
+297: farmer: '≡ƒî╛',
+298: vendor: '≡ƒÅ¡',
+299: platform: '≡ƒÅó',
+303: system: { icon: 'ΓÜÖ∩╕Å', color: '#6b7280' },
+304: message: { icon: '≡ƒÆ¼', color: '#3b82f6' },
+305: action: { icon: '≡ƒöº', color: '#8b5cf6' },
+306: escalation: { icon: 'ΓÜá∩╕Å', color: '#dc2626' },
+307: resolution: { icon: 'Γ£à', color: '#16a34a' },
+308: attachment: { icon: '≡ƒôÄ', color: '#f59e0b' },
+309: status_change: { icon: '≡ƒöä', color: '#06b6d4' },
+319: const icons: Record<string, string> = { success: 'Γ£à', error: 'Γ¥î', warning: 'ΓÜá∩╕Å', info: 'Γä╣∩╕Å' };
+328: <button className="dd-toast__close" onClick={() => onDismiss(toast.id)}>Γ£ò</button>
+361: <span key={`f${i}`} className="dd-star dd-star--full">Γÿà</span>
+363: {hasHalf && <span className="dd-star dd-star--half">Γÿà</span>}
+365: <span key={`e${i}`} className="dd-star dd-star--empty">Γÿà</span>
+401: <span className="dd-timeline-attachment__icon">≡ƒôÄ</span>
+429: <div className="dd-party-card__role-badge">{role === 'complainant' ? '≡ƒôú Complainant' : '≡ƒÄ» Respondent'}</div>
+430: {party.verified && <span className="dd-party-card__verified" title="Verified">Γ£ô</span>}
+459: <span>≡ƒôº</span> Email
+462: <span>≡ƒô₧</span> Call
+506: <button className="dd-modal__close" onClick={onClose}>Γ£ò</button>
+529: { value: 'full_refund', label: 'Full Refund', icon: '≡ƒÆ░', desc: 'Refund entire order amount' },
+530: { value: 'partial_refund', label: 'Partial Refund', icon: '≡ƒÆ╡', desc: 'Refund portion of order' },
+531: { value: 'no_refund', label: 'No Refund', icon: 'Γ¥î', desc: 'Reject refund request' },
+532: { value: 'replacement', label: 'Replacement', icon: '≡ƒöä', desc: 'Send replacement items' },
+614: {isSubmitting ? <><span className="dd-btn-spinner" /> Resolving...</> : 'Γ£à Confirm Resolution'}
+643: <h2 className="dd-modal__title">ΓÜá∩╕Å Escalate Dispute</h2>
+644: <button className="dd-modal__close" onClick={onClose}>Γ£ò</button>
+649: <span className="dd-escalation-warning__icon">ΓÜá∩╕Å</span>
+688: {isSubmitting ? <><span className="dd-btn-spinner" /> Escalating...</> : 'ΓÜá∩╕Å Confirm Escalation'}
+832: { key: 'timeline', label: 'Timeline', icon: '≡ƒôà', count: timeline.length },
+833: { key: 'evidence', label: 'Evidence', icon: '≡ƒôÄ', count: attachments.length },
+834: { key: 'notes', label: 'Internal Notes', icon: '≡ƒô¥', count: notes.length },
+835: { key: 'related', label: 'Related', icon: '≡ƒöù', count: relatedDisputes.length },
+847: ΓåÉ Back to Dispute Center
+874: <span>≡ƒôª Order: <strong>{dispute.orderId}</strong></span>
+876: <span>≡ƒÆ░ Amount: <strong>{formatCurrency(dispute.orderAmount)}</strong></span>
+878: <span>≡ƒôà Filed: <strong>{formatRelativeTime(dispute.createdAt)}</strong></span>
+882: <span>≡ƒæñ Assigned: <strong>{dispute.assignedTo}</strong></span>
+899: <span>ΓÅ│</span> Mark Awaiting Response
+902: <span>≡ƒöù</span> Copy Link
+905: <span>≡ƒôÑ</span> Export Report
+908: <span>≡ƒùæ∩╕Å</span> Delete Dispute
+916: ΓÜá∩╕Å Escalate
+924: Γ¥î Reject
+928: Γ£à Resolve
+944: <h3>≡ƒôï Dispute Description</h3>
+958: <span>≡ƒÆ░ Refund Requested:</span>
+1002: {isInternalReply ? '≡ƒöÆ Internal Note' : '≡ƒÆ¼ Public Reply'}
+1016: ≡ƒôÄ Attach
+1023: {isSending ? <><span className="dd-btn-spinner dd-btn-spinner--small" /> Sending...</> : isInternalReply ? '≡ƒô¥ Add Note' : '≡ƒôñ Send Reply'}
+1036: <button className="dd-btn dd-btn--secondary dd-btn--sm">≡ƒôñ Upload</button>
+1040: <div key={att.id} className="dd-evidence-card" onClick={() => att.type === 'image' && setLightboxImage(att.thumbnail || '≡ƒôä')}>
+1045: <span className="dd-evidence-card__icon">≡ƒôä</span>
+1054: <button className="dd-icon-btn" title="Download">≡ƒôÑ</button>
+1055: <button className="dd-icon-btn" title="View">≡ƒæü</button>
+1062: <span className="dd-empty-state__icon">≡ƒôÄ</span>
+1086: ≡ƒô¥ Add Note
+1103: ≡ƒôî
+1138: <span className="dd-empty-state__icon">≡ƒöù</span>
+1153: <h3>≡ƒôè Dispute Info</h3>
+1177: {slaStatus.status === 'breach' ? '≡ƒÜ¿' : slaStatus.status === 'critical' ? 'ΓÅ░' : 'Γ£ô'} {slaStatus.timeLeft}
+1205: <h3>ΓÜí Quick Actions</h3>
+1209: <span>≡ƒôä</span>
+1213: <span>≡ƒôà</span>
+1217: <span>≡ƒÆ░</span>
+1221: <span>≡ƒôª</span>
+1251: <button className="dd-lightbox__close">Γ£ò</button>
+
+=== src\modules\admin\disputes\EvidenceViewer.tsx (898 lines) ===
+46: icon: '≡ƒô╖',
+61: icon: '≡ƒô╖',
+76: icon: '≡ƒº╛',
+91: icon: '≡ƒô╖',
+105: icon: '≡ƒôä',
+119: icon: '≡ƒÄÑ',
+353: case 'photo': return '≡ƒô╖';
+354: case 'document': return '≡ƒôä';
+355: case 'receipt': return '≡ƒº╛';
+356: case 'video': return '≡ƒÄÑ';
+357: default: return '≡ƒôÄ';
+370: {toast.type === 'success' && 'Γ£ô'}
+371: {toast.type === 'error' && 'Γ£ò'}
+372: {toast.type === 'warning' && 'ΓÜá'}
+389: <span className="evidence-viewer__search-icon">≡ƒöì</span>
+407: Γ¼ç∩╕Å Download All
+449: <div className="evidence-viewer__empty-icon">≡ƒô¡</div>
+460: <button className="evidence-viewer__tool-btn" onClick={handleZoomOut} title="Zoom out (Γåô)">
+464: <button className="evidence-viewer__tool-btn" onClick={handleZoomIn} title="Zoom in (Γåæ)">
+469: Γå║
+472: Γå╗
+485: ≡ƒôî
+492: ≡ƒÆ¼
+508: {isPlaying ? 'ΓÅ╕' : 'Γû╢'}
+511: {isFullscreen ? 'ΓèÖ' : 'Γ¢╢'}
+549: <div className="evidence-viewer__play-overlay">Γû╢</div>
+560: <div className="evidence-viewer__annotation-marker">≡ƒôî</div>
+580: <div className="evidence-viewer__annotation-marker">≡ƒôî</div>
+599: {selected.verified ? 'Γ£ô Verified' : 'ΓÜá Unverified'}
+644: {selected.verified && <span className="evidence-viewer__verified-icon">Γ£ô</span>}
+655: Γ¼ç∩╕Å Download
+658: ≡ƒöì View Full
+683: {item.verified && <span className="evidence-viewer__thumb-verified">Γ£ô</span>}
+691: <span>ΓåÉ ΓåÆ Navigate</span>
+692: <span>Γåæ Γåô Zoom</span>
+704: <h3 className="evidence-sidebar-card__title">≡ƒôü File Details</h3>
+725: <h3 className="evidence-sidebar-card__title">≡ƒöÆ Integrity Check</h3>
+730: {selected.verified ? 'Γ£à' : 'ΓÜá∩╕Å'}
+741: Γ£ô Mark as Verified
+745: Γ£ò Remove Verification
+755: <h3 className="evidence-sidebar-card__title">≡ƒô¥ Notes ({selected.notes.length})</h3>
+783: ≡ƒÆ╛ Save Note
+791: <h3 className="evidence-sidebar-card__title">≡ƒôî Annotations ({currentAnnotations.length})</h3>
+822: <h3 className="evidence-sidebar-card__title">≡ƒôï All Evidence ({filteredEvidence.length})</h3>
+842: {item.verified && <span className="evidence-timeline__verified">Γ£ô</span>}
+864: {item.verified && <span className="evidence-sidebar-card__file-verified">Γ£ô</span>}
+
+=== src\modules\admin\finance\DriverPayouts.tsx (1262 lines) ===
+259: <span key={`f${i}`} className="dp-star dp-star--full">Γÿà</span>
+261: {hasHalf && <span className="dp-star dp-star--half">Γÿà</span>}
+263: <span key={`e${i}`} className="dp-star dp-star--empty">Γÿà</span>
+277: const icons: Record<string, string> = { success: 'Γ£à', error: 'Γ¥î', warning: 'ΓÜá∩╕Å', info: 'Γä╣∩╕Å' };
+286: <button className="dp-toast__close" onClick={() => onDismiss(toast.id)}>Γ£ò</button>
+303: { key: 'overview' as const, label: 'Overview', icon: '≡ƒæñ' },
+304: { key: 'earnings' as const, label: 'Earnings', icon: '≡ƒÆ░' },
+305: { key: 'history' as const, label: 'History', icon: '≡ƒôï' },
+325: <button className="dp-modal__close" onClick={onClose}>Γ£ò</button>
+345: <div className="dp-detail-card__icon">≡ƒô▒</div>
+352: <div className="dp-detail-card__icon">≡ƒôº</div>
+359: <div className="dp-detail-card__icon">≡ƒÅª</div>
+366: <div className="dp-detail-card__icon">≡ƒôà</div>
+383: <div className="dp-performance-item__icon">≡ƒÜÇ</div>
+390: <div className="dp-performance-item__icon">ΓÅ▒∩╕Å</div>
+505: {h.status === 'paid' ? 'Γ£ô' : h.status === 'failed' ? 'Γ£ò' : 'ΓÅ│'}
+536: '≡ƒöä Retry Payment'
+538: '≡ƒÆ╕ Process Payment'
+562: {variant === 'danger' ? 'ΓÜá∩╕Å' : '≡ƒÆ╕'}
+744: <h1 className="dp-header__title">≡ƒÆ░ Driver Payouts</h1>
+782: ≡ƒôÑ Export CSV
+791: ΓÜí Process All Pending
+798: <span className="dp-cycle-info__icon">≡ƒôà</span>
+805: <div className="dp-summary-card__icon">Γ£à</div>
+819: <div className="dp-summary-card__icon">ΓÅ│</div>
+833: <div className="dp-summary-card__icon">≡ƒöä</div>
+847: <div className="dp-summary-card__icon">Γ¥î</div>
+861: <div className="dp-summary-card__icon">≡ƒæÑ</div>
+873: <div className="dp-summary-card__icon">≡ƒÅó</div>
+889: <span className="dp-search__icon">≡ƒöì</span>
+899: Γ£ò
+908: ≡ƒö╜ Filters
+920: Γÿ░
+927: Γûª
+985: ≡ƒÆ╕ Process Selected
+1010: Driver {sortField === 'name' && <span className="dp-sort-icon">{sortDir === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+1013: Deliveries {sortField === 'deliveries' && <span className="dp-sort-icon">{sortDir === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+1016: Gross {sortField === 'earnings' && <span className="dp-sort-icon">{sortDir === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+1020: Net Payout {sortField === 'netPayout' && <span className="dp-sort-icon">{sortDir === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+1023: Status {sortField === 'status' && <span className="dp-sort-icon">{sortDir === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+1068: {p.status === 'paid' && 'Γ£ô '}
+1070: {p.status === 'failed' && 'Γ£ò '}
+1071: {p.status === 'pending' && 'Γùª '}
+1088: ≡ƒæü
+1099: ) : p.status === 'failed' ? '≡ƒöä' : '≡ƒÆ╕'}
+1111: <span className="dp-empty-state__icon">≡ƒöì</span>
+1151: <span className="dp-payout-card__stat-value">Γ¡É {p.rating}</span>
+1189: ) : p.status === 'failed' ? '≡ƒöä Retry' : '≡ƒÆ╕ Pay'}
+1192: <span className="dp-payout-card__paid-label">Γ£ô Paid on {formatDate(p.paidDate)}</span>
+1210: <span className="dp-empty-state__icon">≡ƒöì</span>
+
+=== src\modules\admin\finance\FinancialOverview.tsx (1686 lines) ===
+551: { key: 'overview', label: 'Overview', icon: '≡ƒôè' },
+552: { key: 'transactions', label: 'Transactions', icon: '≡ƒÆ│' },
+553: { key: 'payouts', label: 'Payouts', icon: '≡ƒÆ░' },
+554: { key: 'invoices', label: 'Invoices', icon: '≡ƒôä' },
+578: icon: '≡ƒÆ░',
+587: icon: '≡ƒÅó',
+596: icon: '≡ƒÜù',
+605: icon: 'ΓÅ│',
+897: <>≡ƒôÑ Export</>
+902: ΓÜí Quick Actions
+907: <span>≡ƒôñ</span> Send Invoice
+910: <span>≡ƒÆ╕</span> Process Payouts
+913: <span>≡ƒôè</span> Generate Report
+916: <span>≡ƒöä</span> Reconcile
+932: {card.trend >= 0 ? 'Γåæ' : 'Γåô'} {Math.abs(card.trend)}%
+1029: <div className="fo-quick-stat__icon">≡ƒôª</div>
+1036: <div className="fo-quick-stat__icon">≡ƒº╛</div>
+1043: <div className="fo-quick-stat__icon">≡ƒöä</div>
+1050: <div className="fo-quick-stat__icon">Γ¡É</div>
+1065: <span className="fo-transactions__search-icon">≡ƒöì</span>
+1075: Γ£ò
+1130: {txn.type === 'credit' ? 'Γåù' : txn.type === 'debit' ? 'ΓåÖ' : 'Γå⌐'}{' '}
+1148: ≡ƒæü
+1186: <span className="fo-empty-state__icon">≡ƒöì</span>
+1201: Γ£à
+1212: ΓÅ│
+1223: ≡ƒöä
+1277: <div className="fo-invoice-card__icon">≡ƒôä</div>
+1314: <h2 className="fo-modal__title">≡ƒôñ Send Invoice</h2>
+1315: <button className="fo-modal__close" onClick={() => setShowSendInvoice(false)}>Γ£ò</button>
+1320: <span style={{ fontSize: 48 }}>Γ£à</span>
+1398: <h2 className="fo-modal__title">≡ƒÆ╕ Process Payouts</h2>
+1399: <button className="fo-modal__close" onClick={() => setShowProcessPayouts(false)}>Γ£ò</button>
+1404: <span style={{ fontSize: 48 }}>Γ£à</span>
+1427: <span style={{ fontSize: 36 }}>≡ƒÄë</span>
+1491: <h2 className="fo-modal__title">≡ƒôè Generate Report</h2>
+1492: <button className="fo-modal__close" onClick={() => setShowGenerateReport(false)}>Γ£ò</button>
+1497: <span style={{ fontSize: 48 }}>≡ƒôÑ</span>
+1507: { value: 'revenue', label: '≡ƒÆ░ Revenue Summary', desc: 'Revenue, commissions, and growth metrics' },
+1508: { value: 'payouts', label: '≡ƒÜù Driver Payouts', desc: 'All payout records and pending amounts' },
+1509: { value: 'transactions', label: '≡ƒÆ│ Transaction History', desc: 'Detailed transaction log with filters' },
+1510: { value: 'tax', label: '≡ƒº╛ Tax Report', desc: 'GST, TDS, and tax-related summaries' },
+1511: { value: 'full', label: '≡ƒôï Full Financial Report', desc: 'Comprehensive report with all sections' },
+1552: { value: 'pdf', label: '≡ƒôä PDF' },
+1553: { value: 'csv', label: '≡ƒôè CSV' },
+1554: { value: 'xlsx', label: '≡ƒôù Excel' },
+1591: <h2 className="fo-modal__title">≡ƒöä Reconciliation</h2>
+1592: <button className="fo-modal__close" onClick={() => setShowReconcile(false)}>Γ£ò</button>
+1597: <span style={{ fontSize: 48 }}>Γ£à</span>
+1605: <div className="fo-modal__reconcile-icon" style={{ background: '#dcfce7', color: '#16a34a' }}>Γ£à</div>
+1612: <div className="fo-modal__reconcile-icon" style={{ background: '#fef3c7', color: '#d97706' }}>ΓÜá∩╕Å</div>
+1619: <div className="fo-modal__reconcile-icon" style={{ background: '#fee2e2', color: '#dc2626' }}>Γ¥î</div>
+
+=== src\modules\admin\finance\Transactions.tsx (953 lines) ===
+110: order: { icon: '≡ƒ¢Æ', label: 'Order', color: '#4f46e5' },
+111: payout: { icon: '≡ƒÆ╕', label: 'Payout', color: '#16a34a' },
+112: refund: { icon: 'Γå⌐∩╕Å', label: 'Refund', color: '#f59e0b' },
+113: commission: { icon: '≡ƒÅó', label: 'Commission', color: '#06b6d4' },
+114: adjustment: { icon: 'ΓÜû∩╕Å', label: 'Adjustment', color: '#8b5cf6' },
+115: subscription: { icon: '≡ƒöä', label: 'Subscription', color: '#ec4899' },
+119: success: { icon: 'Γ£ô', label: 'Success' },
+120: pending: { icon: 'Γùª', label: 'Pending' },
+121: failed: { icon: 'Γ£ò', label: 'Failed' },
+122: reversed: { icon: 'Γå║', label: 'Reversed' },
+126: customer: '≡ƒæñ',
+127: driver: '≡ƒÜù',
+128: vendor: '≡ƒÅ¡',
+129: platform: '≡ƒÅó',
+130: ngo: '≡ƒñ¥',
+191: const icons: Record<string, string> = { success: 'Γ£à', error: 'Γ¥î', warning: 'ΓÜá∩╕Å', info: 'Γä╣∩╕Å' };
+200: <button className="txn-toast__close" onClick={() => onDismiss(toast.id)}>Γ£ò</button>
+229: <button className="txn-modal__close" onClick={onClose}>Γ£ò</button>
+285: {txn.direction === 'credit' ? 'Γåù Credit (Incoming)' : 'ΓåÖ Debit (Outgoing)'}
+335: <button className="txn-btn txn-btn--warning" onClick={onRetry}>≡ƒöä Retry</button>
+338: <button className="txn-btn txn-btn--danger" onClick={onRefund}>Γå⌐∩╕Å Refund</button>
+340: <button className="txn-btn txn-btn--primary">≡ƒôÑ Download Receipt</button>
+517: { key: 'all', label: 'All', icon: '≡ƒôï', count: filtered.length },
+518: { key: 'credits', label: 'Credits', icon: 'Γåù∩╕Å', count: filtered.filter((t) => t.direction === 'credit').length },
+519: { key: 'debits', label: 'Debits', icon: 'ΓåÖ∩╕Å', count: filtered.filter((t) => t.direction === 'debit').length },
+532: <h1 className="txn-header__title">≡ƒÆ│ Transactions</h1>
+548: {isExporting ? <><span className="txn-btn-spinner" /> Exporting...</> : <>≡ƒôÑ Export CSV</>}
+557: <div className="txn-summary-card__icon">Γåù∩╕Å</div>
+570: <div className="txn-summary-card__icon">ΓåÖ∩╕Å</div>
+583: <div className="txn-summary-card__icon">≡ƒÆ░</div>
+585: {stats.net >= 0 ? 'Γåæ' : 'Γåô'}
+596: <div className="txn-summary-card__icon">≡ƒôè</div>
+606: <div className="txn-summary-card__icon">Γ£à</div>
+638: <span className="txn-search__icon">≡ƒöì</span>
+647: <button className="txn-search__clear" onClick={() => { setSearch(''); searchRef.current?.focus(); }}>Γ£ò</button>
+654: ≡ƒö╜ Filters
+680: <option value="success">Γ£ô Success</option>
+681: <option value="pending">Γùª Pending</option>
+682: <option value="failed">Γ£ò Failed</option>
+683: <option value="reversed">Γå║ Reversed</option>
+715: ≡ƒôÑ Export Selected
+735: Date {sortField === 'date' && <span className="txn-sort-icon">{sortDir === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+739: Type {sortField === 'type' && <span className="txn-sort-icon">{sortDir === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+743: Party {sortField === 'party' && <span className="txn-sort-icon">{sortDir === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+747: Amount {sortField === 'amount' && <span className="txn-sort-icon">{sortDir === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+750: Status {sortField === 'status' && <span className="txn-sort-icon">{sortDir === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+788: {t.notes && <span className="txn-desc-cell__flag">ΓÜá∩╕Å</span>}
+820: ≡ƒæü
+827: {expandedRow === t.id ? 'Γû▓' : 'Γû╝'}
+874: <span className="txn-empty-state__icon">≡ƒöì</span>
+
+=== src\modules\admin\layout\AdminTopbar.tsx (48 lines) ===
+14: Γÿ░
+25: <span>≡ƒöì</span>
+35: ≡ƒöö
+40: ΓÜÖ∩╕Å
+
+=== src\modules\admin\logistics\DeliveryMap.tsx (111 lines) ===
+58: <div className="delivery-map__placeholder-icon">≡ƒù║∩╕Å</div>
+94: <span className="delivery-map__route-path-arrow">ΓåÆ</span>
+
+=== src\modules\admin\logistics\LiveOperations.tsx (153 lines) ===
+66: <div className="live-stat-card__icon live-stat-card__icon--active">≡ƒÜ¢</div>
+73: <div className="live-stat-card__icon live-stat-card__icon--transit">≡ƒôª</div>
+80: <div className="live-stat-card__icon live-stat-card__icon--pending">ΓÅ│</div>
+87: <div className="live-stat-card__icon live-stat-card__icon--completed">Γ£à</div>
+118: {order.status === 'pickup' && '≡ƒƒí'}
+119: {order.status === 'transit' && '≡ƒö╡'}
+120: {order.status === 'delivered' && '≡ƒƒó'}
+121: {order.status === 'delayed' && '≡ƒö┤'}
+
+=== src\modules\admin\logistics\OrderControlPanel.tsx (2812 lines) ===
+104: pending: { icon: 'ΓÅ│', color: '#d97706', bgColor: '#fef3c7', label: 'Pending' },
+105: assigned: { icon: '≡ƒæñ', color: '#3b82f6', bgColor: '#dbeafe', label: 'Assigned' },
+106: 'picked-up': { icon: '≡ƒôª', color: '#8b5cf6', bgColor: '#ede9fe', label: 'Picked Up' },
+107: 'in-transit': { icon: '≡ƒÜÜ', color: '#06b6d4', bgColor: '#cffafe', label: 'In Transit' },
+108: delivered: { icon: 'Γ£ô', color: '#16a34a', bgColor: '#dcfce7', label: 'Delivered' },
+109: cancelled: { icon: 'Γ£ò', color: '#6b7280', bgColor: '#f3f4f6', label: 'Cancelled' },
+110: failed: { icon: 'ΓÜá', color: '#dc2626', bgColor: '#fee2e2', label: 'Failed' },
+114: urgent: { icon: '≡ƒö┤', color: '#dc2626', bgColor: '#fee2e2', label: 'Urgent' },
+115: high: { icon: '≡ƒƒá', color: '#ea580c', bgColor: '#ffedd5', label: 'High' },
+116: medium: { icon: '≡ƒƒí', color: '#d97706', bgColor: '#fef3c7', label: 'Medium' },
+117: low: { icon: '≡ƒƒó', color: '#16a34a', bgColor: '#dcfce7', label: 'Low' },
+121: individual: { icon: '≡ƒæñ', color: '#6b7280' },
+122: ngo: { icon: '≡ƒÆÜ', color: '#16a34a' },
+123: business: { icon: '≡ƒÅó', color: '#3b82f6' },
+432: {trend.isPositive ? 'Γåæ' : 'Γåô'} {Math.abs(trend.value)}%
+487: <span className="ocp-row__route-icon pickup">≡ƒôì</span>
+492: <span className="ocp-row__route-icon dropoff">≡ƒÅü</span>
+510: <span className="icon">ΓÜá∩╕Å</span>
+535: {order.paymentStatus === 'paid' ? 'Γ£ô Paid' : order.paymentStatus}
+542: <span className="icon">≡ƒòÉ</span>
+548: <span className="icon">Γ£ô</span>
+560: ≡ƒæü∩╕Å
+568: ≡ƒÜÜ
+584: Γ₧í∩╕Å
+593: Γ£ò
+635: <span>≡ƒôì</span>
+639: <span>≡ƒÅü</span>
+752: <button className="ocp-modal__close" onClick={onClose}>Γ£ò</button>
+757: { key: 'details', label: 'Details', icon: '≡ƒôï' },
+758: { key: 'items', label: 'Items', icon: '≡ƒôª' },
+759: { key: 'timeline', label: 'Timeline', icon: '≡ƒô£' },
+760: { key: 'tracking', label: 'Tracking', icon: '≡ƒôì' },
+805: <div className="ocp-location-icon pickup">≡ƒôì</div>
+821: <div className="ocp-location-icon dropoff">≡ƒÅü</div>
+847: <span className="rating">Γ¡É {order.driver.rating}</span>
+849: <button className="ocp-call-btn">≡ƒô₧ Call</button>
+971: <span className="icon">≡ƒù║∩╕Å</span>
+1002: ≡ƒÜÜ Assign Driver
+1010: Γ₧í∩╕Å Mark as {STATUS_CONFIG[nextStatusMap[order.status]].label}
+1018: Γ£ò Cancel Order
+1061: <button className="ocp-modal__close" onClick={onClose}>Γ£ò</button>
+1065: <span className="icon">≡ƒöì</span>
+1077: <span>Γ£ô</span> Available ({availableDrivers.length})
+1093: <span className="location">≡ƒôì {driver.currentLocation}</span>
+1096: <span className="rating">Γ¡É {driver.rating}</span>
+1100: {selectedDriverId === driver.id && <span>Γ£ô</span>}
+1113: <span>≡ƒÜÜ</span> Busy ({busyDrivers.length})
+1128: <span className="location">≡ƒôì {driver.currentLocation}</span>
+1131: <span className="rating">Γ¡É {driver.rating}</span>
+1143: <span>Γùï</span> Offline ({offlineDrivers.length})
+1199: {confirmVariant === 'danger' ? 'ΓÜá∩╕Å' : confirmVariant === 'warning' ? 'Γ¥ô' : 'Γä╣∩╕Å'}
+1232: {toast.type === 'success' && 'Γ£ô'}
+1233: {toast.type === 'error' && 'Γ£ò'}
+1234: {toast.type === 'warning' && 'ΓÜá'}
+1374: <button className="ocp-modal__close" onClick={onClose}>Γ£ò</button>
+1434: <option value="individual">≡ƒæñ Individual</option>
+1435: <option value="ngo">≡ƒÆÜ NGO</option>
+1436: <option value="business">≡ƒÅó Business</option>
+1449: <option value="low">≡ƒƒó Low</option>
+1450: <option value="medium">≡ƒƒí Medium</option>
+1451: <option value="high">≡ƒƒá High</option>
+1452: <option value="urgent">≡ƒö┤ Urgent</option>
+1495: <option value="Cash">≡ƒÆ╡ Cash</option>
+1496: <option value="Online">≡ƒÆ│ Online</option>
+1497: <option value="UPI">≡ƒô▒ UPI</option>
+1510: <span style={{ fontSize: 18 }}>≡ƒôì</span> Pickup Location
+1579: <span style={{ fontSize: 18 }}>≡ƒÅü</span> Delivery Location
+1745: ≡ƒùæ∩╕Å
+1814: <button className="ocp-btn ocp-btn--secondary" onClick={handleBack}>ΓåÉ Back</button>
+1820: <button className="ocp-btn ocp-btn--primary" onClick={handleNext}>Next ΓåÆ</button>
+1827: {isLoading ? 'Creating...' : 'Γ£ô Create Order'}
+2370: icon="≡ƒôª"
+2376: icon="ΓÅ│"
+2383: icon="≡ƒÜÜ"
+2389: icon="Γ£ô"
+2395: icon="≡ƒö┤"
+2402: icon="ΓÜá∩╕Å"
+2420: ≡ƒôÑ Export
+2432: <span className="ocp-search__icon">≡ƒöì</span>
+2454: <span>≡ƒÄ¢∩╕Å</span>
+2493: Γÿ░
+2500: Γûª
+2512: Γÿæ∩╕Å {selectionMode ? 'Exit' : 'Select'}
+2589: Γ£ò Cancel Selected
+2620: {sortField === 'orderId' && <span className="sort-indicator">{sortOrder === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+2624: {sortField === 'customer' && <span className="sort-indicator">{sortOrder === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+2630: {sortField === 'priority' && <span className="sort-indicator">{sortOrder === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+2634: {sortField === 'status' && <span className="sort-indicator">{sortOrder === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+2638: {sortField === 'total' && <span className="sort-indicator">{sortOrder === 'asc' ? 'Γåæ' : 'Γåô'}</span>}
+2649: <span className="icon">≡ƒôª</span>
+
+=== src\modules\admin\marketplace\CategoryManager.tsx (1732 lines) ===
+64: '≡ƒÑ¼', '≡ƒìÄ', '≡ƒìè', '≡ƒìï', '≡ƒìç', '≡ƒìô', '≡ƒ½É', '≡ƒìÆ', '≡ƒìæ', '≡ƒÑ¡',
+65: '≡ƒìì', '≡ƒÑÑ', '≡ƒÑ¥', '≡ƒìå', '≡ƒÑæ', '≡ƒÑª', '≡ƒÑ¼', '≡ƒÑÆ', '≡ƒî╢∩╕Å', '≡ƒ½æ',
+66: '≡ƒî╜', '≡ƒÑò', '≡ƒ½Æ', '≡ƒºä', '≡ƒºà', '≡ƒÑö', '≡ƒìá', '≡ƒî╛', '≡ƒÑ¢', '≡ƒºÇ',
+67: '≡ƒÑÜ', '≡ƒìù', '≡ƒÑ⌐', '≡ƒìû', '≡ƒªÉ', '≡ƒÉƒ', '≡ƒì▓', '≡ƒì£', '≡ƒÑù', '≡ƒî┐',
+68: '≡ƒì»', '≡ƒÑ£', '≡ƒ½ÿ', '≡ƒì₧', '≡ƒÑû', '≡ƒºê', '≡ƒì╢', '≡ƒºâ', 'Γÿò', '≡ƒì╡',
+83: icon: '≡ƒÑ¼',
+99: icon: '≡ƒÑù',
+114: icon: '≡ƒÑò',
+129: icon: '≡ƒìÄ',
+145: icon: '≡ƒìè',
+160: icon: '≡ƒÑ¡',
+175: icon: '≡ƒî╛',
+190: icon: '≡ƒÑ¢',
+205: icon: '≡ƒì▓',
+220: icon: '≡ƒî┐',
+236: icon: '≡ƒôª',
+273: <span className="cm-icon-picker__arrow">{isOpen ? 'Γû▓' : 'Γû╝'}</span>
+333: <span className="cm-color-picker__arrow">{isOpen ? 'Γû▓' : 'Γû╝'}</span>
+465: {hasChildren ? (isExpanded ? 'Γû╝' : 'Γû╢') : 'ΓÇó'}
+480: {category.featured && <span className="cm-tree-item__featured">Γÿà Featured</span>}
+500: {category.active ? '≡ƒöÆ' : '≡ƒöô'}
+510: {category.featured ? 'Γ¡É' : 'Γÿå'}
+520: ≡ƒôï
+530: ≡ƒùæ∩╕Å
+586: {category.featured && <span className="cm-card__featured">Γ¡É</span>}
+593: <span className="cm-card__stat-icon">≡ƒôª</span>
+598: <span className="cm-card__stat-icon">≡ƒôé</span>
+606: {category.active ? 'ΓùÅ Active' : 'Γùï Inactive'}
+617: {category.active ? '≡ƒöÆ' : '≡ƒöô'}
+627: ≡ƒùæ∩╕Å
+650: {confirmVariant === 'danger' ? 'ΓÜá∩╕Å' : confirmVariant === 'warning' ? 'Γ¥ô' : 'Γä╣∩╕Å'}
+683: {toast.type === 'success' && 'Γ£ô'}
+684: {toast.type === 'error' && 'Γ£ò'}
+685: {toast.type === 'warning' && 'ΓÜá'}
+723: {category.featured && <span className="cm-preview__badge featured">Γ¡É Featured</span>}
+725: {category.active ? 'ΓùÅ Active' : 'Γùï Inactive'}
+1245: <div className="cm-stat-card__icon">≡ƒôé</div>
+1252: <div className="cm-stat-card__icon">Γ£ô</div>
+1259: <div className="cm-stat-card__icon">Γ¡É</div>
+1266: <div className="cm-stat-card__icon">≡ƒôª</div>
+1285: <span>≡ƒôÑ Import</span>
+1288: ≡ƒôñ Export
+1300: <span className="cm-search__icon">≡ƒöì</span>
+1354: ≡ƒî│
+1361: Γûª
+1375: Γ£ô Activate
+1378: Γùï Deactivate
+1381: ≡ƒùæ∩╕Å Delete
+1402: <span className="cm-empty-state__icon">≡ƒôé</span>
+1623: <span>{showAdvanced ? 'Γû╝' : 'Γû╢'} Advanced Settings</span>
+1703: <span className="cm-form__placeholder-icon">≡ƒô¥</span>
+
+=== src\modules\admin\marketplace\ListingModeration.tsx (1750 lines) ===
+82: pending: { icon: 'ΓÅ│', color: '#d97706', bgColor: '#fef3c7', label: 'Pending Review' },
+83: approved: { icon: 'Γ£ô', color: '#16a34a', bgColor: '#dcfce7', label: 'Approved' },
+84: rejected: { icon: 'Γ£ò', color: '#dc2626', bgColor: '#fee2e2', label: 'Rejected' },
+85: flagged: { icon: 'ΓÜá', color: '#ea580c', bgColor: '#ffedd5', label: 'Flagged' },
+86: expired: { icon: 'ΓÅ░', color: '#6b7280', bgColor: '#f3f4f6', label: 'Expired' },
+94: vegetable: { icon: '≡ƒÑ¼', color: '#16a34a', label: 'Vegetables' },
+95: fruit: { icon: '≡ƒìÄ', color: '#dc2626', label: 'Fruits' },
+96: grain: { icon: '≡ƒî╛', color: '#d97706', label: 'Grains' },
+97: dairy: { icon: '≡ƒÑ¢', color: '#3b82f6', label: 'Dairy' },
+98: spices: { icon: '≡ƒî╢∩╕Å', color: '#ea580c', label: 'Spices' },
+99: other: { icon: '≡ƒôª', color: '#6b7280', label: 'Other' },
+193: {filter === 'pending' ? '≡ƒôï' : filter === 'flagged' ? '≡ƒÜ⌐' : '≡ƒôª'}
+234: {trend.isPositive ? 'Γåæ' : 'Γåô'} {Math.abs(trend.value)}%
+284: <span className="lm-card__organic-badge">≡ƒî▒ Organic</span>
+287: <span className="lm-card__featured-badge">Γ¡É Featured</span>
+294: ≡ƒÜ⌐ {listing.flags.length} flag{listing.flags.length > 1 ? 's' : ''}
+301: ≡ƒæü∩╕Å View Details
+324: {listing.farmer.verified && <span className="verified-badge">Γ£ô</span>}
+327: Γ¡É {listing.farmer.rating.toFixed(1)}
+334: <span className="lm-card__detail-icon">≡ƒôª</span>
+338: <span className="lm-card__detail-icon">≡ƒÆ░</span>
+342: <span className="lm-card__detail-icon">≡ƒôì</span>
+346: <span className="lm-card__detail-icon">≡ƒôà</span>
+352: <span title="Views">≡ƒæü∩╕Å {listing.viewCount}</span>
+353: <span title="Inquiries">≡ƒÆ¼ {listing.inquiryCount}</span>
+364: Γ£ô Approve
+371: Γ£ò Reject
+379: ≡ƒÜ⌐
+424: {listing.isOrganic && <span className="lm-row__organic">≡ƒî▒</span>}
+431: <span className="lm-row__flag-badge">≡ƒÜ⌐ {listing.flags.length}</span>
+437: {listing.farmer.verified && <span className="verified-badge">Γ£ô</span>}
+477: Γ£ô
+484: Γ£ò
+492: ≡ƒÜ⌐
+502: ≡ƒæü∩╕Å
+547: {confirmVariant === 'danger' ? 'ΓÜá∩╕Å' :
+548: confirmVariant === 'warning' ? '≡ƒÜ⌐' :
+549: confirmVariant === 'success' ? 'Γ£ô' : 'Γä╣∩╕Å'}
+567: {selectedReasons.has(reason.id) ? 'Γ£ô' : ''}
+613: {toast.type === 'success' && 'Γ£ô'}
+614: {toast.type === 'error' && 'Γ£ò'}
+615: {toast.type === 'warning' && 'ΓÜá'}
+697: images: [{ id: 'img1', url: 'https://via.placeholder.com/400x300/ef4444/ffffff?text=≡ƒìà+Tomatoes', isPrimary: true }],
+698: icon: '≡ƒìà',
+718: images: [{ id: 'img2', url: 'https://via.placeholder.com/400x300/fbbf24/ffffff?text=≡ƒî╛+Rice', isPrimary: true }],
+719: icon: '≡ƒî╛',
+741: images: [{ id: 'img3', url: 'https://via.placeholder.com/400x300/3b82f6/ffffff?text=≡ƒÑ¢+Milk', isPrimary: true }],
+742: icon: '≡ƒÑ¢',
+763: images: [{ id: 'img4', url: 'https://via.placeholder.com/400x300/dc2626/ffffff?text=≡ƒî╢∩╕Å+Chillies', isPrimary: true }],
+764: icon: '≡ƒî╢∩╕Å',
+784: images: [{ id: 'img5', url: 'https://via.placeholder.com/400x300/f59e0b/ffffff?text=≡ƒÑ¡+Mangoes', isPrimary: true }],
+785: icon: '≡ƒÑ¡',
+805: images: [{ id: 'img6', url: 'https://via.placeholder.com/400x300/22c55e/ffffff?text=≡ƒÑ¼+Spinach', isPrimary: true }],
+806: icon: '≡ƒÑ¼',
+830: icon: '≡ƒƒí',
+852: images: [{ id: 'img8', url: 'https://via.placeholder.com/400x300/f3f4f6/6b7280?text=≡ƒºÇ+Paneer', isPrimary: true }],
+853: icon: '≡ƒºÇ',
+1205: { key: 'all', label: 'All', icon: '≡ƒôï' },
+1206: { key: 'pending', label: 'Pending', icon: 'ΓÅ│' },
+1207: { key: 'approved', label: 'Approved', icon: 'Γ£à' },
+1208: { key: 'rejected', label: 'Rejected', icon: 'Γ¥î' },
+1209: { key: 'flagged', label: 'Flagged', icon: '≡ƒÜ⌐' },
+1213: { key: 'all', label: 'All', icon: '≡ƒÅ╖∩╕Å' },
+1226: icon="≡ƒôï"
+1232: icon="ΓÅ│"
+1240: icon="Γ£à"
+1248: icon="≡ƒÜ⌐"
+1256: icon="≡ƒî▒"
+1277: <span className={`btn-icon ${isLoading ? 'spinning' : ''}`}>≡ƒöä</span>
+1284: <span className="btn-icon">≡ƒôÑ</span>
+1293: <span className="lm-search__icon">≡ƒöì</span>
+1316: <span>≡ƒÄ¢∩╕Å</span>
+1329: Γûª
+1336: Γÿ░
+1347: Γÿæ∩╕Å {selectionMode ? 'Exit Selection' : 'Select'}
+1413: ≡ƒî▒ Organic Only
+1460: Γ£ô Approve Selected
+1466: Γ£ò Reject Selected
+1499: <span className="sort-indicator">{sortOrder === 'asc' ? 'Γåæ' : 'Γåô'}</span>
+1509: <span className="sort-indicator">{sortOrder === 'asc' ? 'Γåæ' : 'Γåô'}</span>
+1518: <span className="sort-indicator">{sortOrder === 'asc' ? 'Γåæ' : 'Γåô'}</span>
+
+=== src\modules\admin\marketplace\ListingReviewModal.tsx (1285 lines) ===
+154: pending: { icon: 'ΓÅ│', color: '#d97706', bgColor: '#fef3c7', label: 'Pending Review' },
+155: approved: { icon: 'Γ£ô', color: '#16a34a', bgColor: '#dcfce7', label: 'Approved' },
+156: rejected: { icon: 'Γ£ò', color: '#dc2626', bgColor: '#fee2e2', label: 'Rejected' },
+157: flagged: { icon: '≡ƒÜ⌐', color: '#ea580c', bgColor: '#ffedd5', label: 'Flagged' },
+158: expired: { icon: 'ΓÅ░', color: '#6b7280', bgColor: '#f3f4f6', label: 'Expired' },
+279: Γ¢╢
+292: {image.isPrimary && <span className="lrm-gallery__primary-badge">Γÿà</span>}
+309: <button className="close" onClick={() => setShowFullscreen(false)}>Γ£ò</button>
+367: {item.checked ? 'Γ£ô' : ''}
+459: <span className="icon">≡ƒÆí</span>
+484: <span className="lrm-farmer__verified" title="Verified Seller">Γ£ô</span>
+491: {'Γÿà'.repeat(Math.floor(farmer.rating))}
+492: {'Γÿå'.repeat(5 - Math.floor(farmer.rating))}
+497: <span className="lrm-farmer__location">≡ƒôì {farmer.location}</span>
+501: ≡ƒÆ¼ Contact
+527: <span className="icon">≡ƒôº</span>
+531: <span className="icon">≡ƒô▒</span>
+538: <span className="icon">ΓÜá∩╕Å</span>
+557: {item.status === 'success' && 'Γ£ô'}
+558: {item.status === 'warning' && 'ΓÜá'}
+559: {item.status === 'error' && 'Γ£ò'}
+582: <span className="icon">≡ƒÜ⌐</span>
+791: { key: 'details', label: 'Details', icon: '≡ƒôï' },
+792: { key: 'images', label: 'Images', icon: '≡ƒû╝∩╕Å', badge: listingDetails.images.length },
+793: { key: 'farmer', label: 'Seller', icon: '≡ƒæñ' },
+794: { key: 'analysis', label: 'Analysis', icon: '≡ƒôè' },
+795: { key: 'history', label: 'History', icon: '≡ƒô£' },
+816: <span className="lrm-header__organic">≡ƒî▒ Organic</span>
+819: <span className="lrm-header__featured">Γ¡É Featured</span>
+827: Γ£Å∩╕Å
+831: Γ£ò
+839: <span className="lrm-flags-alert__icon">≡ƒÜ⌐</span>
+874: <span className="icon">≡ƒÆ░</span>
+883: <span className="icon">≡ƒôª</span>
+890: <span className="icon">≡ƒôì</span>
+897: <span className="icon">≡ƒôà</span>
+951: ≡ƒÜÜ {option}
+965: Γ£ô {cert}
+977: <span className="icon">≡ƒæü∩╕Å</span>
+982: <span className="icon">≡ƒÆ¼</span>
+987: <span className="icon">≡ƒôï</span>
+1021: <li className="passed">Γ£ô Images are clear and not blurry</li>
+1022: <li className="passed">Γ£ô Product is clearly visible</li>
+1023: <li className="passed">Γ£ô No inappropriate content</li>
+1024: <li className="passed">Γ£ô Correct aspect ratio</li>
+1025: <li className="passed">Γ£ô Adequate lighting</li>
+1073: <span className="icon">≡ƒô¥</span>
+1108: <span className="btn-icon">≡ƒÜ⌐</span>
+1117: <span className="btn-icon">Γ£ò</span>
+1126: <span className="btn-icon">Γ£ô</span>
+1139: <span className="icon">ΓÜá∩╕Å</span>
+1159: {selectedReasons.has(reason.id) ? 'Γ£ô' : ''}
+1201: <span className="btn-icon">Γ£ò</span>
+1216: <span className="icon success">Γ£ô</span>
+1249: <span className="icon">Γ£ô</span>
+1271: <span className="btn-icon">Γ£ô</span>
+
+=== src\modules\admin\users\KycReviewPanel.tsx (1151 lines) ===
+72: address_proof: { icon: '≡ƒÅá', label: 'Address Proof' },
+73: license: { icon: '≡ƒÜù', label: 'Driving License' },
+74: registration: { icon: '≡ƒôï', label: 'Registration Certificate' },
+75: photo: { icon: '≡ƒô╕', label: 'Photo' },
+76: bank_statement: { icon: '≡ƒÅª', label: 'Bank Statement' },
+120: <span>≡ƒæü∩╕Å View</span>
+128: {document.status === 'pending' && 'ΓÅ│'}
+129: {document.status === 'verified' && 'Γ£ô'}
+130: {document.status === 'rejected' && 'Γ£ò'}
+131: {document.status === 'expired' && 'ΓÜá'}
+153: <span className="rejection-icon">ΓÜá∩╕Å</span>
+167: Γ£ô Verify
+176: Γ£ò Reject
+235: Γ₧û
+243: Γ₧ò
+251: ≡ƒöä
+261: Γå⌐∩╕Å
+265: Γ£ò
+293: <button className="no-preview-download">≡ƒôÑ Download to View</button>
+328: Γ£ò Reject Document
+334: Γ£ô Verify Document
+347: case 'success': return 'Γ£ô';
+348: case 'warning': return 'ΓÜá';
+349: case 'error': return 'Γ£ò';
+689: <span>Γ£ò</span>
+698: {kycData.status === 'pending' && 'ΓÅ│ Pending Review'}
+699: {kycData.status === 'under_review' && '≡ƒöì Under Review'}
+700: {kycData.status === 'approved' && 'Γ£ô Approved'}
+701: {kycData.status === 'rejected' && 'Γ£ò Rejected'}
+702: {kycData.status === 'resubmission_required' && '≡ƒöä Resubmission Required'}
+728: <span className="tab-icon">≡ƒôä</span>
+738: <span className="tab-icon">≡ƒô£</span>
+745: <span className="tab-icon">Γä╣∩╕Å</span>
+772: {reviewMode ? 'Γ£ò Exit Review Mode' : 'Γ£ô Review Mode'}
+803: {doc?.status === 'verified' && <span className="check">Γ£ô</span>}
+839: Γ£ô Verify Selected
+845: ≡ƒöä Request Resubmission
+908: <span className="notes-icon">≡ƒô¥</span>
+934: <span className="btn-icon">Γ£ò</span>
+949: <span className="btn-icon">Γ£ô</span>
+962: ΓåÉ Back
+969: ΓåÉ Back
+980: <span className="rejection-icon">ΓÜá∩╕Å</span>
+998: {selectedReasons.has(reason.id) ? 'Γ£ô' : ''}
+1038: <span className="btn-icon">≡ƒöä</span>
+1057: <span className="btn-icon">Γ£ò</span>
+1070: <div className="approve-confirm__icon">Γ£ô</div>
+1114: <span className="btn-icon">Γ£ô</span>
+
+=== src\modules\admin\users\UserDetailsModal.tsx (1006 lines) ===
+117: farmer: { icon: '≡ƒî╛', color: '#16a34a', label: 'Farmer', bgColor: '#dcfce7' },
+118: customer: { icon: '≡ƒ¢Æ', color: '#3b82f6', label: 'Customer', bgColor: '#dbeafe' },
+119: driver: { icon: '≡ƒÜÜ', color: '#f59e0b', label: 'Driver', bgColor: '#fef3c7' },
+120: ngo: { icon: '≡ƒÆÜ', color: '#8b5cf6', label: 'NGO', bgColor: '#ede9fe' },
+124: active: { icon: 'Γ£ô', color: '#16a34a', label: 'Active', bgColor: '#dcfce7' },
+126: pending: { icon: 'Γù╖', color: '#d97706', label: 'Pending', bgColor: '#fef3c7' },
+130: login: { icon: '≡ƒöÉ', color: '#6b7280' },
+131: order: { icon: '≡ƒôª', color: '#3b82f6' },
+132: kyc: { icon: '≡ƒôï', color: '#8b5cf6' },
+133: profile: { icon: '≡ƒæñ', color: '#06b6d4' },
+134: transaction: { icon: '≡ƒÆ░', color: '#16a34a' },
+135: support: { icon: '≡ƒÄº', color: '#f59e0b' },
+136: review: { icon: 'Γ¡É', color: '#eab308' },
+140: purchase: { icon: '≡ƒ¢Æ', color: '#3b82f6' },
+141: sale: { icon: '≡ƒÆ░', color: '#16a34a' },
+142: donation: { icon: '≡ƒÆÜ', color: '#8b5cf6' },
+143: delivery: { icon: '≡ƒÜÜ', color: '#f59e0b' },
+144: refund: { icon: 'Γå⌐∩╕Å', color: '#dc2626' },
+208: {trend.isPositive ? 'Γåæ' : 'Γåô'} {Math.abs(trend.value)}%
+227: Γÿà
+308: Γ£Å∩╕Å Edit
+316: <div className="udm-document-item__icon">≡ƒôä</div>
+322: {document.status === 'verified' && <span className="status-verified">Γ£ô Verified</span>}
+323: {document.status === 'pending' && <span className="status-pending">ΓÅ│ Pending</span>}
+324: {document.status === 'rejected' && <span className="status-rejected">Γ£ò Rejected</span>}
+538: { key: 'overview', label: 'Overview', icon: '≡ƒôï' },
+539: { key: 'activity', label: 'Activity', icon: '≡ƒôè' },
+540: { key: 'transactions', label: 'Transactions', icon: '≡ƒÆ░' },
+541: { key: 'documents', label: 'Documents', icon: '≡ƒôä' },
+594: <span className="kyc-verified">Γ£ô KYC Verified</span>
+596: <span className="kyc-pending">ΓÅ│ KYC Pending</span>
+617: Γ£ò
+624: Γ£Å∩╕Å Edit User
+629: ≡ƒÆ¼ Send Message
+634: ≡ƒôï View KYC
+640: Γ£ô Activate User
+656: icon="≡ƒÆ¼"
+662: icon="≡ƒôº"
+667: icon="≡ƒô₧"
+673: icon="≡ƒôï"
+681: icon="Γ£Å∩╕Å"
+713: icon="≡ƒôª"
+719: icon="≡ƒÆ░"
+725: icon="Γ¡É"
+731: icon="≡ƒÆ¼"
+738: icon="ΓÜí"
+746: icon="≡ƒÄ»"
+769: {copiedField === 'email' ? 'Γ£ô' : '≡ƒôï'}
+782: {copiedField === 'phone' ? 'Γ£ô' : '≡ƒôï'}
+839: <span className="udm-device-info__icon">≡ƒÆ╗</span>
+846: <span className="udm-device-info__icon">≡ƒîÉ</span>
+853: <span className="udm-device-info__icon">≡ƒôì</span>
+868: <span className="udm-admin-notes__icon">≡ƒô¥</span>
+887: <span className="udm-empty-state__icon">≡ƒôè</span>
+930: <span className="udm-empty-state__icon">≡ƒÆ░</span>
+944: {user.kycVerified ? 'Γ£ô' : 'ΓÅ│'}
+970: <span className="udm-empty-state__icon">≡ƒôä</span>
+
+=== src\modules\admin\users\UserManagement.tsx (1068 lines) ===
+44: farmer: { icon: '≡ƒî╛', color: '#22c55e', label: 'Farmer' },
+45: customer: { icon: '≡ƒ¢Æ', color: '#3b82f6', label: 'Customer' },
+46: driver: { icon: '≡ƒÜÜ', color: '#f59e0b', label: 'Driver' },
+47: ngo: { icon: '≡ƒÆÜ', color: '#8b5cf6', label: 'NGO' },
+51: active: { icon: 'Γ£ô', color: '#16a34a', bgColor: '#dcfce7' },
+53: pending: { icon: 'Γù╖', color: '#d97706', bgColor: '#fef3c7' },
+83: <div className="empty-state__icon">≡ƒæñ</div>
+114: {confirmVariant === 'danger' ? 'ΓÜá∩╕Å' : confirmVariant === 'warning' ? 'ΓÜí' : 'Γä╣∩╕Å'}
+151: {toast.type === 'success' && 'Γ£ô'}
+152: {toast.type === 'error' && 'Γ£ò'}
+153: {toast.type === 'warning' && 'ΓÜá'}
+586: { key: 'all', label: 'All Users', icon: '≡ƒæÑ' },
+587: { key: 'farmer', label: 'Farmers', icon: '≡ƒî╛' },
+588: { key: 'customer', label: 'Customers', icon: '≡ƒ¢Æ' },
+589: { key: 'driver', label: 'Drivers', icon: '≡ƒÜÜ' },
+590: { key: 'ngo', label: 'NGOs', icon: '≡ƒÆÜ' },
+598: <div className="stat-card__icon">≡ƒæÑ</div>
+605: <div className="stat-card__icon">Γ£ô</div>
+612: <div className="stat-card__icon">ΓÅ│</div>
+619: <div className="stat-card__icon">≡ƒôê</div>
+641: <span className={`btn-icon ${isLoading ? 'spinning' : ''}`}>≡ƒöä</span>
+648: <span className="btn-icon">≡ƒôÑ</span>
+657: <span className="search-icon">≡ƒöì</span>
+747: <span className="error-icon">ΓÜá∩╕Å</span>
+771: <span className="sort-indicator">{sortOrder === 'asc' ? 'Γåæ' : 'Γåô'}</span>
+777: <span className="sort-indicator">{sortOrder === 'asc' ? 'Γåæ' : 'Γåô'}</span>
+783: <span className="sort-indicator">{sortOrder === 'asc' ? 'Γåæ' : 'Γåô'}</span>
+790: <span className="sort-indicator">{sortOrder === 'asc' ? 'Γåæ' : 'Γåô'}</span>
+796: <span className="sort-indicator">{sortOrder === 'asc' ? 'Γåæ' : 'Γåô'}</span>
+871: <span className="kyc-badge__icon">Γ£ô</span>
+876: <span className="kyc-badge__icon">ΓÅ│</span>
+907: <span>≡ƒæü∩╕Å</span>
+918: <span>≡ƒôï</span>
+926: <span>{user.status === 'suspended' ? 'Γ£ô' : 'Γèÿ'}</span>

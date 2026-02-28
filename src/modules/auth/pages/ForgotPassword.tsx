@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './AuthStyles.css';
-
+import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import './AuthStyles.css';import { API_ENDPOINTS } from '../../../config/api';
 const ForgotPasswordPage: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState<string>('');
@@ -35,7 +35,7 @@ const ForgotPasswordPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/forgot-password', {
+      const response = await fetch(API_ENDPOINTS.forgotPassword, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -80,10 +80,10 @@ const ForgotPasswordPage: React.FC = () => {
             onClick={() => navigate('/auth')}
             type="button"
           >
-            ← Back to Login
+            <ArrowLeft size={16} /> Back to Login
           </button>
 
-          <div className="forgot-icon">🔐</div>
+          <div className="forgot-icon"><ShieldCheck size={32} /></div>
 
           <h1 className="auth-title">Forgot Password?</h1>
           <p className="auth-subtitle">

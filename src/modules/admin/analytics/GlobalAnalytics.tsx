@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
+  Users, Package, DollarSign, Truck, Leaf, RefreshCw, Pause,
+  BarChart3, TrendingUp, TrendingDown, Download, FileText, FileSpreadsheet,
+  ArrowUpRight, ArrowDownRight, ArrowDown, ArrowRight,
+  Scale, Sparkles, Maximize, MapPin, Star, Wheat, Car,
+} from 'lucide-react';
+import {
   LineChart,
   Line,
   BarChart,
@@ -27,7 +33,7 @@ type ViewMode = 'overview' | 'detailed';
 type ChartType = 'line' | 'bar' | 'area';
 
 interface KPI {
-  icon: string;
+  icon: React.ReactNode;
   value: string;
   label: string;
   change: string;
@@ -77,7 +83,7 @@ const GlobalAnalytics: React.FC = () => {
 
   const kpis: KPI[] = [
     {
-      icon: '👥',
+      icon: <Users size={16} />,
       value: '2,847',
       label: 'Total Users',
       change: '+12%',
@@ -87,7 +93,7 @@ const GlobalAnalytics: React.FC = () => {
       color: '#3b82f6',
     },
     {
-      icon: '📦',
+      icon: <Package size={16} />,
       value: '1,248',
       label: 'Orders',
       change: '+18%',
@@ -97,7 +103,7 @@ const GlobalAnalytics: React.FC = () => {
       color: '#10b981',
     },
     {
-      icon: '💰',
+      icon: <DollarSign size={16} />,
       value: '₹12.4L',
       label: 'GMV',
       change: '+22%',
@@ -107,7 +113,7 @@ const GlobalAnalytics: React.FC = () => {
       color: '#f59e0b',
     },
     {
-      icon: '🚛',
+      icon: <Truck size={16} />,
       value: '892',
       label: 'Deliveries',
       change: '+15%',
@@ -117,7 +123,7 @@ const GlobalAnalytics: React.FC = () => {
       color: '#8b5cf6',
     },
     {
-      icon: '🌿',
+      icon: <Leaf size={16} />,
       value: '45.2T',
       label: 'Food Saved (kg)',
       change: '-3%',
@@ -519,7 +525,7 @@ const GlobalAnalytics: React.FC = () => {
     addText('Farmer | Location | Revenue | Orders | Rating', 9, true);
     topFarmers.forEach(f => {
       addText(
-        `${f.name} | ${f.location} | ${f.revenue} | ${f.orders} | ⭐${f.rating}`,
+        `${f.name} | ${f.location} | ${f.revenue} | ${f.orders} | ★${f.rating}`,
         8
       );
     });
@@ -530,7 +536,7 @@ const GlobalAnalytics: React.FC = () => {
     addText('Driver | Location | Deliveries | OnTime % | Rating', 9, true);
     topDrivers.forEach(d => {
       addText(
-        `${d.name} | ${d.location} | ${d.deliveries} | ${d.onTime}% | ⭐${d.rating}`,
+        `${d.name} | ${d.location} | ${d.deliveries} | ${d.onTime}% | ★${d.rating}`,
         8
       );
     });
@@ -588,7 +594,7 @@ const GlobalAnalytics: React.FC = () => {
               onClick={() => setAutoRefresh(!autoRefresh)}
               title={autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF'}
             >
-              {autoRefresh ? '🔄' : '⏸️'}
+              {autoRefresh ? <RefreshCw size={16} /> : <Pause size={16} />}
             </button>
           </div>
         </div>
@@ -600,13 +606,13 @@ const GlobalAnalytics: React.FC = () => {
               className={`ga-view-toggle__btn ${viewMode === 'overview' ? 'ga-view-toggle__btn--active' : ''}`}
               onClick={() => setViewMode('overview')}
             >
-              <span>📊</span> Overview
+              <span><BarChart3 size={16} /></span> Overview
             </button>
             <button
               className={`ga-view-toggle__btn ${viewMode === 'detailed' ? 'ga-view-toggle__btn--active' : ''}`}
               onClick={() => setViewMode('detailed')}
             >
-              <span>📈</span> Detailed
+              <span><TrendingUp size={16} /></span> Detailed
             </button>
           </div>
 
@@ -629,18 +635,18 @@ const GlobalAnalytics: React.FC = () => {
               className="ga-export-btn"
               onClick={() => setShowExport(!showExport)}
             >
-              📥 Export
+              <Download size={16} /> Export
             </button>
             {showExport && (
               <div className="ga-export-menu">
                 <button onClick={() => handleExport('csv')}>
-                  <span>📄</span> Export as CSV
+                  <span><FileText size={16} /></span> Export as CSV
                 </button>
                 <button onClick={() => handleExport('excel')}>
-                  <span>📊</span> Export as Excel
+                  <span><FileSpreadsheet size={16} /></span> Export as Excel
                 </button>
                 <button onClick={() => handleExport('pdf')}>
-                  <span>📕</span> Export as PDF
+                  <span><FileText size={16} /></span> Export as PDF
                 </button>
               </div>
             )}
@@ -664,7 +670,7 @@ const GlobalAnalytics: React.FC = () => {
                 {kpi.icon}
               </div>
               <span className={`ga-kpi__change ga-kpi__change--${kpi.dir}`}>
-                {kpi.dir === 'up' ? '↗' : '↘'} {kpi.change}
+                {kpi.dir === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />} {kpi.change}
               </span>
             </div>
             <div className="ga-kpi__value">{kpi.value}</div>
@@ -711,13 +717,13 @@ const GlobalAnalytics: React.FC = () => {
             className={`ga-chart-control ${isComparing ? 'ga-chart-control--active' : ''}`}
             onClick={() => setIsComparing(!isComparing)}
           >
-            <span>⚖️</span> Compare Periods
+            <span><Scale size={16} /></span> Compare Periods
           </button>
           <button
             className={`ga-chart-control ${animateCharts ? 'ga-chart-control--active' : ''}`}
             onClick={() => setAnimateCharts(!animateCharts)}
           >
-            <span>✨</span> Animations
+            <span><Sparkles size={16} /></span> Animations
           </button>
         </div>
         <div className="ga-chart-type-selector">
@@ -726,21 +732,21 @@ const GlobalAnalytics: React.FC = () => {
             onClick={() => setChartType('line')}
             title="Line Chart"
           >
-            📈
+            <TrendingUp size={16} />
           </button>
           <button
             className={`ga-chart-type ${chartType === 'bar' ? 'ga-chart-type--active' : ''}`}
             onClick={() => setChartType('bar')}
             title="Bar Chart"
           >
-            📊
+            <BarChart3 size={16} />
           </button>
           <button
             className={`ga-chart-type ${chartType === 'area' ? 'ga-chart-type--active' : ''}`}
             onClick={() => setChartType('area')}
             title="Area Chart"
           >
-            📉
+            <TrendingDown size={16} />
           </button>
         </div>
       </div>
@@ -751,11 +757,11 @@ const GlobalAnalytics: React.FC = () => {
         <div className="ga-chart ga-chart--primary">
           <div className="ga-chart__header">
             <h3 className="ga-chart__title">
-              <span className="ga-chart__icon">👥</span>
+              <span className="ga-chart__icon"><Users size={16} /></span>
               User Growth
             </h3>
             <button className="ga-chart__fullscreen" title="View Fullscreen">
-              ⛶
+              <Maximize size={14} />
             </button>
           </div>
           <div className="ga-chart__body">
@@ -840,11 +846,11 @@ const GlobalAnalytics: React.FC = () => {
         <div className="ga-chart">
           <div className="ga-chart__header">
             <h3 className="ga-chart__title">
-              <span className="ga-chart__icon">📦</span>
+              <span className="ga-chart__icon"><Package size={16} /></span>
               Order Volume & Revenue
             </h3>
             <button className="ga-chart__fullscreen" title="View Fullscreen">
-              ⛶
+              <Maximize size={14} />
             </button>
           </div>
           <div className="ga-chart__body">
@@ -879,11 +885,11 @@ const GlobalAnalytics: React.FC = () => {
         <div className="ga-chart">
           <div className="ga-chart__header">
             <h3 className="ga-chart__title">
-              <span className="ga-chart__icon">🥬</span>
+              <span className="ga-chart__icon"><Leaf size={16} /></span>
               Revenue by Category
             </h3>
             <button className="ga-chart__fullscreen" title="View Fullscreen">
-              ⛶
+              <Maximize size={14} />
             </button>
           </div>
           <div className="ga-chart__body">
@@ -914,11 +920,11 @@ const GlobalAnalytics: React.FC = () => {
         <div className="ga-chart">
           <div className="ga-chart__header">
             <h3 className="ga-chart__title">
-              <span className="ga-chart__icon">🚛</span>
+              <span className="ga-chart__icon"><Truck size={16} /></span>
               Delivery Performance
             </h3>
             <button className="ga-chart__fullscreen" title="View Fullscreen">
-              ⛶
+              <Maximize size={14} />
             </button>
           </div>
           <div className="ga-chart__body">
@@ -955,10 +961,10 @@ const GlobalAnalytics: React.FC = () => {
         <div className="ga-table">
           <div className="ga-table__header">
             <h3 className="ga-table__title">
-              <span className="ga-table__icon">🌾</span>
+              <span className="ga-table__icon"><Wheat size={16} /></span>
               Top Farmers by Revenue
             </h3>
-            <button className="ga-table__export">Export ↓</button>
+            <button className="ga-table__export">Export <ArrowDown size={14} /></button>
           </div>
           <div className="ga-table__body">
             <table>
@@ -983,19 +989,19 @@ const GlobalAnalytics: React.FC = () => {
                     </td>
                     <td className="ga-table__name">{farmer.name}</td>
                     <td>
-                      <span className="ga-table__location">📍 {farmer.location}</span>
+                      <span className="ga-table__location"><MapPin size={14} /> {farmer.location}</span>
                     </td>
                     <td className="ga-table__revenue">{farmer.revenue}</td>
                     <td className="ga-table__orders">{farmer.orders}</td>
                     <td>
                       <div className="ga-table__rating">
-                        <span>⭐</span>
+                        <span><Star size={14} /></span>
                         <span>{farmer.rating}</span>
                       </div>
                     </td>
                     <td>
                       <span className={`ga-table__trend ga-table__trend--${farmer.trend}`}>
-                        {farmer.trend === 'up' ? '↗' : farmer.trend === 'down' ? '↘' : '→'}
+                        {farmer.trend === 'up' ? <ArrowUpRight size={14} /> : farmer.trend === 'down' ? <ArrowDownRight size={14} /> : <ArrowRight size={14} />}
                       </span>
                     </td>
                   </tr>
@@ -1009,10 +1015,10 @@ const GlobalAnalytics: React.FC = () => {
         <div className="ga-table">
           <div className="ga-table__header">
             <h3 className="ga-table__title">
-              <span className="ga-table__icon">🚗</span>
+              <span className="ga-table__icon"><Car size={16} /></span>
               Top Drivers by Deliveries
             </h3>
-            <button className="ga-table__export">Export ↓</button>
+            <button className="ga-table__export">Export <ArrowDown size={14} /></button>
           </div>
           <div className="ga-table__body">
             <table>
@@ -1036,7 +1042,7 @@ const GlobalAnalytics: React.FC = () => {
                     </td>
                     <td className="ga-table__name">{driver.name}</td>
                     <td>
-                      <span className="ga-table__location">📍 {driver.location}</span>
+                      <span className="ga-table__location"><MapPin size={14} /> {driver.location}</span>
                     </td>
                     <td className="ga-table__deliveries">{driver.deliveries}</td>
                     <td>
@@ -1052,7 +1058,7 @@ const GlobalAnalytics: React.FC = () => {
                     </td>
                     <td>
                       <div className="ga-table__rating">
-                        <span>⭐</span>
+                        <span><Star size={14} /></span>
                         <span>{driver.rating}</span>
                       </div>
                     </td>

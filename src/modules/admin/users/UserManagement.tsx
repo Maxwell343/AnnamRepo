@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Wheat, ShoppingCart, Truck, Heart, Check, Ban, Clock, Users, AlertTriangle, Zap, Info, X, TrendingUp, RefreshCw, Download, Search, ArrowUp, ArrowDown, Eye, ClipboardList } from 'lucide-react';
 import UserDetailsModal from './UserDetailsModal';
 import KycReviewPanel from './KycReviewPanel';
+import { API_ENDPOINTS } from '../../../config/api';
 import './UserManagement.css';
 
 // ============ Types ============
@@ -40,17 +42,17 @@ interface Toast {
 // ============ Constants ============
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];
 
-const ROLE_CONFIG: Record<Exclude<UserRole, 'all'>, { icon: string; color: string; label: string }> = {
-  farmer: { icon: '🌾', color: '#22c55e', label: 'Farmer' },
-  customer: { icon: '🛒', color: '#3b82f6', label: 'Customer' },
-  driver: { icon: '🚚', color: '#f59e0b', label: 'Driver' },
-  ngo: { icon: '💚', color: '#8b5cf6', label: 'NGO' },
+const ROLE_CONFIG: Record<Exclude<UserRole, 'all'>, { icon: React.ReactNode; color: string; label: string }> = {
+  farmer: { icon: <Wheat size={16} />, color: '#22c55e', label: 'Farmer' },
+  customer: { icon: <ShoppingCart size={16} />, color: '#3b82f6', label: 'Customer' },
+  driver: { icon: <Truck size={16} />, color: '#f59e0b', label: 'Driver' },
+  ngo: { icon: <Heart size={16} />, color: '#8b5cf6', label: 'NGO' },
 };
 
-const STATUS_CONFIG: Record<UserStatus, { icon: string; color: string; bgColor: string }> = {
-  active: { icon: '✓', color: '#16a34a', bgColor: '#dcfce7' },
-  suspended: { icon: '⊘', color: '#dc2626', bgColor: '#fee2e2' },
-  pending: { icon: '◷', color: '#d97706', bgColor: '#fef3c7' },
+const STATUS_CONFIG: Record<UserStatus, { icon: React.ReactNode; color: string; bgColor: string }> = {
+  active: { icon: <Check size={14} />, color: '#16a34a', bgColor: '#dcfce7' },
+  suspended: { icon: <Ban size={14} />, color: '#dc2626', bgColor: '#fee2e2' },
+  pending: { icon: <Clock size={14} />, color: '#d97706', bgColor: '#fef3c7' },
 };
 
 // ============ Helper Components ============
@@ -80,7 +82,7 @@ const LoadingSkeleton: React.FC<{ rows?: number }> = ({ rows = 5 }) => (
 
 const EmptyState: React.FC<{ searchQuery: string; onClear: () => void }> = ({ searchQuery, onClear }) => (
   <div className="empty-state">
-    <div className="empty-state__icon">👤</div>
+    <div className="empty-state__icon"><Users size={48} /></div>
     <h3 className="empty-state__title">No users found</h3>
     <p className="empty-state__description">
       {searchQuery
@@ -111,7 +113,7 @@ const ConfirmDialog: React.FC<{
     <div className="confirm-dialog__overlay" onClick={onCancel}>
       <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="confirm-dialog__icon" data-variant={confirmVariant}>
-          {confirmVariant === 'danger' ? '⚠️' : confirmVariant === 'warning' ? '⚡' : 'ℹ️'}
+          {confirmVariant === 'danger' ? <AlertTriangle size={24} /> : confirmVariant === 'warning' ? <Zap size={24} /> : <Info size={24} />}
         </div>
         <h3 className="confirm-dialog__title">{title}</h3>
         <p className="confirm-dialog__message">{message}</p>
@@ -148,10 +150,10 @@ const ToastContainer: React.FC<{ toasts: Toast[]; onDismiss: (id: string) => voi
     {toasts.map((toast) => (
       <div key={toast.id} className={`toast toast--${toast.type}`}>
         <span className="toast__icon">
-          {toast.type === 'success' && '✓'}
-          {toast.type === 'error' && '✕'}
-          {toast.type === 'warning' && '⚠'}
-          {toast.type === 'info' && 'ℹ'}
+          {toast.type === 'success' && <Check size={16} />}
+          {toast.type === 'error' && <X size={16} />}
+          {toast.type === 'warning' && <AlertTriangle size={16} />}
+          {toast.type === 'info' && <Info size={16} />}
         </span>
         <span className="toast__message">{toast.message}</span>
         <button className="toast__close" onClick={() => onDismiss(toast.id)}>
@@ -230,7 +232,7 @@ const UserManagement: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:8000/api/admin/users').catch(() => null);
+      const response = await fetch(API_ENDPOINTS.admin.users).catch(() => null);
       if (response?.ok) {
         const data = await response.json();
         setUsers(data.users || []);
@@ -582,12 +584,12 @@ const UserManagement: React.FC = () => {
 
   // ============ Render ============
   
-  const tabs: { key: UserRole; label: string; icon: string }[] = [
-    { key: 'all', label: 'All Users', icon: '👥' },
-    { key: 'farmer', label: 'Farmers', icon: '🌾' },
-    { key: 'customer', label: 'Customers', icon: '🛒' },
-    { key: 'driver', label: 'Drivers', icon: '🚚' },
-    { key: 'ngo', label: 'NGOs', icon: '💚' },
+  const tabs: { key: UserRole; label: string; icon: React.ReactNode }[] = [
+    { key: 'all', label: 'All Users', icon: <Users size={16} /> },
+    { key: 'farmer', label: 'Farmers', icon: <Wheat size={16} /> },
+    { key: 'customer', label: 'Customers', icon: <ShoppingCart size={16} /> },
+    { key: 'driver', label: 'Drivers', icon: <Truck size={16} /> },
+    { key: 'ngo', label: 'NGOs', icon: <Heart size={16} /> },
   ];
 
   return (
@@ -595,28 +597,28 @@ const UserManagement: React.FC = () => {
       {/* Statistics Cards */}
       <div className="user-management__stats">
         <div className="stat-card stat-card--primary">
-          <div className="stat-card__icon">👥</div>
+          <div className="stat-card__icon"><Users size={24} /></div>
           <div className="stat-card__content">
             <span className="stat-card__value">{statistics.total}</span>
             <span className="stat-card__label">Total Users</span>
           </div>
         </div>
         <div className="stat-card stat-card--success">
-          <div className="stat-card__icon">✓</div>
+          <div className="stat-card__icon"><Check size={24} /></div>
           <div className="stat-card__content">
             <span className="stat-card__value">{statistics.active}</span>
             <span className="stat-card__label">Active</span>
           </div>
         </div>
         <div className="stat-card stat-card--warning">
-          <div className="stat-card__icon">⏳</div>
+          <div className="stat-card__icon"><Clock size={24} /></div>
           <div className="stat-card__content">
             <span className="stat-card__value">{statistics.kycPending}</span>
             <span className="stat-card__label">KYC Pending</span>
           </div>
         </div>
         <div className="stat-card stat-card--info">
-          <div className="stat-card__icon">📈</div>
+          <div className="stat-card__icon"><TrendingUp size={24} /></div>
           <div className="stat-card__content">
             <span className="stat-card__value">{statistics.newThisMonth}</span>
             <span className="stat-card__label">New This Month</span>
@@ -638,14 +640,14 @@ const UserManagement: React.FC = () => {
             onClick={loadUsers}
             disabled={isLoading}
           >
-            <span className={`btn-icon ${isLoading ? 'spinning' : ''}`}>🔄</span>
+            <span className={`btn-icon ${isLoading ? 'spinning' : ''}`}><RefreshCw size={16} /></span>
             Refresh
           </button>
           <button
             className="user-management__btn user-management__btn--secondary"
             onClick={handleExport}
           >
-            <span className="btn-icon">📥</span>
+            <span className="btn-icon"><Download size={16} /></span>
             Export
           </button>
         </div>
@@ -654,7 +656,7 @@ const UserManagement: React.FC = () => {
       {/* Filters Bar */}
       <div className="user-management__filters">
         <div className="user-management__search">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"><Search size={16} /></span>
           <input
             type="text"
             placeholder="Search by name, email, or phone..."
@@ -744,7 +746,7 @@ const UserManagement: React.FC = () => {
       {/* Error State */}
       {error && (
         <div className="user-management__error">
-          <span className="error-icon">⚠️</span>
+          <span className="error-icon"><AlertTriangle size={16} /></span>
           <span className="error-message">{error}</span>
           <button className="error-retry" onClick={loadUsers}>
             Retry
@@ -768,32 +770,32 @@ const UserManagement: React.FC = () => {
               <th className="sortable" onClick={() => handleSort('name')}>
                 User
                 {sortField === 'name' && (
-                  <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                  <span className="sort-indicator">{sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>
                 )}
               </th>
               <th className="sortable" onClick={() => handleSort('role')}>
                 Role
                 {sortField === 'role' && (
-                  <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                  <span className="sort-indicator">{sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>
                 )}
               </th>
               <th className="sortable" onClick={() => handleSort('status')}>
                 Status
                 {sortField === 'status' && (
-                  <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                  <span className="sort-indicator">{sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>
                 )}
               </th>
               <th>KYC</th>
               <th className="sortable" onClick={() => handleSort('joinedAt')}>
                 Joined
                 {sortField === 'joinedAt' && (
-                  <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                  <span className="sort-indicator">{sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>
                 )}
               </th>
               <th className="sortable" onClick={() => handleSort('lastActive')}>
                 Last Active
                 {sortField === 'lastActive' && (
-                  <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                  <span className="sort-indicator">{sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>
                 )}
               </th>
               <th>Actions</th>
@@ -868,12 +870,12 @@ const UserManagement: React.FC = () => {
                     >
                       {user.kycVerified ? (
                         <>
-                          <span className="kyc-badge__icon">✓</span>
+                          <span className="kyc-badge__icon"><Check size={14} /></span>
                           Verified
                         </>
                       ) : (
                         <>
-                          <span className="kyc-badge__icon">⏳</span>
+                          <span className="kyc-badge__icon"><Clock size={14} /></span>
                           Pending
                         </>
                       )}
@@ -904,7 +906,7 @@ const UserManagement: React.FC = () => {
                         onClick={() => setSelectedUser(user)}
                         title="View Details"
                       >
-                        <span>👁️</span>
+                        <span><Eye size={16} /></span>
                       </button>
                       {!user.kycVerified && (
                         <button
@@ -915,7 +917,7 @@ const UserManagement: React.FC = () => {
                           }}
                           title="Review KYC"
                         >
-                          <span>📋</span>
+                          <span><ClipboardList size={16} /></span>
                         </button>
                       )}
                       <button
@@ -923,7 +925,7 @@ const UserManagement: React.FC = () => {
                         onClick={() => handleSuspendUser(user)}
                         title={user.status === 'suspended' ? 'Activate User' : 'Suspend User'}
                       >
-                        <span>{user.status === 'suspended' ? '✓' : '⊘'}</span>
+                        <span>{user.status === 'suspended' ? <Check size={16} /> : <Ban size={16} />}</span>
                       </button>
                     </div>
                   </td>
