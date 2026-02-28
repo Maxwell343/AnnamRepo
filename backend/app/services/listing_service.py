@@ -5,9 +5,98 @@ from app.core.database import (
     delivery_tasks_collection
 )
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 from app.services.notification_service import send_whatsapp
+
+
+def is_listing_expired(listing: dict) -> bool:
+    """Check if a listing has expired based on expiry_date or expiry"""
+    expiry_date_str = listing.get("expiry_date") or listing.get("expiry")
+    created_at_str = listing.get("created_at")
+    
+    if not expiry_date_str:
+        return False  # No expiry date means never expires
+    
+    try:
+        expiry_dt = None
+        
+        # Format 1: ISO format with datetime
+        if isinstance(expiry_date_str, str) and "T" in expiry_date_str:
+            expiry_dt = datetime.fromisoformat(expiry_date_str.replace("Z", "+00:00"))
+        # Format 2: ISO date only (YYYY-MM-DD)
+        elif isinstance(expiry_date_str, str) and len(expiry_date_str) == 10 and expiry_date_str.count("-") == 2:
+            try:
+                expiry_dt = datetime.fromisoformat(expiry_date_str)
+                # Set to end of day (23:59:59)
+                expiry_dt = expiry_dt.replace(hour=23, minute=59, second=59)
+            except:
+                pass
+        # Format 3: Relative time like "3 days", "2 hours", "30 minutes"
+        elif isinstance(expiry_date_str, str):
+            import re
+            match = re.match(r'(\d+)\s*(day|hour|minute)s?', expiry_date_str.lower().strip())
+            if match:
+                value = int(match.group(1))
+                unit = match.group(2).lower()
+                
+                # Determine base time (created_at or now)
+                base_time = datetime.utcnow()
+                if created_at_str:
+                    try:
+                        base_time = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
+                    except:
+                        base_time = datetime.utcnow()
+                
+                # Calculate expiry time
+                if unit == "day" or unit == "days":
+                    expiry_dt = base_time + timedelta(days=value)
+                elif unit == "hour" or unit == "hours":
+                    expiry_dt = base_time + timedelta(hours=value)
+                elif unit == "minute" or unit == "minutes":
+                    expiry_dt = base_time + timedelta(minutes=value)
+        
+        # If we couldn't parse to a datetime, assume not expired
+        if not expiry_dt:
+            return False
+        
+        # Check if expiry time has passed
+        now = datetime.utcnow() if expiry_dt.tzinfo is None else datetime.now(expiry_dt.tzinfo)
+        is_expired = now > expiry_dt
+        
+        return is_expired
+    except Exception as e:
+        print(f"[WARNING] Failed to parse expiry date '{expiry_date_str}': {e}")
+        return False
+
+
+def mark_expired_listings() -> int:
+    """Mark all expired listings with status 'expired' in the database"""
+    expired_count = 0
+    
+    try:
+        # Find all active listings
+        active_listings = list(listings_collection.find({
+            "status": {"$in": ["available", "claimed", "assigned", "picked_up"]}
+        }))
+        
+        for listing in active_listings:
+            if is_listing_expired(listing):
+                # Mark as expired
+                listings_collection.update_one(
+                    {"_id": listing["_id"]},
+                    {"$set": {
+                        "status": "expired",
+                        "expired_at": datetime.utcnow().isoformat(),
+                        "updated_at": datetime.utcnow().isoformat()
+                    }}
+                )
+                expired_count += 1
+                print(f"[EXPIRY] Marked listing {listing.get('id', listing.get('_id'))} as expired")
+    except Exception as e:
+        print(f"[ERROR] Failed to mark expired listings: {e}")
+    
+    return expired_count
 
 
 def notify_ngos_new_listing(listing_data: dict):
@@ -76,9 +165,26 @@ def create_listing(listing_data: dict) -> dict:
     return listing_data
 
 
-def get_all_listings(filters: dict = None) -> List[dict]:
-    """Get all listings with optional filters"""
+def get_all_listings(filters: dict = None, include_expired: bool = False) -> List[dict]:
+    """Get all listings with optional filters
+    
+    Args:
+        filters: Optional MongoDB filter criteria
+        include_expired: If False (default), excludes expired listings from results
+    """
+    # First, mark any newly expired listings
+    mark_expired_listings()
+    
     query = filters or {}
+    
+    # Exclude expired listings by default
+    if not include_expired:
+        if "$or" in query:
+            # If there's already an $or clause, we need to combine carefully
+            query = {"$and": [query, {"status": {"$ne": "expired"}}]}
+        else:
+            query["status"] = {"$ne": "expired"}
+    
     listings = list(listings_collection.find(query).sort("created_at", -1))
     
     # Convert ObjectId to string
@@ -92,6 +198,9 @@ def get_all_listings(filters: dict = None) -> List[dict]:
 def get_listing_by_id(listing_id: str) -> Optional[dict]:
     """Get a single listing by ID"""
     try:
+        # Mark any expired listings first
+        mark_expired_listings()
+        
         listing = listings_collection.find_one({"_id": ObjectId(listing_id)})
         if listing:
             listing["id"] = str(listing["_id"])
@@ -102,13 +211,16 @@ def get_listing_by_id(listing_id: str) -> Optional[dict]:
 
 
 def get_listings_by_farmer(farmer_id: str) -> List[dict]:
-    """Get all listings by a specific farmer"""
-    return get_all_listings({"farmer_id": farmer_id})
+    """Get all listings by a specific farmer (excludes expired by default)"""
+    return get_all_listings({"farmer_id": farmer_id}, include_expired=False)
 
 
 def get_available_listings() -> List[dict]:
-    """Get all available listings for NGOs to claim"""
-    return get_all_listings({"status": "available"})
+    """Get all available listings for NGOs to claim (excludes expired)"""
+    # Mark any newly expired listings
+    mark_expired_listings()
+    
+    return get_all_listings({"status": "available"}, include_expired=False)
 
 
 def update_listing(listing_id: str, update_data: dict) -> Optional[dict]:

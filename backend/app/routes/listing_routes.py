@@ -48,9 +48,13 @@ def create_new_listing(listing: ListingCreate):
 def get_listings(
     farmer_id: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
-    type: Optional[str] = Query(None)
+    type: Optional[str] = Query(None),
+    include_expired: bool = Query(False, description="Include expired listings in results")
 ):
-    """Get all listings with optional filters"""
+    """Get all listings with optional filters
+    
+    By default, expired listings are excluded. Set include_expired=true to show them.
+    """
     filters = {}
     
     if farmer_id:
@@ -64,7 +68,7 @@ def get_listings(
     if type:
         filters["type"] = type
     
-    listings = get_all_listings(filters) if filters else get_all_listings()
+    listings = get_all_listings(filters, include_expired=include_expired) if filters else get_all_listings(include_expired=include_expired)
     
     return {
         "listings": listings,
@@ -82,7 +86,27 @@ def get_available():
     }
 
 
-@router.get("/listings/claimed/{ngo_id}")
+@router.get("/listings/expired")
+def get_expired_listings():
+    """Get all expired listings (archived)"""
+    listings = get_all_listings({"status": "expired"}, include_expired=True)
+    return {
+        "listings": listings,
+        "count": len(listings)
+    }
+
+
+@router.get("/listings/expired/{farmer_id}")
+def get_farmer_expired_listings(farmer_id: str):
+    """Get expired listings for a specific farmer"""
+    listings = get_all_listings({
+        "farmer_id": farmer_id,
+        "status": "expired"
+    }, include_expired=True)
+    return {
+        "listings": listings,
+        "count": len(listings)
+    }@router.get("/listings/claimed/{ngo_id}")
 def get_claimed_by_ngo(ngo_id: str):
     """Get all listings claimed by a specific NGO"""
     listings = get_all_listings()

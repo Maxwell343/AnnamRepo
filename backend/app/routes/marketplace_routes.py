@@ -187,6 +187,18 @@ def generate_mock_listings():
 mock_listings = generate_mock_listings()
 
 # ============================================
+# HELPER FUNCTIONS
+# ============================================
+
+def is_listing_expired(listing) -> bool:
+    """Check if a listing is expired based on its expiry_date"""
+    expiry_date = getattr(listing, 'expiry_date', None)
+    if expiry_date and isinstance(expiry_date, datetime):
+        return datetime.now() >= expiry_date
+    return False
+
+
+# ============================================
 # LISTINGS ENDPOINTS
 # ============================================
 
@@ -202,10 +214,18 @@ async def get_listings(
     verified_only: bool = False,
     sort_by: Optional[str] = None,
     page: int = 1,
-    limit: int = 20
+    limit: int = 20,
+    include_expired: bool = False
 ):
-    """Get all marketplace listings with optional filters"""
+    """Get all marketplace listings with optional filters
+    
+    By default, expired listings are excluded. Set include_expired=true to show them.
+    """
     filtered = mock_listings.copy()
+    
+    # Exclude expired listings by default (check both status and expiry_date)
+    if not include_expired:
+        filtered = [l for l in filtered if l.status != ListingStatus.EXPIRED and not is_listing_expired(l)]
     
     # Apply filters
     if category:
@@ -238,6 +258,37 @@ async def get_listings(
     end = start + limit
     
     return filtered[start:end]
+
+
+@router.get("/listings/farmer/{farmer_id}", response_model=List[MarketplaceListingResponse])
+async def get_farmer_listings(farmer_id: str, include_expired: bool = False):
+    """Get all listings by a specific farmer
+    
+    By default, expired listings are excluded. Set include_expired=true to show them.
+    """
+    farmer_listings = []
+    for listing in mock_listings:
+        # Handle both dict and object access
+        farm_id = listing.get("farmer_id") if isinstance(listing, dict) else getattr(listing, "farmer_id", None)
+        if str(farm_id) == str(farmer_id):
+            # Exclude expired unless specifically requested
+            if include_expired or (hasattr(listing, 'status') and listing.status != ListingStatus.EXPIRED and not is_listing_expired(listing)):
+                farmer_listings.append(listing)
+    return farmer_listings
+
+
+@router.get("/listings/farmer/{farmer_id}/expired", response_model=List[MarketplaceListingResponse])
+async def get_farmer_expired_listings(farmer_id: str):
+    """Get all expired listings by a specific farmer (for archives)"""
+    farmer_listings = []
+    for listing in mock_listings:
+        # Handle both dict and object access
+        farm_id = listing.get("farmer_id") if isinstance(listing, dict) else getattr(listing, "farmer_id", None)
+        if str(farm_id) == str(farmer_id):
+            # Include items that are either marked expired OR have passed expiry date
+            if (hasattr(listing, 'status') and listing.status == ListingStatus.EXPIRED) or is_listing_expired(listing):
+                farmer_listings.append(listing)
+    return farmer_listings
 
 
 @router.get("/listings/{listing_id}", response_model=MarketplaceListingResponse)
@@ -344,25 +395,25 @@ async def delete_listing(listing_id: str):
 @router.get("/near-expiry", response_model=List[MarketplaceListingResponse])
 async def get_near_expiry_listings():
     """Get listings that are near expiry (priority rescue)"""
-    return [l for l in mock_listings if l.category == ListingCategory.NEAR_EXPIRY]
+    return [l for l in mock_listings if l.category == ListingCategory.NEAR_EXPIRY and l.status != ListingStatus.EXPIRED and not is_listing_expired(l)]
 
 
 @router.get("/ngo-rescue", response_model=List[MarketplaceListingResponse])
 async def get_ngo_rescue_listings():
     """Get listings available for NGO rescue"""
-    return [l for l in mock_listings if l.category == ListingCategory.NGO_RESCUE or l.selling_mode == SellingMode.DONATE]
+    return [l for l in mock_listings if (l.category == ListingCategory.NGO_RESCUE or l.selling_mode == SellingMode.DONATE) and l.status != ListingStatus.EXPIRED and not is_listing_expired(l)]
 
 
 @router.get("/flash-sales", response_model=List[MarketplaceListingResponse])
 async def get_flash_sales():
     """Get flash sale listings with high discounts"""
-    return [l for l in mock_listings if l.discount_percent and l.discount_percent >= 30]
+    return [l for l in mock_listings if l.discount_percent and l.discount_percent >= 30 and l.status != ListingStatus.EXPIRED and not is_listing_expired(l)]
 
 
 @router.get("/bulk-lots", response_model=List[MarketplaceListingResponse])
 async def get_bulk_lots():
     """Get bulk quantity listings for processors"""
-    return [l for l in mock_listings if l.quantity >= 100]
+    return [l for l in mock_listings if l.quantity >= 100 and l.status != ListingStatus.EXPIRED and not is_listing_expired(l)]
 
 
 # ============================================
@@ -376,9 +427,11 @@ async def search_listings(search: SearchQuery):
     
     results = [
         l for l in mock_listings
-        if query in l.title.lower() 
+        if (query in l.title.lower() 
         or query in l.description.lower()
-        or any(query in tag.lower() for tag in l.tags)
+        or any(query in tag.lower() for tag in l.tags))
+        and l.status != ListingStatus.EXPIRED
+        and not is_listing_expired(l)
     ]
     
     return results
