@@ -80,7 +80,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       farmer: [
         { id: 'my-listings', icon: <Package size={20} />, label: 'My Listings', action: () => navigate('/my-listings') },
         { id: 'add-listing', icon: <PlusCircle size={20} />, label: 'Add Listing', action: () => navigate('/listing') },
-        { id: 'marketplace', icon: <ShoppingCart size={20} />, label: 'Marketplace', action: () => navigate('/marketplace') },
         { id: 'analytics', icon: <BarChart3 size={20} />, label: 'Analytics', action: () => navigate('/analytics') },
       ],
       ngo: [

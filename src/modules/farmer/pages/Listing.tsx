@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './Listing.css';
 import '../../../app/HomePage.css';
 import { API_ENDPOINTS } from '../../../config/api';
-import { MapContainer, TileLayer, CircleMarker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { LeafletMouseEvent } from 'leaflet';
 
@@ -17,6 +17,14 @@ const MapClickToPick: React.FC<{ onPick: (coords: LatLng) => void }> = ({ onPick
       onPick({ lat: e.latlng.lat, lng: e.latlng.lng });
     },
   });
+  return null;
+};
+
+const MapFlyTo: React.FC<{ center: LatLng; zoom: number }> = ({ center, zoom }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo([center.lat, center.lng], zoom, { duration: 1.5 });
+  }, [map, center, zoom]);
   return null;
 };
 
@@ -39,7 +47,12 @@ const ListingForm: React.FC = () => {
   const [pickupCoords, setPickupCoords] = useState<LatLng | null>(null);
   const [showMapPicker, setShowMapPicker] = useState(false);
 
-  const mapCenter = useMemo<LatLng>(() => ({ lat: 20.5937, lng: 78.9629 }), []);
+  const defaultCenter = useMemo<LatLng>(() => ({ lat: 20.5937, lng: 78.9629 }), []);
+  const [mapCenter, setMapCenter] = useState<LatLng>(defaultCenter);
+  const [mapZoom, setMapZoom] = useState(5);
+  const [farmerLocation, setFarmerLocation] = useState<string>('');
+
+  const [profileChecking, setProfileChecking] = useState(true);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -52,11 +65,83 @@ const ListingForm: React.FC = () => {
       const parsedUser = JSON.parse(savedUser);
       if (parsedUser.role !== 'farmer') {
         navigate('/dashboard');
+        return;
       }
+
+      // Check if farmer profile is complete before allowing listing
+      const checkProfile = async () => {
+        try {
+          const response = await fetch(API_ENDPOINTS.farmerSettings(parsedUser.id.toString()));
+          const data = await response.json();
+
+          const name = data?.name || parsedUser.name || '';
+          const phone = data?.phone || localStorage.getItem('userPhone') || '';
+          const farmName = data?.farm_name || localStorage.getItem('farmName') || '';
+          const farmLocation = data?.farm_location || localStorage.getItem('farmLocation') || '';
+
+          // Save farm location for map centering
+          if (farmLocation.trim()) {
+            setFarmerLocation(farmLocation.trim());
+          }
+
+          if (!name.trim() || !phone.trim() || !farmName.trim() || !farmLocation.trim()) {
+            const missing: string[] = [];
+            if (!name.trim()) missing.push('Full Name');
+            if (!phone.trim()) missing.push('Phone Number');
+            if (!farmName.trim()) missing.push('Farm Name');
+            if (!farmLocation.trim()) missing.push('Farm Location');
+
+            alert(`Please complete your profile before creating a listing.\n\nMissing fields: ${missing.join(', ')}`);
+            navigate('/farmer-settings', { state: { returnTo: '/listing', incompleteProfile: true } });
+            return;
+          }
+        } catch (err) {
+          // Fallback: check localStorage
+          const farmName = localStorage.getItem('farmName') || '';
+          const farmLocation = localStorage.getItem('farmLocation') || '';
+          const phone = localStorage.getItem('userPhone') || '';
+
+          if (farmLocation.trim()) {
+            setFarmerLocation(farmLocation.trim());
+          }
+
+          if (!parsedUser.name?.trim() || !phone.trim() || !farmName.trim() || !farmLocation.trim()) {
+            alert('Please complete your profile before creating a listing.');
+            navigate('/farmer-settings', { state: { returnTo: '/listing', incompleteProfile: true } });
+            return;
+          }
+        } finally {
+          setProfileChecking(false);
+        }
+      };
+
+      checkProfile();
     } catch {
       navigate('/auth');
     }
   }, [navigate]);
+
+  // Geocode farmer's saved location to center the map
+  useEffect(() => {
+    if (!farmerLocation) return;
+    const geocode = async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(farmerLocation)}&limit=1`,
+          { headers: { 'Accept': 'application/json' } }
+        );
+        const results = await res.json();
+        if (results.length > 0) {
+          const coords = { lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon) };
+          setMapCenter(coords);
+          setMapZoom(13);
+        }
+      } catch (err) {
+        console.warn('Geocoding farm location failed:', err);
+      }
+    };
+    geocode();
+  }, [farmerLocation]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -186,7 +271,15 @@ const ListingForm: React.FC = () => {
   };
 
   return (
-    <>
+    <div className="listing-page">
+      {profileChecking ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ width: '40px', height: '40px', border: '4px solid #e0e0e0', borderTop: '4px solid #2e7d32', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+          <p style={{ color: '#757575', fontSize: '14px' }}>Checking profile...</p>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      ) : (
+      <>
       <header className="top-header">
           <div className="header-left">
             <h1 className="page-title">➕ Add Listing</h1>
@@ -326,14 +419,15 @@ const ListingForm: React.FC = () => {
               <div className="map-picker">
                 <MapContainer
                   center={[mapCenter.lat, mapCenter.lng]}
-                  zoom={5}
-                  scrollWheelZoom={false}
+                  zoom={mapZoom}
+                  scrollWheelZoom={true}
                   className="map-picker-map"
                 >
                   <TileLayer
                     attribution="&copy; OpenStreetMap contributors"
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
+                  <MapFlyTo center={mapCenter} zoom={mapZoom} />
                   <MapClickToPick onPick={setPickupCoords} />
                   {pickupCoords && (
                     <CircleMarker center={[pickupCoords.lat, pickupCoords.lng]} radius={10} pathOptions={{ color: '#064e3b' }} />
@@ -369,6 +463,8 @@ const ListingForm: React.FC = () => {
           </div>
         </div>
       </>
+      )}
+    </div>
     );
   };
   

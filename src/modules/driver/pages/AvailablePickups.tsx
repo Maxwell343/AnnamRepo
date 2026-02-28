@@ -65,6 +65,7 @@ const AvailablePickups: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+  const [profileChecking, setProfileChecking] = useState(true);
   
   // Filters
   const [filterType, setFilterType] = useState<FilterType>('all');
@@ -297,6 +298,44 @@ const AvailablePickups: React.FC = () => {
         return;
       }
       setUser(parsedUser);
+
+      // Check if driver profile is complete before allowing access
+      const checkProfile = async () => {
+        try {
+          const response = await fetch(API_ENDPOINTS.driverSettings(parsedUser.id.toString()));
+          const data = await response.json();
+
+          const fullName = data?.name || parsedUser.name || '';
+          const phone = data?.phone || localStorage.getItem('userPhone') || '';
+          const vehicleNumber = data?.vehicle_number || localStorage.getItem('vehicleNumber') || '';
+          const licenseNumber = data?.license_number || '';
+
+          if (!fullName.trim() || !phone.trim() || !vehicleNumber.trim() || !licenseNumber.trim()) {
+            const missing: string[] = [];
+            if (!fullName.trim()) missing.push('Full Name');
+            if (!phone.trim()) missing.push('Phone Number');
+            if (!vehicleNumber.trim()) missing.push('Vehicle Number');
+            if (!licenseNumber.trim()) missing.push('Driving License Number');
+
+            alert(`Please complete your profile before accepting pickups.\n\nMissing fields: ${missing.join(', ')}`);
+            navigate('/driver-settings', { state: { returnTo: '/available-pickups', incompleteProfile: true } });
+            return;
+          }
+        } catch (err) {
+          // Fallback: check localStorage
+          const phone = localStorage.getItem('userPhone') || '';
+          const vehicleNumber = localStorage.getItem('vehicleNumber') || '';
+          if (!parsedUser.name?.trim() || !phone.trim() || !vehicleNumber.trim()) {
+            alert('Please complete your profile before accepting pickups.');
+            navigate('/driver-settings', { state: { returnTo: '/available-pickups', incompleteProfile: true } });
+            return;
+          }
+        } finally {
+          setProfileChecking(false);
+        }
+      };
+
+      checkProfile();
     } else {
       navigate('/');
       return;
@@ -475,6 +514,15 @@ const AvailablePickups: React.FC = () => {
     const encodedAddress = encodeURIComponent(address);
     window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
   };
+
+  if (profileChecking) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Checking profile...</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

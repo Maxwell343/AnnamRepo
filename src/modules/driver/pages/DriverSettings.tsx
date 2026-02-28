@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Check, Car, FileText, ClipboardList, Shield, CreditCard, Smartphone, Wallet, Banknote, Truck, BarChart3, Target, Bell, Volume2, Globe, Package, Settings, Save, CheckCircle, Circle, Bike, Star, AlertTriangle, IdCard } from 'lucide-react';
 import './DriverSettings.css';
 import { API_ENDPOINTS } from '../../../config/api';
@@ -13,6 +13,9 @@ interface DriverStats {
 
 const DriverSettings: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const incompleteProfile = location.state?.incompleteProfile || false;
+  const returnTo = location.state?.returnTo || '';
   const [user, setUser] = useState<any>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -242,6 +245,15 @@ const DriverSettings: React.FC = () => {
       user.name = formData.fullName;
       user.vehicle_number = formData.vehicleNumber;
       localStorage.setItem('user', JSON.stringify(user));
+    }
+
+    // If redirected from action page due to incomplete profile, go back after save
+    if (returnTo) {
+      const isNowComplete = formData.fullName.trim() && formData.phone.trim() && formData.vehicleNumber.trim() && formData.drivingLicenseNumber.trim();
+      if (isNowComplete) {
+        setTimeout(() => navigate(returnTo), 1200);
+        return;
+      }
     }
 
     setTimeout(() => navigate('/home'), 2000);
@@ -760,6 +772,17 @@ const DriverSettings: React.FC = () => {
 
   return (
     <div className="settings-container driver-theme">
+      {incompleteProfile && (
+        <div className="driver-profile-incomplete-banner">
+          <div className="banner-content">
+            <AlertTriangle size={22} />
+            <div>
+              <strong>Complete your profile to start accepting deliveries</strong>
+              <p>Please fill in your <em>Full Name</em>, <em>Phone</em>, <em>Vehicle Number</em>, and <em>Driving License Number</em> before you can accept pickups.</p>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="settings-card">
         
         {/* Header */}

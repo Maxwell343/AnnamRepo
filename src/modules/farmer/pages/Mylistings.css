@@ -431,7 +431,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .meta-icon {
@@ -439,8 +439,9 @@
 }
 
 .meta-value {
-  color: #424242;
-  font-weight: 600;
+  color: #212121;
+  font-weight: 700;
+  font-size: 14px;
 }
 
 .meta-value.countdown {
@@ -464,12 +465,12 @@
 }
 
 .listing-description {
-  font-size: 14px;
-  color: #757575;
+  font-size: 15px;
+  color: #424242;
   margin: 0 0 12px 0;
-  line-height: 1.5;
+  line-height: 1.6;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

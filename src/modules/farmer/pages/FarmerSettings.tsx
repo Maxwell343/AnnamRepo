@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './FarmerSettings.css';
 import { API_ENDPOINTS } from '../../../config/api';
 
@@ -44,6 +44,9 @@ interface User {
 
 const FarmerSettings: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const incompleteProfile = location.state?.incompleteProfile || false;
+  const returnTo = location.state?.returnTo || '';
   const [user, setUser] = useState<User | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -336,6 +339,14 @@ const FarmerSettings: React.FC = () => {
     setHasChanges(false);
     setIsSaving(false);
     showNotification('Settings saved successfully!', 'success');
+
+    // If redirected from listing form due to incomplete profile, go back after save
+    if (returnTo) {
+      const isNowComplete = formData.fullName.trim() && formData.phone.trim() && formData.farmName.trim() && formData.farmLocation.trim();
+      if (isNowComplete) {
+        setTimeout(() => navigate(returnTo), 1200);
+      }
+    }
   };
 
   const handleReset = () => {
@@ -401,6 +412,21 @@ const FarmerSettings: React.FC = () => {
 
   return (
     <div className="settings-container">
+      {incompleteProfile && (
+        <div className="profile-incomplete-banner">
+          <div className="banner-content">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <div>
+              <strong>Complete your profile to create listings</strong>
+              <p>Please fill in your <em>Full Name</em>, <em>Phone</em>, <em>Farm Name</em>, and <em>Farm Location</em> before you can list products.</p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Sidebar Navigation */}
       <aside className="settings-sidebar">
         <div className="sidebar-header">

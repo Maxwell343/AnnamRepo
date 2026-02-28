@@ -2029,10 +2029,9 @@
 
 .mp-order-section {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) 0;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg) 0;
   border-top: 1px solid var(--border-color);
   margin-top: var(--spacing-md);
 }
@@ -2040,7 +2039,7 @@
 .mp-quantity-selector {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
 }
 
 .mp-quantity-controls {
@@ -2053,12 +2052,12 @@
 }
 
 .mp-quantity-controls button {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border: none;
   background: none;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--text-primary);
   transition: background var(--transition-fast);
@@ -2069,33 +2068,42 @@
 }
 
 .mp-quantity-controls input {
-  width: 50px;
-  height: 36px;
+  width: 64px;
+  height: 44px;
   border: none;
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
   text-align: center;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.1rem;
 }
 
 .mp-unit-label {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .mp-total-display {
-  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--farm-green-pale);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-md);
 }
 
 .mp-total-label {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: var(--text-secondary);
-  display: block;
+  font-weight: 500;
 }
 
 .mp-total-value {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: 800;
   color: var(--farm-green-dark);
+  letter-spacing: -0.5px;
 }
 
 .mp-savings {
@@ -2106,8 +2114,8 @@
 
 .mp-modal-actions {
   display: flex;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-md);
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
 }
 
 .mp-btn-cart {
@@ -2486,12 +2494,6 @@
   .mp-impact-stats {
     grid-template-columns: 1fr;
     gap: var(--spacing-sm);
-  }
-  
-  .mp-order-section {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
   }
   
   .mp-quantity-selector {

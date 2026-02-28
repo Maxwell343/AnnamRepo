@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './NgoSettings.css';
 import { API_ENDPOINTS } from '../../../config/api';
 import { BookOpen, Hospital, Globe, UserRound, Baby, Accessibility, Home, UtensilsCrossed, PawPrint, Siren, Palette, Building, User, Target, ClipboardList, HeartHandshake, Globe2, Bell, Settings, Lock, Check, X, Mail, MapPin, BarChart3, Tag, FileText, Upload, Landmark, Smartphone, Sun, Moon, Monitor, Clock, Calendar, Wheat, Camera, ShieldCheck, Users, AlertTriangle } from 'lucide-react';
@@ -105,6 +105,9 @@ const causeAreaOptions = [
 
 const NGOSettings: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const incompleteProfile = location.state?.incompleteProfile || false;
+  const returnTo = location.state?.returnTo || '';
   const [user, setUser] = useState<User | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -499,6 +502,14 @@ const NGOSettings: React.FC = () => {
     setHasChanges(false);
     setIsSaving(false);
     showNotification('Settings saved successfully!', 'success');
+
+    // If redirected from action page due to incomplete profile, go back after save
+    if (returnTo) {
+      const isNowComplete = formData.adminName.trim() && formData.adminPhone.trim() && formData.organizationName.trim() && formData.address.trim();
+      if (isNowComplete) {
+        setTimeout(() => navigate(returnTo), 1200);
+      }
+    }
   };
 
   const handleReset = () => {
@@ -576,6 +587,17 @@ const NGOSettings: React.FC = () => {
 
   return (
     <div className="ngo-settings-container">
+      {incompleteProfile && (
+        <div className="ngo-profile-incomplete-banner">
+          <div className="banner-content">
+            <AlertTriangle size={22} />
+            <div>
+              <strong>Complete your organization profile to access donations</strong>
+              <p>Please fill in your <em>Admin Name</em>, <em>Phone</em>, <em>Organization Name</em>, and <em>Address</em> before you can claim donations.</p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Sidebar Navigation */}
       <aside className="ngo-settings-sidebar">
         <div className="sidebar-header">

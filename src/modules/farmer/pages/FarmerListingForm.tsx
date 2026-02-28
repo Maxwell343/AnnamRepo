@@ -163,7 +163,10 @@ const FarmerListingForm: React.FC = () => {
   // Tag input state
   const [tagInput, setTagInput] = useState('');
   
-  // Load user
+  // Profile check state
+  const [profileChecking, setProfileChecking] = useState(true);
+
+  // Load user & check profile completeness
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
@@ -174,6 +177,46 @@ const FarmerListingForm: React.FC = () => {
           return;
         }
         setUser(parsedUser);
+
+        // Check if farmer profile is complete before allowing listing
+        const checkProfile = async () => {
+          try {
+            const response = await fetch(API_ENDPOINTS.farmerSettings(parsedUser.id.toString()));
+            const data = await response.json();
+
+            const name = data?.name || parsedUser.name || '';
+            const phone = data?.phone || localStorage.getItem('userPhone') || '';
+            const farmName = data?.farm_name || localStorage.getItem('farmName') || '';
+            const farmLocation = data?.farm_location || localStorage.getItem('farmLocation') || '';
+
+            if (!name.trim() || !phone.trim() || !farmName.trim() || !farmLocation.trim()) {
+              const missing: string[] = [];
+              if (!name.trim()) missing.push('Full Name');
+              if (!phone.trim()) missing.push('Phone Number');
+              if (!farmName.trim()) missing.push('Farm Name');
+              if (!farmLocation.trim()) missing.push('Farm Location');
+
+              alert(`Please complete your profile before creating a listing.\n\nMissing fields: ${missing.join(', ')}`);
+              navigate('/farmer-settings', { state: { returnTo: '/farmer/new-listing', incompleteProfile: true } });
+              return;
+            }
+          } catch (err) {
+            // Fallback: check localStorage
+            const farmName = localStorage.getItem('farmName') || '';
+            const farmLocation = localStorage.getItem('farmLocation') || '';
+            const phone = localStorage.getItem('userPhone') || '';
+
+            if (!parsedUser.name?.trim() || !phone.trim() || !farmName.trim() || !farmLocation.trim()) {
+              alert('Please complete your profile before creating a listing.');
+              navigate('/farmer-settings', { state: { returnTo: '/farmer/new-listing', incompleteProfile: true } });
+              return;
+            }
+          } finally {
+            setProfileChecking(false);
+          }
+        };
+
+        checkProfile();
       } catch (e) {
         navigate('/auth');
       }
@@ -429,6 +472,16 @@ const FarmerListingForm: React.FC = () => {
   
   const spoilagePreview = getSpoilagePreview();
   
+  if (profileChecking) {
+    return (
+      <div className="farmer-listing-form" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ width: '40px', height: '40px', border: '4px solid #e0e0e0', borderTop: '4px solid #2e7d32', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <p style={{ color: '#757575', fontSize: '14px' }}>Checking profile...</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
   return (
     <div className="farmer-listing-form">
       {/* Header */}

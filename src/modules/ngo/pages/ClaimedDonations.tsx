@@ -39,6 +39,7 @@ const ClaimedDonations: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [donations, setDonations] = useState<ClaimedDonation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [profileChecking, setProfileChecking] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -94,6 +95,43 @@ const ClaimedDonations: React.FC = () => {
         return;
       }
       setUser(parsedUser);
+
+      // Check if NGO profile is complete before allowing access
+      const checkProfile = async () => {
+        try {
+          const response = await fetch(API_ENDPOINTS.ngoSettings(parsedUser.id.toString()));
+          const data = await response.json();
+
+          const adminName = data?.admin_name || parsedUser.name || '';
+          const adminPhone = data?.admin_phone || '';
+          const orgName = data?.organization_name || localStorage.getItem('ngoName') || '';
+          const address = data?.address || '';
+
+          if (!adminName.trim() || !adminPhone.trim() || !orgName.trim() || !address.trim()) {
+            const missing: string[] = [];
+            if (!adminName.trim()) missing.push('Admin Name');
+            if (!adminPhone.trim()) missing.push('Phone Number');
+            if (!orgName.trim()) missing.push('Organization Name');
+            if (!address.trim()) missing.push('Address');
+
+            alert(`Please complete your organization profile before accessing donations.\n\nMissing fields: ${missing.join(', ')}`);
+            navigate('/ngo-settings', { state: { returnTo: '/claimed-donations', incompleteProfile: true } });
+            return;
+          }
+        } catch (err) {
+          // Fallback: check localStorage
+          const ngoName = localStorage.getItem('ngoName') || '';
+          if (!parsedUser.name?.trim() || !ngoName.trim()) {
+            alert('Please complete your organization profile before accessing donations.');
+            navigate('/ngo-settings', { state: { returnTo: '/claimed-donations', incompleteProfile: true } });
+            return;
+          }
+        } finally {
+          setProfileChecking(false);
+        }
+      };
+
+      checkProfile();
     } else {
       navigate('/');
       return;
@@ -200,6 +238,17 @@ const ClaimedDonations: React.FC = () => {
     setSelectedDonation(donation);
     setShowDetailsModal(true);
   };
+
+  if (profileChecking) {
+    return (
+      <div className="claimed-donations-page">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Checking profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
