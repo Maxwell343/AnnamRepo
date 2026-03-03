@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   Apple, Truck, CreditCard, Package, User, HeartCrack, HelpCircle,
   Circle, Search, Clock, CheckCircle, AlertTriangle, Lock,
@@ -7,8 +8,9 @@ import {
   Target, Megaphone, Check, Mail, Phone, DollarSign, Banknote,
   Calendar, Link2, Download, Trash2, ClipboardList, Pencil,
   ArrowLeft, Send, Upload, FileText, Eye, Pin, BarChart3, Zap,
-  Image, AlertOctagon
+  AlertOctagon
 } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './DisputeDetails.css';
 
 /* ─── Types ─── */
@@ -101,137 +103,11 @@ interface ToastNotification {
   message: string;
 }
 
-/* ─── Mock Data ─── */
-const mockDispute: DisputeData = {
-  id: '1',
-  disputeId: 'DSP-401',
-  orderId: 'ORD-2389',
-  orderAmount: 2450,
-  subject: 'Received rotten vegetables',
-  description: 'I ordered fresh vegetables for an event but received rotten tomatoes and wilted spinach. The quality was terrible and completely unfit for consumption. This caused significant inconvenience as I had to rush to find alternatives.',
-  category: 'quality',
-  priority: 'high',
-  status: 'investigating',
-  createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-  updatedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-  slaDeadline: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-  assignedTo: 'Priya M.',
-  complainant: {
-    name: 'Ravi Sharma',
-    role: 'customer',
-    email: 'ravi.sharma@email.com',
-    phone: '+91 98765 43210',
-    rating: 4.8,
-    totalOrders: 23,
-    pastDisputes: 0,
-    resolvedDisputes: 0,
-    memberSince: '2023-06-15',
-    verified: true,
-  },
-  respondent: {
-    name: 'Green Valley Farm',
-    role: 'farmer',
-    email: 'contact@greenvalley.com',
-    phone: '+91 98765 43211',
-    rating: 4.2,
-    totalOrders: 156,
-    pastDisputes: 3,
-    resolvedDisputes: 2,
-    memberSince: '2022-03-10',
-    verified: true,
-  },
-  refundRequested: 2450,
-  tags: ['quality', 'urgent', 'first_dispute'],
-};
-
-const mockTimeline: TimelineEvent[] = [
-  {
-    id: '1',
-    type: 'system',
-    actor: 'System',
-    content: 'Dispute DSP-401 created for order ORD-2389',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    metadata: { orderId: 'ORD-2389', amount: '₹2,450' },
-  },
-  {
-    id: '2',
-    type: 'message',
-    actor: 'Ravi Sharma',
-    actorRole: 'customer',
-    content: 'I received rotten tomatoes and wilted spinach. The quality was terrible and unfit for consumption. Attaching photos as evidence.',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000 + 5 * 60 * 1000).toISOString(),
-    attachments: [
-      { name: 'rotten_tomatoes.jpg', type: 'image', size: '2.4 MB' },
-      { name: 'wilted_spinach.jpg', type: 'image', size: '1.8 MB' },
-    ],
-  },
-  {
-    id: '3',
-    type: 'action',
-    actor: 'Support Bot',
-    actorRole: 'platform',
-    content: 'Auto-assigned to investigation queue based on category: Quality Issue',
-    timestamp: new Date(Date.now() - 1.5 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '4',
-    type: 'status_change',
-    actor: 'Priya M.',
-    actorRole: 'platform',
-    content: 'Changed status from "Open" to "Investigating"',
-    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-    metadata: { from: 'open', to: 'investigating' },
-  },
-  {
-    id: '5',
-    type: 'message',
-    actor: 'Priya M.',
-    actorRole: 'platform',
-    content: 'Hello Ravi, thank you for reporting this issue. We\'re looking into it and have contacted the supplier for clarification.',
-    timestamp: new Date(Date.now() - 55 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '6',
-    type: 'message',
-    actor: 'Green Valley Farm',
-    actorRole: 'farmer',
-    content: 'The produce was fresh when dispatched. There may have been a delay in delivery causing spoilage. We can provide dispatch photos if needed.',
-    timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '7',
-    type: 'action',
-    actor: 'Priya M.',
-    actorRole: 'platform',
-    content: 'Requested delivery timeline from logistics',
-    timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    isInternal: true,
-  },
-  {
-    id: '8',
-    type: 'escalation',
-    actor: 'System',
-    content: 'Auto-escalated: Approaching SLA deadline (30 minutes remaining)',
-    timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    metadata: { reason: 'SLA Warning', deadline: '30 min' },
-  },
-];
-
-const mockAttachments: Attachment[] = [
-  { id: '1', name: 'rotten_tomatoes.jpg', type: 'image', size: '2.4 MB', uploadedBy: 'Ravi Sharma', uploadedAt: mockTimeline[1].timestamp, url: '#', thumbnail: <Image size={20} /> },
-  { id: '2', name: 'wilted_spinach.jpg', type: 'image', size: '1.8 MB', uploadedBy: 'Ravi Sharma', uploadedAt: mockTimeline[1].timestamp, url: '#', thumbnail: <Image size={20} /> },
-  { id: '3', name: 'order_receipt.pdf', type: 'document', size: '156 KB', uploadedBy: 'System', uploadedAt: mockDispute.createdAt, url: '#' },
-];
-
-const mockNotes: InternalNote[] = [
-  { id: '1', author: 'Priya M.', content: 'Customer seems genuine. Photos clearly show spoiled produce. Recommend partial refund.', timestamp: new Date(Date.now() - 40 * 60 * 1000).toISOString(), isPinned: true },
-  { id: '2', author: 'System', content: 'Delivery log shows package was in transit for 6 hours (normally 2 hours). Weather delay reported.', timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString() },
-];
-
-const mockRelatedDisputes: RelatedDispute[] = [
-  { id: '1', disputeId: 'DSP-312', subject: 'Delayed delivery', status: 'resolved', date: '2024-01-05' },
-  { id: '2', disputeId: 'DSP-287', subject: 'Wrong items received', status: 'closed', date: '2023-12-20' },
-];
+/* ─── Default Empty Data ─── */
+const defaultTimeline: TimelineEvent[] = [];
+const defaultAttachments: Attachment[] = [];
+const defaultNotes: InternalNote[] = [];
+const defaultRelatedDisputes: RelatedDispute[] = [];
 
 /* ─── Helpers ─── */
 const formatCurrency = (val: number): string =>
@@ -503,7 +379,7 @@ const ResolutionModal: React.FC<{
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    // TODO: Replace with API call to resolve dispute
     onResolve({ outcome, refund: refundAmount, note });
     setIsSubmitting(false);
   };
@@ -641,7 +517,7 @@ const EscalationModal: React.FC<{
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    // TODO: Replace with API call to escalate dispute
     onEscalate(reason, assignTo);
     setIsSubmitting(false);
   };
@@ -705,11 +581,12 @@ const EscalationModal: React.FC<{
 
 /* ─── Main Component ─── */
 const DisputeDetails: React.FC = () => {
-  const [dispute, setDispute] = useState<DisputeData>(mockDispute);
-  const [timeline, setTimeline] = useState<TimelineEvent[]>(mockTimeline);
-  const [attachments] = useState<Attachment[]>(mockAttachments);
-  const [notes, setNotes] = useState<InternalNote[]>(mockNotes);
-  const [relatedDisputes] = useState<RelatedDispute[]>(mockRelatedDisputes);
+  const { disputeId } = useParams<{ disputeId: string }>();
+  const [dispute, setDispute] = useState<DisputeData | null>(null);
+  const [timeline, setTimeline] = useState<TimelineEvent[]>(defaultTimeline);
+  const [attachments, setAttachments] = useState<Attachment[]>(defaultAttachments);
+  const [notes, setNotes] = useState<InternalNote[]>(defaultNotes);
+  const [relatedDisputes, setRelatedDisputes] = useState<RelatedDispute[]>(defaultRelatedDisputes);
   const [activeTab, setActiveTab] = useState<ActiveTab>('timeline');
   const [replyText, setReplyText] = useState('');
   const [isInternalReply, setIsInternalReply] = useState(false);
@@ -719,7 +596,32 @@ const DisputeDetails: React.FC = () => {
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<React.ReactNode | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const replyRef = useRef<HTMLTextAreaElement>(null);
+
+  // Fetch dispute data from API
+  useEffect(() => {
+    const fetchDispute = async () => {
+      if (!disputeId) return;
+      setIsLoading(true);
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/disputes/${disputeId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setDispute(data.dispute ?? data);
+          setTimeline(data.timeline ?? []);
+          setAttachments(data.attachments ?? []);
+          setNotes(data.notes ?? []);
+          setRelatedDisputes(data.relatedDisputes ?? []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch dispute details:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDispute();
+  }, [disputeId]);
 
   const addToast = useCallback((type: ToastNotification['type'], title: string, message: string) => {
     setToasts((prev) => [...prev, { id: Date.now().toString(), type, title, message }]);
@@ -729,13 +631,16 @@ const DisputeDetails: React.FC = () => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const slaStatus = useMemo(() => getSLAStatus(dispute.slaDeadline), [dispute.slaDeadline]);
+  const slaStatus = useMemo(() => dispute ? getSLAStatus(dispute.slaDeadline) : { status: 'ok' as const, timeLeft: '', percent: 0 }, [dispute?.slaDeadline]);
+
+  if (isLoading) return <div className="dd"><p>Loading dispute details...</p></div>;
+  if (!dispute) return <div className="dd"><p>Dispute not found.</p></div>;
 
   const handleSendReply = async () => {
     if (!replyText.trim()) return;
 
     setIsSending(true);
-    await new Promise((r) => setTimeout(r, 1000));
+    // TODO: Replace with API call to POST reply
 
     const newEvent: TimelineEvent = {
       id: Date.now().toString(),
@@ -755,7 +660,7 @@ const DisputeDetails: React.FC = () => {
 
   const handleStatusChange = (newStatus: DisputeStatus) => {
     const oldStatus = dispute.status;
-    setDispute((prev) => ({ ...prev, status: newStatus, updatedAt: new Date().toISOString() }));
+    setDispute((prev) => prev ? { ...prev, status: newStatus, updatedAt: new Date().toISOString() } : prev);
 
     const statusEvent: TimelineEvent = {
       id: Date.now().toString(),
@@ -772,12 +677,12 @@ const DisputeDetails: React.FC = () => {
   };
 
   const handleResolve = (resolution: { outcome: string; refund: number; note: string }) => {
-    setDispute((prev) => ({
+    setDispute((prev) => prev ? ({
       ...prev,
       status: 'resolved',
       refundApproved: resolution.refund,
       updatedAt: new Date().toISOString(),
-    }));
+    }) : prev);
 
     const resolutionEvent: TimelineEvent = {
       id: Date.now().toString(),
@@ -794,7 +699,7 @@ const DisputeDetails: React.FC = () => {
   };
 
   const handleEscalate = (reason: string, assignTo: string) => {
-    setDispute((prev) => ({ ...prev, status: 'escalated', updatedAt: new Date().toISOString() }));
+    setDispute((prev) => prev ? { ...prev, status: 'escalated', updatedAt: new Date().toISOString() } : prev);
 
     const escalationEvent: TimelineEvent = {
       id: Date.now().toString(),

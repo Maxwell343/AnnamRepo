@@ -221,9 +221,7 @@ const AuthPage: React.FC = () => {
           role: loginData.user.role
         };
         localStorage.setItem('user', JSON.stringify(user));
-        navigate(getRedirectUrl(user.role));
-      } else {
-        // New user — always show role selection modal
+        window.dispatchEvent(new CustomEvent('annam-role-transition', { detail: { path: getRedirectUrl(user.role), role: user.role } }));
         console.log('New user, showing role modal...');
         setGoogleUserData(userData);
         setSelectedRole('farmer');
@@ -315,7 +313,7 @@ const AuthPage: React.FC = () => {
         role: data.user.role
       };
       localStorage.setItem('user', JSON.stringify(user));
-      navigate(getRedirectUrl());
+      window.dispatchEvent(new CustomEvent('annam-role-transition', { detail: { path: getRedirectUrl(), role: user.role } }));
     } catch (err: any) {
       console.error('Google signup error:', err);
       const errorMessage = err.message || 'Failed to create account';
@@ -443,7 +441,7 @@ const AuthPage: React.FC = () => {
         };
 
         localStorage.setItem('user', JSON.stringify(user));
-        navigate(getRedirectUrl());
+        window.dispatchEvent(new CustomEvent('annam-role-transition', { detail: { path: getRedirectUrl(), role: user.role } }));
       } else {
         alert('Account created successfully! Please login.');
         setIsLogin(true);

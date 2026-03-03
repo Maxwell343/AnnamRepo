@@ -666,9 +666,7 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
     currency: listing.currency || 'INR',
     status: listing.status as ListingStatus,
     submittedAt: listing.submittedAt,
-    images: listing.images || [
-      { id: 'img1', url: `https://via.placeholder.com/600x400/f3f4f6/6b7280?text=${encodeURIComponent(listing.icon)}+${encodeURIComponent(listing.title)}`, isPrimary: true, uploadedAt: listing.submittedAt },
-    ],
+    images: listing.images || [],
     icon: listing.icon,
     location: listing.location || 'India',
     isOrganic: listing.isOrganic || false,
@@ -755,7 +753,6 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
     setIsLoading(true);
     setActionType('approve');
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
       onApprove();
     } finally {
       setIsLoading(false);
@@ -769,7 +766,6 @@ const ListingReviewModal: React.FC<ListingReviewModalProps> = ({
     setIsLoading(true);
     setActionType('reject');
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
       onReject(getRejectionMessage());
     } finally {
       setIsLoading(false);

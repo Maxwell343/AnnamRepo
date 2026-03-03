@@ -63,18 +63,12 @@ const ImpactPage: React.FC = () => {
             setDriverStats({
               deliveries: data.completed_deliveries || 0,
               milesRidden: data.total_distance_km || 0,
-              rank: 1,
-              rating: data.average_rating || 4.5
+              rank: data.rank || 0,
+              rating: data.average_rating || 0
             });
             
-            // Set mock leaderboard for now (could be API endpoint)
-            setLeaderboard([
-              { id: 1, name: 'Rajesh Kumar', deliveries: 234, avatar: 'R', rating: 4.9 },
-              { id: 2, name: user.name || 'You', deliveries: data.completed_deliveries || 0, avatar: user.name?.charAt(0) || 'D', rating: data.average_rating || 4.5 },
-              { id: 3, name: 'Vikram Singh', deliveries: 156, avatar: 'V', rating: 4.7 },
-              { id: 4, name: 'Ashok Patel', deliveries: 142, avatar: 'A', rating: 4.6 },
-              { id: 5, name: 'Suresh Gupta', deliveries: 98, avatar: 'S', rating: 4.5 },
-            ]);
+            // Leaderboard comes from API - empty until backend provides it
+            setLeaderboard(data.leaderboard || []);
           }
         } else {
           const response = await fetch(API_ENDPOINTS.farmerAnalytics(user.id.toString()));
@@ -84,17 +78,11 @@ const ImpactPage: React.FC = () => {
             setFarmerStats({
               points: data.meals_provided_estimate || 0,
               carbonSaved: data.carbon_saved_kg || 0,
-              rank: 1
+              rank: data.rank || 0
             });
             
-            // Set mock leaderboard for now
-            setLeaderboard([
-              { id: 1, name: 'Ramesh Farms', points: 5400, avatar: 'R' },
-              { id: 2, name: 'Seva Group', points: 4200, avatar: 'S' },
-              { id: 3, name: 'Green Valley', points: 3150, avatar: 'G' },
-              { id: 4, name: user.name || 'You', points: data.meals_provided_estimate || 0, avatar: user.name?.charAt(0) || 'A' },
-              { id: 5, name: 'Kisan Unit 4', points: 980, avatar: 'K' },
-            ]);
+            // Leaderboard comes from API - empty until backend provides it
+            setLeaderboard(data.leaderboard || []);
           }
         }
       } catch (err) {

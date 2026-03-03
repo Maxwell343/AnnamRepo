@@ -5,6 +5,7 @@ import {
   Pin, MessageSquare, Columns2, Pause, Play, Minimize2, Maximize2, FolderOpen,
   Lock, CheckCircle, Pencil, Save, ClipboardList
 } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './EvidenceViewer.css';
 
 interface EvidenceItem {
@@ -45,98 +46,24 @@ interface Annotation {
   author: string;
 }
 
-const mockEvidence: EvidenceItem[] = [
-  { 
-    id: '1', 
-    type: 'photo', 
-    icon: <Camera size={16} />, 
-    fileName: 'rotten_tomatoes_1.jpg', 
-    uploadedBy: 'Ravi Sharma', 
-    uploadedAt: '2 hrs ago',
-    uploadedDate: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    fileSize: '2.4 MB', 
-    verified: true,
-    verifiedBy: 'Admin User',
-    tags: ['produce', 'quality-issue', 'tomatoes'],
-    notes: [{ id: 'n1', text: 'Clear evidence of spoilage', author: 'Admin', createdAt: '1 hr ago' }],
-    description: 'Photo showing rotten tomatoes received in order'
-  },
-  { 
-    id: '2', 
-    type: 'photo', 
-    icon: <Camera size={16} />, 
-    fileName: 'wilted_spinach.jpg', 
-    uploadedBy: 'Ravi Sharma', 
-    uploadedAt: '2 hrs ago',
-    uploadedDate: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    fileSize: '1.8 MB', 
-    verified: true,
-    verifiedBy: 'Admin User',
-    tags: ['produce', 'quality-issue', 'spinach'],
-    notes: [],
-    description: 'Wilted spinach leaves'
-  },
-  { 
-    id: '3', 
-    type: 'receipt', 
-    icon: <Receipt size={16} />, 
-    fileName: 'order_receipt_2389.pdf', 
-    uploadedBy: 'System', 
-    uploadedAt: '2 hrs ago',
-    uploadedDate: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    fileSize: '145 KB', 
-    verified: true,
-    verifiedBy: 'System',
-    tags: ['receipt', 'auto-generated'],
-    notes: [],
-    description: 'Original order receipt'
-  },
-  { 
-    id: '4', 
-    type: 'photo', 
-    icon: <Camera size={16} />, 
-    fileName: 'dispatch_photo.jpg', 
-    uploadedBy: 'Green Valley Farm', 
-    uploadedAt: '45 min ago',
-    uploadedDate: new Date(Date.now() - 45 * 60 * 1000),
-    fileSize: '3.1 MB', 
-    verified: false,
-    tags: ['dispatch', 'supplier-evidence'],
-    notes: [],
-    description: 'Photo of produce at dispatch time'
-  },
-  { 
-    id: '5', 
-    type: 'document', 
-    icon: <FileText size={16} />, 
-    fileName: 'quality_cert.pdf', 
-    uploadedBy: 'Green Valley Farm', 
-    uploadedAt: '40 min ago',
-    uploadedDate: new Date(Date.now() - 40 * 60 * 1000),
-    fileSize: '520 KB', 
-    verified: false,
-    tags: ['certificate', 'supplier-evidence'],
-    notes: [],
-    description: 'Quality certification document'
-  },
-  { 
-    id: '6', 
-    type: 'video', 
-    icon: <Video size={16} />, 
-    fileName: 'unboxing_video.mp4', 
-    uploadedBy: 'Ravi Sharma', 
-    uploadedAt: '1 hr ago',
-    uploadedDate: new Date(Date.now() - 60 * 60 * 1000),
-    fileSize: '15.2 MB', 
-    verified: false,
-    tags: ['video', 'unboxing'],
-    notes: [],
-    description: 'Video of unboxing the delivery'
-  },
-];
-
 const EvidenceViewer: React.FC = () => {
-  const [evidence, setEvidence] = useState<EvidenceItem[]>(mockEvidence);
+  const [evidence, setEvidence] = useState<EvidenceItem[]>([]);
+
+  // Fetch evidence from API
+  useEffect(() => {
+    const fetchEvidence = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/disputes/evidence`);
+        if (res.ok) {
+          const data = await res.json();
+          setEvidence(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch evidence:', err);
+      }
+    };
+    fetchEvidence();
+  }, []);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);

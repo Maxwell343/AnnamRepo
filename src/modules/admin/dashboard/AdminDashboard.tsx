@@ -9,6 +9,7 @@ import {
   Map, ArrowUp, ArrowDown, Milk, Sprout, ShoppingBag, Cog
 } from 'lucide-react';
 import './AdminDashboard.css';
+import { API_BASE_URL } from '../../../config/api';
 
 // Types
 interface StatCard {
@@ -320,255 +321,156 @@ const AdminDashboard: React.FC = () => {
     { value: 'system', label: 'System', icon: <Settings size={14} /> },
   ];
 
-  // Load dashboard data
+  // Icon maps for mapping API string keys to React icon components
+  const statIconMap: Record<string, { icon: React.ReactNode; iconClass: string }> = useMemo(() => ({
+    users:    { icon: <Users size={16} />,      iconClass: 'users' },
+    orders:   { icon: <Package size={16} />,    iconClass: 'orders' },
+    revenue:  { icon: <DollarSign size={16} />, iconClass: 'revenue' },
+    impact:   { icon: <Globe size={16} />,      iconClass: 'impact' },
+    disputes: { icon: <Scale size={16} />,      iconClass: 'disputes' },
+    drivers:  { icon: <Car size={16} />,        iconClass: 'drivers' },
+  }), []);
+
+  const activityIconMap: Record<string, React.ReactNode> = useMemo(() => ({
+    user:     <User size={16} />,
+    order:    <Package size={16} />,
+    dispute:  <AlertTriangle size={16} />,
+    kyc:      <CheckCircle size={16} />,
+    listing:  <Tag size={16} />,
+    system:   <Settings size={16} />,
+  }), []);
+
+  const alertIconMap: Record<string, React.ReactNode> = useMemo(() => ({
+    warning:  <AlertTriangle size={16} />,
+    critical: <Siren size={16} />,
+    info:     <BarChart3 size={16} />,
+    success:  <CheckCircle size={16} />,
+  }), []);
+
+  const systemMetricIconMap: Record<string, React.ReactNode> = useMemo(() => ({
+    'API Response': <Radio size={16} />,
+    'Database':     <Database size={16} />,
+    'Memory':       <HardDrive size={16} />,
+    'CPU Usage':    <Zap size={16} />,
+    'Uptime':       <CircleDot size={16} />,
+  }), []);
+
+  const orderStatusIconMap: Record<string, React.ReactNode> = useMemo(() => ({
+    'Pending':    <Clock size={16} />,
+    'Processing': <Cog size={16} />,
+    'In Transit': <Truck size={16} />,
+    'Delivered':  <CheckCircle size={16} />,
+    'Cancelled':  <XCircle size={16} />,
+  }), []);
+
+  const performerAvatarMap: Record<string, React.ReactNode> = useMemo(() => ({
+    Farmer:   <Wheat size={16} />,
+    Driver:   <Car size={16} />,
+    Supplier: <Building2 size={16} />,
+    Buyer:    <Store size={16} />,
+  }), []);
+
+  // Load dashboard data from API
   const loadDashboard = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const res = await fetch(`${API_BASE_URL}/api/admin/dashboard?range=${timeRange}`);
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      const data = await res.json();
 
-      // Stats data with trends
-      setStats([
-        { 
-          id: 'users',
-          label: 'Total Users', 
-          value: 2847,
-          displayValue: '2,847', 
-          change: '+12%', 
-          changeValue: 12,
-          positive: true, 
-          icon: <Users size={16} />, 
-          iconClass: 'users',
-          trend: [2100, 2250, 2380, 2520, 2650, 2720, 2847],
-          description: 'Active registered users on the platform'
-        },
-        { 
-          id: 'orders',
-          label: 'Active Orders', 
-          value: 156,
-          displayValue: '156', 
-          change: '+8%', 
-          changeValue: 8,
-          positive: true, 
-          icon: <Package size={16} />, 
-          iconClass: 'orders',
-          trend: [120, 135, 142, 138, 150, 148, 156],
-          description: 'Orders currently being processed'
-        },
-        { 
-          id: 'revenue',
-          label: 'Revenue (MTD)', 
-          value: 420000,
-          displayValue: '₹4.2L', 
-          change: '+23%', 
-          changeValue: 23,
-          positive: true, 
-          icon: <DollarSign size={16} />, 
-          iconClass: 'revenue',
-          trend: [280000, 310000, 350000, 380000, 395000, 410000, 420000],
-          description: 'Month-to-date revenue collected'
-        },
-        { 
-          id: 'impact',
-          label: 'Food Saved (kg)', 
-          value: 12450,
-          displayValue: '12,450', 
-          change: '+15%', 
-          changeValue: 15,
-          positive: true, 
-          icon: <Globe size={16} />, 
-          iconClass: 'impact',
-          trend: [8500, 9200, 10100, 10800, 11400, 12000, 12450],
-          description: 'Kilograms of food waste prevented'
-        },
-        { 
-          id: 'disputes',
-          label: 'Open Disputes', 
-          value: 7,
-          displayValue: '7', 
-          change: '-3', 
-          changeValue: -3,
-          positive: true, 
-          icon: <Scale size={16} />, 
-          iconClass: 'disputes',
-          trend: [15, 12, 10, 11, 9, 8, 7],
-          description: 'Disputes awaiting resolution'
-        },
-        { 
-          id: 'drivers',
-          label: 'Active Drivers', 
-          value: 42,
-          displayValue: '42', 
-          change: '+5', 
-          changeValue: 5,
-          positive: true, 
-          icon: <Car size={16} />, 
-          iconClass: 'drivers',
-          trend: [32, 34, 36, 37, 39, 41, 42],
-          description: 'Drivers currently online'
-        },
-      ]);
+      // Stats
+      if (Array.isArray(data.stats)) {
+        setStats(data.stats.map((s: any) => {
+          const mapped = statIconMap[s.id] || { icon: <BarChart3 size={16} />, iconClass: 'default' };
+          return {
+            ...s,
+            icon: mapped.icon,
+            iconClass: mapped.iconClass,
+            trend: Array.isArray(s.trend) ? s.trend : [],
+          } as StatCard;
+        }));
+      } else {
+        setStats([]);
+      }
 
-      // Activity data
-      setRecentActivity([
-        { 
-          id: '1', 
-          icon: <User size={16} />, 
-          text: <><strong>Ramesh Kumar</strong> registered as a new farmer</>, 
-          time: '5 min ago',
-          timestamp: new Date(Date.now() - 5 * 60 * 1000),
-          type: 'user',
-          status: 'completed'
-        },
-        { 
-          id: '2', 
-          icon: <Package size={16} />, 
-          text: <><strong>Order #1234</strong> marked as delivered</>, 
-          time: '12 min ago',
-          timestamp: new Date(Date.now() - 12 * 60 * 1000),
-          type: 'order',
-          status: 'completed'
-        },
-        { 
-          id: '3', 
-          icon: <AlertTriangle size={16} />, 
-          text: <>Dispute raised on <strong>Order #1198</strong></>, 
-          time: '25 min ago',
-          timestamp: new Date(Date.now() - 25 * 60 * 1000),
-          type: 'dispute',
-          status: 'urgent',
-          actionable: true
-        },
-        { 
-          id: '4', 
-          icon: <CheckCircle size={16} />, 
-          text: <>KYC approved for <strong>Priya Devi</strong></>, 
-          time: '1 hour ago',
-          timestamp: new Date(Date.now() - 60 * 60 * 1000),
-          type: 'kyc',
-          status: 'completed'
-        },
-        { 
-          id: '5', 
-          icon: <Tag size={16} />, 
-          text: <>New listing <strong>"Organic Basmati"</strong> submitted for review</>, 
-          time: '2 hours ago',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-          type: 'listing',
-          status: 'pending',
-          actionable: true
-        },
-        { 
-          id: '6', 
-          icon: <CreditCard size={16} />, 
-          text: <>Payout of <strong>₹15,000</strong> processed for Farmer Collective</>, 
-          time: '3 hours ago',
-          timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000),
-          type: 'order',
-          status: 'completed'
-        },
-        { 
-          id: '7', 
-          icon: <Car size={16} />, 
-          text: <>Driver <strong>Suresh M.</strong> completed 50 deliveries</>, 
-          time: '4 hours ago',
-          timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-          type: 'user',
-          status: 'completed'
-        },
-        { 
-          id: '8', 
-          icon: <Settings size={16} />, 
-          text: <>System backup completed successfully</>, 
-          time: '5 hours ago',
-          timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000),
-          type: 'system',
-          status: 'completed'
-        },
-      ]);
+      // Recent Activity
+      if (Array.isArray(data.recentActivity)) {
+        setRecentActivity(data.recentActivity.map((a: any) => ({
+          ...a,
+          icon: activityIconMap[a.type] || <ClipboardList size={16} />,
+          text: <span dangerouslySetInnerHTML={{ __html: a.text }} />,
+          timestamp: new Date(a.timestamp),
+        } as ActivityItem)));
+      } else {
+        setRecentActivity([]);
+      }
 
       // Alerts
-      setAlerts([
-        {
-          id: '1',
-          type: 'warning',
-          icon: <AlertTriangle size={16} />,
-          message: '3 listings pending moderation for over 24 hours',
-          timestamp: new Date(),
-          dismissible: true,
-          action: { label: 'Review Now', onClick: () => console.log('Review listings') }
-        },
-        {
-          id: '2',
-          type: 'critical',
-          icon: <Siren size={16} />,
-          message: '2 drivers have unresolved payout failures',
-          timestamp: new Date(),
-          dismissible: true,
-          action: { label: 'Fix Payouts', onClick: () => console.log('Fix payouts') }
-        },
-        {
-          id: '3',
-          type: 'info',
-          icon: <BarChart3 size={16} />,
-          message: 'Weekly analytics report is ready for download',
-          timestamp: new Date(),
-          dismissible: true,
-          action: { label: 'Download', onClick: () => console.log('Download report') }
-        },
-      ]);
+      if (Array.isArray(data.alerts)) {
+        setAlerts(data.alerts.map((al: any) => ({
+          ...al,
+          icon: alertIconMap[al.type] || <AlertTriangle size={16} />,
+          timestamp: new Date(al.timestamp),
+          dismissible: al.dismissible ?? true,
+        } as Alert)));
+      } else {
+        setAlerts([]);
+      }
 
       // System Metrics
-      setSystemMetrics([
-        { id: '1', label: 'API Response', value: 120, max: 500, unit: 'ms', status: 'healthy', icon: <Radio size={16} /> },
-        { id: '2', label: 'Database', value: 87, max: 100, unit: '%', status: 'warning', icon: <Database size={16} /> },
-        { id: '3', label: 'Memory', value: 62, max: 100, unit: '%', status: 'healthy', icon: <HardDrive size={16} /> },
-        { id: '4', label: 'CPU Usage', value: 45, max: 100, unit: '%', status: 'healthy', icon: <Zap size={16} /> },
-        { id: '5', label: 'Uptime', value: 99.9, max: 100, unit: '%', status: 'healthy', icon: <CircleDot size={16} /> },
-      ]);
+      if (Array.isArray(data.systemMetrics)) {
+        setSystemMetrics(data.systemMetrics.map((m: any) => ({
+          ...m,
+          icon: systemMetricIconMap[m.label] || <Radio size={16} />,
+        } as SystemMetric)));
+      } else {
+        setSystemMetrics([]);
+      }
 
       // Order Statuses
-      setOrderStatuses([
-        { status: 'Pending', count: 45, color: '#f59e0b', icon: <Clock size={16} /> },
-        { status: 'Processing', count: 62, color: '#3b82f6', icon: <Cog size={16} /> },
-        { status: 'In Transit', count: 38, color: '#8b5cf6', icon: <Truck size={16} /> },
-        { status: 'Delivered', count: 156, color: '#10b981', icon: <CheckCircle size={16} /> },
-        { status: 'Cancelled', count: 12, color: '#ef4444', icon: <XCircle size={16} /> },
-      ]);
+      if (Array.isArray(data.orderStatuses)) {
+        setOrderStatuses(data.orderStatuses.map((o: any) => ({
+          ...o,
+          icon: orderStatusIconMap[o.status] || <Package size={16} />,
+        } as OrderStatus)));
+      } else {
+        setOrderStatuses([]);
+      }
 
       // Top Performers
-      setTopPerformers([
-        { id: '1', name: 'Ramesh Farms', avatar: <Wheat size={16} />, role: 'Farmer', metric: 'Revenue', value: '₹1.2L', trend: 23 },
-        { id: '2', name: 'Suresh M.', avatar: <Car size={16} />, role: 'Driver', metric: 'Deliveries', value: '287', trend: 15 },
-        { id: '3', name: 'Green Valley Co.', avatar: <Building2 size={16} />, role: 'Supplier', metric: 'Orders', value: '156', trend: 18 },
-        { id: '4', name: 'Priya Store', avatar: <Store size={16} />, role: 'Buyer', metric: 'Purchases', value: '₹85K', trend: 12 },
-      ]);
+      if (Array.isArray(data.topPerformers)) {
+        setTopPerformers(data.topPerformers.map((p: any) => ({
+          ...p,
+          avatar: performerAvatarMap[p.role] || <Users size={16} />,
+        } as TopPerformer)));
+      } else {
+        setTopPerformers([]);
+      }
 
       setLastUpdated(new Date());
+    } catch (err) {
+      console.error('Failed to load dashboard data:', err);
+      // Keep existing state on error (or empty defaults on first load)
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [timeRange, statIconMap, activityIconMap, alertIconMap, systemMetricIconMap, orderStatusIconMap, performerAvatarMap]);
 
   // Initial load
   useEffect(() => {
     loadDashboard();
   }, [loadDashboard, timeRange]);
 
-  // Live updates simulation
+  // Live updates via periodic API refetch
   useEffect(() => {
     if (!liveUpdates) return;
-    
+
     const interval = setInterval(() => {
-      setStats(prev => prev.map(stat => ({
-        ...stat,
-        value: stat.value + Math.floor(Math.random() * 3 - 1),
-        trend: [...stat.trend.slice(1), stat.value + Math.floor(Math.random() * 10 - 5)]
-      })));
-    }, 5000);
+      loadDashboard();
+    }, 30000); // refetch every 30 seconds
 
     return () => clearInterval(interval);
-  }, [liveUpdates]);
+  }, [liveUpdates, loadDashboard]);
 
   // Click outside to close notifications
   useEffect(() => {

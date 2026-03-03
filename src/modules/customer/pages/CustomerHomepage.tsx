@@ -168,148 +168,14 @@ const CustomerHomePage: React.FC = () => {
         // Set featured products (first 6 or all if less)
         setFeaturedProducts(mappedProducts.slice(0, 6));
       } else {
-        // Use mock data if API returns empty
-        throw new Error('No products available');
+        // No products available from API
+        setProducts([]);
+        setFeaturedProducts([]);
       }
     } catch (err) {
       console.error('Error fetching products:', err);
-      // Mock data for demo - shows when no real listings exist
-      const mockProducts: Product[] = [
-        {
-          id: 1,
-          farmer_id: 1,
-          farmer_name: "Rajesh Farms",
-          farmer_rating: 4.8,
-          title: "Fresh Organic Tomatoes",
-          quantity: "50kg",
-          available_quantity: 50,
-          price: 45,
-          unit: "kg",
-          type: "Vegetable",
-          description: "Farm-fresh organic tomatoes, hand-picked daily",
-          image: "https://images.unsplash.com/photo-1546470427-0d4db154cdb8?w=400",
-          location: "Punjab",
-          distance: "5.2 km",
-          organic: true,
-          discount_percentage: 15,
-          original_price: 53,
-          rating: 4.8,
-          reviews_count: 124,
-          sold_count: 2340,
-          tags: ["Organic", "Farm Fresh", "Daily Harvest"]
-        },
-        {
-          id: 2,
-          farmer_id: 2,
-          farmer_name: "Green Valley",
-          farmer_rating: 4.5,
-          title: "Premium Alphonso Mangoes",
-          quantity: "30kg",
-          available_quantity: 30,
-          price: 350,
-          unit: "kg",
-          type: "Fruit",
-          description: "Sweet and juicy Alphonso mangoes from Ratnagiri",
-          image: "https://images.unsplash.com/photo-1553279768-865429fa0078?w=400",
-          location: "Maharashtra",
-          distance: "12.8 km",
-          organic: true,
-          rating: 4.9,
-          reviews_count: 89,
-          sold_count: 1560,
-          tags: ["Premium", "Seasonal", "Gift Pack Available"]
-        },
-        {
-          id: 3,
-          farmer_id: 3,
-          farmer_name: "Sunrise Agro",
-          farmer_rating: 4.6,
-          title: "Basmati Rice - Long Grain",
-          quantity: "100kg",
-          available_quantity: 100,
-          price: 120,
-          unit: "kg",
-          type: "Grain",
-          description: "Aged premium basmati rice with aromatic fragrance",
-          image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400",
-          location: "Haryana",
-          distance: "8.5 km",
-          organic: false,
-          discount_percentage: 10,
-          original_price: 133,
-          rating: 4.7,
-          reviews_count: 256,
-          sold_count: 4520,
-          tags: ["Aged", "Premium Quality", "Bulk Available"]
-        },
-        {
-          id: 4,
-          farmer_id: 4,
-          farmer_name: "Happy Cows Dairy",
-          farmer_rating: 4.9,
-          title: "Fresh Farm Milk",
-          quantity: "20L",
-          available_quantity: 20,
-          price: 65,
-          unit: "L",
-          type: "Dairy",
-          description: "Pure A2 milk from grass-fed cows, delivered fresh",
-          image: "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400",
-          location: "Gujarat",
-          distance: "3.2 km",
-          organic: true,
-          rating: 4.9,
-          reviews_count: 412,
-          sold_count: 8900,
-          tags: ["A2 Milk", "Grass Fed", "Daily Delivery"]
-        },
-        {
-          id: 5,
-          farmer_id: 5,
-          farmer_name: "Nature's Bounty",
-          farmer_rating: 4.4,
-          title: "Mixed Vegetable Box",
-          quantity: "10kg",
-          available_quantity: 25,
-          price: 299,
-          unit: "box",
-          type: "Vegetable",
-          description: "Curated box of seasonal vegetables, perfect for a week",
-          image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400",
-          location: "Karnataka",
-          distance: "6.7 km",
-          organic: true,
-          discount_percentage: 20,
-          original_price: 374,
-          rating: 4.6,
-          reviews_count: 178,
-          sold_count: 3200,
-          tags: ["Weekly Box", "Variety Pack", "Best Seller"]
-        },
-        {
-          id: 6,
-          farmer_id: 6,
-          farmer_name: "Golden Orchards",
-          farmer_rating: 4.7,
-          title: "Fresh Apples - Shimla",
-          quantity: "40kg",
-          available_quantity: 40,
-          price: 180,
-          unit: "kg",
-          type: "Fruit",
-          description: "Crisp and sweet apples from Shimla orchards",
-          image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400",
-          location: "Himachal Pradesh",
-          distance: "15.3 km",
-          organic: false,
-          rating: 4.5,
-          reviews_count: 92,
-          sold_count: 1890,
-          tags: ["Mountain Fresh", "Natural", "Premium"]
-        }
-      ];
-      setProducts(mockProducts);
-      setFeaturedProducts(mockProducts.slice(0, 4));
+      setProducts([]);
+      setFeaturedProducts([]);
     } finally {
       setLoading(false);
     }
@@ -318,28 +184,17 @@ const CustomerHomePage: React.FC = () => {
   // Fetch orders
   const fetchOrders = async (userId: number) => {
     try {
-      const response = await fetch(`${API_ENDPOINTS.marketplace.listings}?user_id=${userId}`);
+      const response = await fetch(`${API_ENDPOINTS.marketplace.orders}/user/${userId}`);
       const data = await response.json();
       
       if (response.ok) {
-        setOrders(data.orders || []);
+        setOrders(Array.isArray(data) ? data : data.orders || []);
+      } else {
+        setOrders([]);
       }
     } catch (err) {
       console.error('Error fetching orders:', err);
-      // Mock orders
-      setOrders([
-        {
-          id: 1001,
-          items: [],
-          total: 1250,
-          status: 'out_for_delivery',
-          created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          delivery_address: "123 Main Street, Bangalore",
-          estimated_delivery: "Today, 4:00 PM - 5:00 PM",
-          driver_name: "Amit Kumar",
-          driver_phone: "+91 98765 43210"
-        }
-      ]);
+      setOrders([]);
     }
   };
 
@@ -695,7 +550,7 @@ const CustomerHomePage: React.FC = () => {
                 <span className="loyalty-icon"><Star size={16} /></span>
                 <span className="loyalty-title">Loyalty Points</span>
               </div>
-              <div className="loyalty-points">{user?.loyalty_points || 250}</div>
+              <div className="loyalty-points">{user?.loyalty_points || 0}</div>
               <div className="loyalty-subtitle">Redeem for discounts</div>
             </>
           )}

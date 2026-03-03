@@ -5,6 +5,7 @@ import {
   ArrowDown, Pencil, FileText, MessageSquare, Mail, Phone, BarChart3,
   Monitor, Globe, MapPin, Zap, Target, X
 } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './UserDetailsModal.css';
 
 // ============ Types ============
@@ -371,147 +372,25 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
     const loadUserDetails = async () => {
       setIsLoading(true);
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        
-        // Mock detailed user data
-        const details: UserDetails = {
+        const response = await fetch(`${API_BASE_URL}/api/admin/users/${user.id}`);
+        if (response.ok) {
+          const details = await response.json();
+          setUserDetails(details);
+        } else {
+          // Fallback: use basic user info if API fails
+          setUserDetails({
+            ...user,
+            role: user.role as UserRole,
+            status: user.status as UserStatus,
+          } as UserDetails);
+        }
+      } catch (error) {
+        console.error('Failed to load user details:', error);
+        setUserDetails({
           ...user,
           role: user.role as UserRole,
           status: user.status as UserStatus,
-          alternatePhone: '+91-9876543211',
-          bio: 'Passionate about sustainable farming and connecting with customers directly. Growing organic vegetables since 2020.',
-          dateOfBirth: '1985-06-15',
-          gender: 'Male',
-          language: 'Hindi, English',
-          referralCode: 'FARM2024XYZ',
-          tags: ['Verified Seller', 'Top Rated', 'Organic'],
-          notes: 'VIP customer. Handle with care.',
-          addresses: [
-            {
-              street: '123 Green Fields Road',
-              city: 'Pune',
-              state: 'Maharashtra',
-              pincode: '411001',
-              country: 'India',
-              isDefault: true,
-              label: 'Farm Address',
-            },
-            {
-              street: '456 Market Street',
-              city: 'Pune',
-              state: 'Maharashtra',
-              pincode: '411002',
-              country: 'India',
-              label: 'Pickup Point',
-            },
-          ],
-          documents: [
-            { id: 'd1', type: 'ID Proof', name: 'Aadhaar Card', status: 'verified', uploadedAt: '2025-08-15' },
-            { id: 'd2', type: 'Address Proof', name: 'Utility Bill', status: 'verified', uploadedAt: '2025-08-15' },
-            { id: 'd3', type: 'Photo', name: 'Profile Photo', status: 'verified', uploadedAt: '2025-08-15' },
-          ],
-          stats: {
-            totalOrders: user.totalTransactions || 145,
-            totalSpent: 45670,
-            totalEarned: 234500,
-            averageRating: user.rating || 4.8,
-            reviewsCount: 89,
-            responseRate: 95,
-            onTimeDeliveryRate: 98,
-            completedDeliveries: 142,
-          },
-          activities: [
-            {
-              id: 'a1',
-              type: 'order',
-              title: 'New Order Received',
-              description: 'Order #ORD-2024-1234 for 5kg Organic Tomatoes',
-              timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-              metadata: { amount: '₹450', items: '3' },
-            },
-            {
-              id: 'a2',
-              type: 'login',
-              title: 'Login Successful',
-              description: 'Logged in from Chrome on Windows',
-              timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-            },
-            {
-              id: 'a3',
-              type: 'review',
-              title: 'Received a Review',
-              description: 'Customer left a 5-star review for recent order',
-              timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            },
-            {
-              id: 'a4',
-              type: 'profile',
-              title: 'Profile Updated',
-              description: 'Updated phone number and address',
-              timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-            },
-            {
-              id: 'a5',
-              type: 'transaction',
-              title: 'Payment Received',
-              description: 'Received payment for order #ORD-2024-1230',
-              timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-              metadata: { amount: '₹1,250' },
-            },
-          ],
-          transactions: [
-            {
-              id: 't1',
-              type: 'sale',
-              amount: 1250,
-              currency: 'INR',
-              status: 'completed',
-              date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-              counterparty: 'Priya Sharma',
-              description: 'Sale of Organic Vegetables',
-            },
-            {
-              id: 't2',
-              type: 'sale',
-              amount: 890,
-              currency: 'INR',
-              status: 'completed',
-              date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-              counterparty: 'Amit Kumar',
-              description: 'Sale of Fresh Fruits',
-            },
-            {
-              id: 't3',
-              type: 'sale',
-              amount: 2100,
-              currency: 'INR',
-              status: 'pending',
-              date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-              counterparty: 'Local Restaurant',
-              description: 'Bulk Order - Mixed Vegetables',
-            },
-            {
-              id: 't4',
-              type: 'refund',
-              amount: 150,
-              currency: 'INR',
-              status: 'completed',
-              date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-              counterparty: 'Customer Refund',
-              description: 'Partial refund for damaged items',
-            },
-          ],
-          deviceInfo: {
-            lastDevice: 'Chrome on Windows 11',
-            lastIP: '192.168.1.xxx',
-            lastLocation: 'Pune, Maharashtra, India',
-          },
-        };
-        
-        setUserDetails(details);
-      } catch (error) {
-        console.error('Failed to load user details:', error);
+        } as UserDetails);
       } finally {
         setIsLoading(false);
       }

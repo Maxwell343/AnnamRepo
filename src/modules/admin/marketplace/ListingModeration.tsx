@@ -6,6 +6,7 @@ import {
   Tag, SlidersHorizontal, LayoutGrid, List, CheckSquare, Info, Circle
 } from 'lucide-react';
 import ListingReviewModal from './ListingReviewModal';
+import { API_ENDPOINTS } from '../../../config/api';
 import './ListingModeration.css';
 
 // ============ Types ============
@@ -683,189 +684,13 @@ const ListingModeration: React.FC = () => {
   const loadListings = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      
-      const mockListings: ModerationListing[] = [
-        {
-          id: '1',
-          title: 'Organic Tomatoes - Farm Fresh',
-          description: 'Premium quality organic tomatoes grown without pesticides. Perfect for salads and cooking.',
-          farmer: { id: 'f1', name: 'Ramesh Kumar', rating: 4.8, verified: true, totalListings: 45 },
-          category: 'vegetable',
-          type: 'Tomatoes',
-          quantity: 500,
-          unit: 'kg',
-          price: 35,
-          currency: 'INR',
-          status: 'pending',
-          submittedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img1', url: 'https://via.placeholder.com/400x300/ef4444/ffffff?text=Tomatoes', isPrimary: true }],
-          icon: <Leaf size={16} />,
-          location: 'Pune, Maharashtra',
-          isOrganic: true,
-          isFeatured: false,
-          viewCount: 124,
-          inquiryCount: 8,
-        },
-        {
-          id: '2',
-          title: 'Premium Basmati Rice - Grade A',
-          description: 'Long grain aromatic basmati rice from the foothills of Himalayas.',
-          farmer: { id: 'f2', name: 'Vikram Singh', rating: 4.9, verified: true, totalListings: 32 },
-          category: 'grain',
-          type: 'Rice',
-          quantity: 1000,
-          unit: 'kg',
-          price: 110,
-          currency: 'INR',
-          status: 'approved',
-          submittedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img2', url: 'https://via.placeholder.com/400x300/fbbf24/ffffff?text=Rice', isPrimary: true }],
-          icon: <Wheat size={16} />,
-          location: 'Dehradun, Uttarakhand',
-          isOrganic: false,
-          isFeatured: true,
-          viewCount: 356,
-          inquiryCount: 23,
-          moderatedBy: 'Admin User',
-          moderatedAt: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: '3',
-          title: 'Fresh Farm Milk - Daily Supply',
-          description: 'Pure and fresh cow milk from grass-fed cows. No additives or preservatives.',
-          farmer: { id: 'f3', name: 'Anita Sharma', rating: 4.2, verified: false, totalListings: 12 },
-          category: 'dairy',
-          type: 'Milk',
-          quantity: 200,
-          unit: 'L',
-          price: 60,
-          currency: 'INR',
-          status: 'flagged',
-          submittedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img3', url: 'https://via.placeholder.com/400x300/3b82f6/ffffff?text=Milk', isPrimary: true }],
-          icon: <Milk size={16} />,
-          location: 'Jaipur, Rajasthan',
-          isOrganic: true,
-          isFeatured: false,
-          flags: ['price', 'quality'],
-          viewCount: 89,
-          inquiryCount: 5,
-        },
-        {
-          id: '4',
-          title: 'Kashmiri Red Chillies - Extra Hot',
-          description: 'Authentic Kashmiri red chillies known for their deep red color and moderate heat.',
-          farmer: { id: 'f4', name: 'Mohammed Ismail', rating: 4.7, verified: true, totalListings: 28 },
-          category: 'spices',
-          type: 'Chillies',
-          quantity: 150,
-          unit: 'kg',
-          price: 280,
-          currency: 'INR',
-          status: 'pending',
-          submittedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img4', url: 'https://via.placeholder.com/400x300/dc2626/ffffff?text=Chillies', isPrimary: true }],
-          icon: <Flame size={16} />,
-          location: 'Srinagar, Kashmir',
-          isOrganic: true,
-          isFeatured: false,
-          viewCount: 67,
-          inquiryCount: 4,
-        },
-        {
-          id: '5',
-          title: 'Alphonso Mangoes - Export Quality',
-          description: 'Premium Alphonso mangoes from Ratnagiri. Perfect sweetness and aroma.',
-          farmer: { id: 'f5', name: 'Suresh Patil', rating: 4.9, verified: true, totalListings: 18 },
-          category: 'fruit',
-          type: 'Mangoes',
-          quantity: 300,
-          unit: 'kg',
-          price: 450,
-          currency: 'INR',
-          status: 'pending',
-          submittedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img5', url: 'https://via.placeholder.com/400x300/f59e0b/ffffff?text=Mangoes', isPrimary: true }],
-          icon: <Apple size={16} />,
-          location: 'Ratnagiri, Maharashtra',
-          isOrganic: false,
-          isFeatured: true,
-          viewCount: 234,
-          inquiryCount: 19,
-        },
-        {
-          id: '6',
-          title: 'Fresh Spinach - Hydroponically Grown',
-          description: 'Clean, pesticide-free spinach grown using hydroponic farming methods.',
-          farmer: { id: 'f6', name: 'Priya Verma', rating: 4.6, verified: true, totalListings: 22 },
-          category: 'vegetable',
-          type: 'Spinach',
-          quantity: 100,
-          unit: 'kg',
-          price: 80,
-          currency: 'INR',
-          status: 'rejected',
-          submittedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img6', url: 'https://via.placeholder.com/400x300/22c55e/ffffff?text=Spinach', isPrimary: true }],
-          icon: <Leaf size={16} />,
-          location: 'Bangalore, Karnataka',
-          isOrganic: true,
-          isFeatured: false,
-          rejectionReason: 'Poor image quality - Images are blurry and do not clearly show the product.',
-          moderatedBy: 'Admin User',
-          moderatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          viewCount: 45,
-          inquiryCount: 2,
-        },
-        {
-          id: '7',
-          title: 'Organic Turmeric Powder',
-          description: 'Pure turmeric powder with high curcumin content. No artificial colors.',
-          farmer: { id: 'f7', name: 'Lakshmi Devi', rating: 4.5, verified: true, totalListings: 15 },
-          category: 'spices',
-          type: 'Turmeric',
-          quantity: 50,
-          unit: 'kg',
-          price: 200,
-          currency: 'INR',
-          status: 'approved',
-          submittedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img7', url: 'https://via.placeholder.com/400x300/eab308/ffffff?text=Turmeric', isPrimary: true }],
-          icon: <Circle size={16} />,
-          location: 'Erode, Tamil Nadu',
-          isOrganic: true,
-          isFeatured: false,
-          viewCount: 189,
-          inquiryCount: 14,
-          moderatedBy: 'Admin User',
-          moderatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: '8',
-          title: 'Fresh Cottage Cheese (Paneer)',
-          description: 'Soft and fresh paneer made from pure buffalo milk. Perfect for cooking.',
-          farmer: { id: 'f8', name: 'Amit Gupta', rating: 4.3, verified: false, totalListings: 8 },
-          category: 'dairy',
-          type: 'Paneer',
-          quantity: 80,
-          unit: 'kg',
-          price: 320,
-          currency: 'INR',
-          status: 'pending',
-          submittedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-          images: [{ id: 'img8', url: 'https://via.placeholder.com/400x300/f3f4f6/6b7280?text=Paneer', isPrimary: true }],
-          icon: <Milk size={16} />,
-          location: 'Lucknow, UP',
-          isOrganic: false,
-          isFeatured: false,
-          viewCount: 34,
-          inquiryCount: 3,
-        },
-      ];
-      
-      setListings(mockListings);
+      const response = await fetch(API_ENDPOINTS.marketplace.listings);
+      if (response.ok) {
+        const data = await response.json();
+        setListings(data.listings || data || []);
+      } else {
+        setListings([]);
+      }
     } catch (error) {
       showToast('error', 'Failed to load listings');
     } finally {
@@ -1068,7 +893,6 @@ const ListingModeration: React.FC = () => {
   const executeApprove = async (ids: string[]) => {
     setConfirmDialog((prev) => prev ? { ...prev, isLoading: true } : null);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
       setListings((prev) =>
         prev.map((l) =>
           ids.includes(l.id)
@@ -1088,7 +912,6 @@ const ListingModeration: React.FC = () => {
   const executeReject = async (ids: string[]) => {
     setConfirmDialog((prev) => prev ? { ...prev, isLoading: true } : null);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
       const reason = Array.from(rejectionReasons)
         .map((id) => REJECTION_REASONS.find((r) => r.id === id)?.label)
         .filter(Boolean)

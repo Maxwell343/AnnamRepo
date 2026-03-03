@@ -213,75 +213,18 @@ const useLocalStorage = <T,>(key: string, initialValue: T): [T, (value: T | ((pr
 };
 
 // ============================================
-// MOCK DATA
+// DEFAULT DATA (empty defaults - data comes from API)
 // ============================================
 
-const generateMockSecurityData = (): SecuritySettings => ({
+const getDefaultSecurityData = (): SecuritySettings => ({
   twoFactorEnabled: false,
-  biometricEnabled: true,
-  loginAlerts: true,
-  trustedDevices: [
-    {
-      id: 'dev_1',
-      name: 'Chrome on Windows',
-      type: 'desktop',
-      lastActive: new Date().toISOString(),
-      location: 'Mumbai, India',
-      isCurrent: true
-    },
-    {
-      id: 'dev_2',
-      name: 'iPhone 14 Pro',
-      type: 'mobile',
-      lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      location: 'Mumbai, India',
-      isCurrent: false
-    },
-    {
-      id: 'dev_3',
-      name: 'iPad Air',
-      type: 'tablet',
-      lastActive: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      location: 'Delhi, India',
-      isCurrent: false
-    }
-  ],
-  loginHistory: [
-    {
-      id: 'login_1',
-      device: 'Chrome on Windows',
-      location: 'Mumbai, India',
-      ip: '192.168.1.xxx',
-      time: new Date().toISOString(),
-      status: 'success'
-    },
-    {
-      id: 'login_2',
-      device: 'iPhone 14 Pro',
-      location: 'Mumbai, India',
-      ip: '192.168.1.xxx',
-      time: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      status: 'success'
-    },
-    {
-      id: 'login_3',
-      device: 'Unknown Device',
-      location: 'Bangalore, India',
-      ip: '103.xxx.xxx.xxx',
-      time: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      status: 'failed'
-    }
-  ]
+  biometricEnabled: false,
+  loginAlerts: false,
+  trustedDevices: [],
+  loginHistory: []
 });
 
-const generateMockConnectedAccounts = (): ConnectedAccount[] => [
-  {
-    id: 'conn_1',
-    provider: 'google',
-    email: 'user@gmail.com',
-    connectedAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
-  }
-];
+const getDefaultConnectedAccounts = (): ConnectedAccount[] => [];
 
 // ============================================
 // SUB-COMPONENTS
@@ -369,7 +312,6 @@ const ProfileSection: React.FC<{
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
     onUpdateProfile(formData);
     setIsEditing(false);
     setIsSaving(false);
@@ -509,7 +451,6 @@ const ChangePasswordModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
   const handleSubmit = async () => {
     if (!validate()) return;
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
     setIsSubmitting(false);
     onClose();
     showToast('Password changed successfully!', 'success');
@@ -603,7 +544,6 @@ const TwoFactorModal: React.FC<{ isOpen: boolean; onClose: () => void; onEnable:
   const handleVerify = async () => {
     if (verificationCode.length !== 6) { showToast('Please enter 6-digit code', 'error'); return; }
     setIsVerifying(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
     setIsVerifying(false);
     onEnable();
     onClose();
@@ -694,7 +634,6 @@ const DeleteAccountModal: React.FC<{ isOpen: boolean; onClose: () => void; onDel
   const handleDelete = async () => {
     if (confirmText !== 'DELETE') { showToast('Please type DELETE to confirm', 'error'); return; }
     setIsDeleting(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
     setIsDeleting(false);
     onDelete();
   };
@@ -791,8 +730,8 @@ const CustomerSettings: React.FC = () => {
     autoPlayVideos: true, highQualityImages: true, reduceMotion: false, fontSize: 'medium'
   });
 
-  const [security] = useState<SecuritySettings>(generateMockSecurityData());
-  const [connectedAccounts, setConnectedAccounts] = useState<ConnectedAccount[]>(generateMockConnectedAccounts());
+  const [security] = useState<SecuritySettings>(getDefaultSecurityData());
+  const [connectedAccounts, setConnectedAccounts] = useState<ConnectedAccount[]>(getDefaultConnectedAccounts());
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showTFAModal, setShowTFAModal] = useState(false);

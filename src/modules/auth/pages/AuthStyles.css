@@ -80,7 +80,8 @@
 .auth-card {
   position: relative;
   z-index: 1;
-  background: var(--bg-white);
+  background: rgba(255, 255, 255, 0.50);
+  backdrop-filter: blur(10px);
   border-radius: var(--radius-xl);
   padding: 3rem 2.5rem;
   width: 100%;
@@ -535,7 +536,8 @@ select.form-input option {
 }
 
 .role-modal {
-  background: var(--bg-white);
+  background: rgba(255, 255, 255, 0.50);
+  backdrop-filter: blur(10px);
   border-radius: var(--radius-xl);
   padding: 2rem;
   width: 100%;

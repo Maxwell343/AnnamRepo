@@ -970,6 +970,9 @@ body {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
 }
 
 .claim-modal {
@@ -2040,4 +2043,65 @@ body {
     right: 16px;
     top: 16px;
   }
+}
+
+/* ============================================
+   VISIBILITY FIXES - Critical Overrides
+   ============================================ */
+.listing-card {
+  height: auto !important;
+  min-height: 480px;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: visible !important;
+}
+
+.card-content {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 250px;
+}
+
+.card-details {
+  flex: 1 !important;
+}
+
+.card-actions {
+  margin-top: auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  min-height: 50px;
+  z-index: 10;
+  background: white;
+  position: relative;
+}
+
+/* Ensure text visibility */
+.detail-value {
+  color: #1a1a2e !important;
+  opacity: 1 !important;
+}
+
+/* Ensure buttons are visible */
+.btn-primary-action, .btn-claim {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+  color: white !important; /* Ensure text is white */
+  z-index: 20;
+}
+
+/* Role Theme Button Fixes */
+.app-container.farmer-theme .btn-primary-action {
+  background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%) !important;
+}
+.app-container.ngo-theme .btn-primary-action {
+  background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%) !important;
+}
+.app-container.driver-theme .btn-primary-action {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+}
+.app-container.customer-theme .btn-primary-action {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
 }

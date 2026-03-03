@@ -13,6 +13,7 @@
   "dependencies": {
     "@fontsource/metropolis": "^5.2.5",
     "@fontsource/open-sans": "^5.2.7",
+    "framer-motion": "^12.34.3",
     "jspdf": "^4.1.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.563.0",

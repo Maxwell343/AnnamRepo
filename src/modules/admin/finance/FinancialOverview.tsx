@@ -6,6 +6,7 @@ import {
   Package, PartyPopper, Receipt, RefreshCw, Search, Star, Undo2,
   Upload, X, XCircle, Zap,
 } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './FinancialOverview.css';
 
 type TimeRange = '7d' | '30d' | '90d' | '1y';
@@ -59,105 +60,7 @@ interface FinanceCardData {
   sparkline: number[];
 }
 
-const generateChartData = (range: TimeRange): ChartDataPoint[] => {
-  const data: ChartDataPoint[] = [];
-  const points = range === '7d' ? 7 : range === '30d' ? 30 : range === '90d' ? 12 : 12;
-
-  for (let i = 0; i < points; i++) {
-    const base = 30000 + Math.random() * 50000;
-    let label = '';
-    if (range === '7d') {
-      const d = new Date();
-      d.setDate(d.getDate() - (points - 1 - i));
-      label = d.toLocaleDateString('en-IN', { weekday: 'short' });
-    } else if (range === '30d') {
-      label = `${i + 1}`;
-    } else if (range === '90d') {
-      label = `W${i + 1}`;
-    } else {
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      label = months[i];
-    }
-
-    data.push({
-      label,
-      revenue: Math.round(base),
-      orders: Math.round(100 + Math.random() * 200),
-      commission: Math.round(base * 0.15),
-    });
-  }
-  return data;
-};
-
-const generateTransactions = (): Transaction[] => {
-  const customers = ['Rajesh Kumar', 'Priya Sharma', 'Amit Patel', 'Sneha Gupta', 'Vikram Singh', 'Anita Desai', 'Mohan Rao', 'Kavita Iyer', 'Suresh Nair', 'Deepa Menon', 'Arjun Reddy', 'Meera Joshi'];
-  const methods = ['UPI', 'Credit Card', 'Debit Card', 'Net Banking', 'COD', 'Wallet'];
-  const types: ('credit' | 'debit' | 'refund')[] = ['credit', 'credit', 'credit', 'debit', 'refund'];
-  const statuses: ('completed' | 'pending' | 'failed')[] = ['completed', 'completed', 'completed', 'pending', 'failed'];
-
-  return Array.from({ length: 20 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - Math.floor(Math.random() * 30));
-    return {
-      id: `TXN${String(100000 + i).slice(1)}`,
-      date: d.toISOString(),
-      customer: customers[Math.floor(Math.random() * customers.length)],
-      type: types[Math.floor(Math.random() * types.length)],
-      amount: Math.round(500 + Math.random() * 15000),
-      status: statuses[Math.floor(Math.random() * statuses.length)],
-      method: methods[Math.floor(Math.random() * methods.length)],
-      orderId: `ORD${String(200000 + i).slice(1)}`,
-    };
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-};
-
-const generatePayouts = (): PayoutRecord[] => {
-  const drivers = [
-    { name: 'Ramesh Yadav', avatar: 'RY' },
-    { name: 'Sunil Patil', avatar: 'SP' },
-    { name: 'Ganesh More', avatar: 'GM' },
-    { name: 'Anil Shinde', avatar: 'AS' },
-    { name: 'Prakash Jadhav', avatar: 'PJ' },
-    { name: 'Vijay Kulkarni', avatar: 'VK' },
-    { name: 'Manoj Tiwari', avatar: 'MT' },
-    { name: 'Ravi Verma', avatar: 'RV' },
-  ];
-  const statuses: ('paid' | 'pending' | 'processing')[] = ['paid', 'paid', 'pending', 'processing'];
-
-  return drivers.map((driver, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - Math.floor(Math.random() * 15));
-    return {
-      id: `PAY${String(300000 + i).slice(1)}`,
-      driver: driver.name,
-      amount: Math.round(8000 + Math.random() * 25000),
-      status: statuses[Math.floor(Math.random() * statuses.length)],
-      date: d.toISOString(),
-      trips: Math.round(15 + Math.random() * 40),
-      avatar: driver.avatar,
-    };
-  });
-};
-
-const generateInvoices = (): Invoice[] => {
-  const vendors = ['FreshFarm Supplies', 'Green Valley Dairy', 'Organic Fields Co.', 'AgroPure Ltd.', 'Krishna Grains', 'Sunrise Fruits'];
-  const statuses: ('paid' | 'overdue' | 'pending')[] = ['paid', 'paid', 'overdue', 'pending', 'pending'];
-
-  return vendors.map((vendor, i) => {
-    const issued = new Date();
-    issued.setDate(issued.getDate() - Math.floor(Math.random() * 30 + 10));
-    const due = new Date(issued);
-    due.setDate(due.getDate() + 30);
-    return {
-      id: `INV-${2024}-${String(i + 1).padStart(4, '0')}`,
-      vendor,
-      amount: Math.round(15000 + Math.random() * 100000),
-      status: statuses[Math.floor(Math.random() * statuses.length)],
-      dueDate: due.toISOString(),
-      issuedDate: issued.toISOString(),
-    };
-  });
-};
+const generateChartData = (_range: TimeRange): ChartDataPoint[] => [];
 
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('en-IN', {
@@ -511,9 +414,9 @@ const FinancialOverview: React.FC = () => {
   const [chartType, setChartType] = useState<ChartType>('revenue');
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [chartAnimated, setChartAnimated] = useState(false);
-  const [transactions] = useState<Transaction[]>(generateTransactions());
-  const [payouts] = useState<PayoutRecord[]>(generatePayouts());
-  const [invoices] = useState<Invoice[]>(generateInvoices());
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [payouts, setPayouts] = useState<PayoutRecord[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [txnFilter, setTxnFilter] = useState<string>('all');
   const [txnSearch, setTxnSearch] = useState('');
   const [expandedTxn, setExpandedTxn] = useState<string | null>(null);
@@ -576,6 +479,17 @@ const FinancialOverview: React.FC = () => {
     });
   }, [timeRange]);
 
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/admin/financial-overview`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.transactions) setTransactions(data.transactions);
+        if (data.payouts) setPayouts(data.payouts);
+        if (data.invoices) setInvoices(data.invoices);
+      })
+      .catch(() => {});
+  }, []);
+
   const financeCards: FinanceCardData[] = [
     {
       label: 'Total Revenue',
@@ -628,7 +542,7 @@ const FinancialOverview: React.FC = () => {
   const handleExport = () => {
     setIsExporting(true);
 
-    setTimeout(() => {
+    {
       const now = new Date().toISOString().slice(0, 10);
       const lines: string[] = [];
 
@@ -673,7 +587,7 @@ const FinancialOverview: React.FC = () => {
       }
 
       setIsExporting(false);
-    }, 400);
+    }
   };
 
   const totalRevenue = chartData.reduce((s, d) => s + d.revenue, 0);

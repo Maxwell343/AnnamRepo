@@ -184,7 +184,9 @@ const Landing = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleGetStarted = () => navigate('/auth');
+  const handleGetStarted = () => {
+    window.dispatchEvent(new CustomEvent('annam-intro-transition', { detail: '/auth' }));
+  };
   const handleLogin = () => navigate('/auth');
   
   const scrollToSection = (e: React.MouseEvent, sectionId: string) => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Users, Package, DollarSign, Truck, Leaf, RefreshCw, Pause,
+  Users, Package, Truck, Leaf, RefreshCw, Pause,
   BarChart3, TrendingUp, TrendingDown, Download, FileText, FileSpreadsheet,
   ArrowUpRight, ArrowDownRight, ArrowDown, ArrowRight,
   Scale, Sparkles, Maximize, MapPin, Star, Wheat, Car,
@@ -26,6 +26,7 @@ import {
 import * as XLSX from 'xlsx';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import jsPDF from 'jspdf';
+import { API_BASE_URL } from '../../../config/api';
 import './GlobalAnalytics.css';
 
 type TimeRange = '7d' | '30d' | '90d' | '1y';
@@ -73,6 +74,33 @@ const GlobalAnalytics: React.FC = () => {
   const [hoveredKPI, setHoveredKPI] = useState<string | null>(null);
   const [showExport, setShowExport] = useState(false);
   const [animateCharts, setAnimateCharts] = useState(true);
+  const [kpis, setKpis] = useState<KPI[]>([]);
+  const [categoryData, setCategoryData] = useState<{ name: string; value: number; color: string }[]>([]);
+  const [topFarmers, setTopFarmers] = useState<Farmer[]>([]);
+  const [topDrivers, setTopDrivers] = useState<Driver[]>([]);
+  const [chartDataState, setChartDataState] = useState<{
+    userGrowthData: { date: string; users: number; previousPeriod: number }[];
+    orderVolumeData: { month: string; orders: number; revenue: number }[];
+    deliveryPerformanceData: { week: string; onTime: number; delayed: number }[];
+  }>({
+    userGrowthData: [],
+    orderVolumeData: [],
+    deliveryPerformanceData: [],
+  });
+
+  // Fetch analytics data from API
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/admin/analytics`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.kpis) setKpis(data.kpis);
+        if (data.categoryData) setCategoryData(data.categoryData);
+        if (data.topFarmers) setTopFarmers(data.topFarmers);
+        if (data.topDrivers) setTopDrivers(data.topDrivers);
+        if (data.chartData) setChartDataState(data.chartData);
+      })
+      .catch(() => {});
+  }, [range]);
 
   const ranges: { key: TimeRange; label: string }[] = [
     { key: '7d', label: '7 Days' },
@@ -81,207 +109,12 @@ const GlobalAnalytics: React.FC = () => {
     { key: '1y', label: '1 Year' },
   ];
 
-  const kpis: KPI[] = [
-    {
-      icon: <Users size={16} />,
-      value: '2,847',
-      label: 'Total Users',
-      change: '+12%',
-      dir: 'up',
-      rawValue: 2847,
-      target: 3000,
-      color: '#3b82f6',
-    },
-    {
-      icon: <Package size={16} />,
-      value: '1,248',
-      label: 'Orders',
-      change: '+18%',
-      dir: 'up',
-      rawValue: 1248,
-      target: 1500,
-      color: '#10b981',
-    },
-    {
-      icon: <DollarSign size={16} />,
-      value: '₹12.4L',
-      label: 'GMV',
-      change: '+22%',
-      dir: 'up',
-      rawValue: 1240000,
-      target: 1500000,
-      color: '#f59e0b',
-    },
-    {
-      icon: <Truck size={16} />,
-      value: '892',
-      label: 'Deliveries',
-      change: '+15%',
-      dir: 'up',
-      rawValue: 892,
-      target: 1000,
-      color: '#8b5cf6',
-    },
-    {
-      icon: <Leaf size={16} />,
-      value: '45.2T',
-      label: 'Food Saved (kg)',
-      change: '-3%',
-      dir: 'down',
-      rawValue: 45200,
-      target: 50000,
-      color: '#059669',
-    },
-  ];
-
-  // Generate data based on selected time range
+  // Chart data from state
   const generateChartData = () => {
-    const getDataPoints = () => {
-      switch (range) {
-        case '7d':
-          return [
-            { date: 'Mon', month: 'Mon', users: 2100, previousPeriod: 1900, orders: 120, revenue: 1.2, week: 'Week 1', onTime: 94, delayed: 6 },
-            { date: 'Tue', month: 'Tue', users: 2250, previousPeriod: 2050, orders: 135, revenue: 1.35, week: 'Week 2', onTime: 91, delayed: 9 },
-            { date: 'Wed', month: 'Wed', users: 2400, previousPeriod: 2200, orders: 150, revenue: 1.5, week: 'Week 3', onTime: 96, delayed: 4 },
-            { date: 'Thu', month: 'Thu', users: 2550, previousPeriod: 2300, orders: 165, revenue: 1.65, week: 'Week 4', onTime: 93, delayed: 7 },
-            { date: 'Fri', month: 'Fri', users: 2700, previousPeriod: 2450, orders: 180, revenue: 1.8, week: 'Week 1', onTime: 98, delayed: 2 },
-            { date: 'Sat', month: 'Sat', users: 2800, previousPeriod: 2550, orders: 200, revenue: 2.0, week: 'Week 2', onTime: 95, delayed: 5 },
-            { date: 'Sun', month: 'Sun', users: 2847, previousPeriod: 2650, orders: 210, revenue: 2.1, week: 'Week 3', onTime: 92, delayed: 8 },
-          ];
-        case '30d':
-          return [
-            { date: 'Week 1', month: 'Wk1', users: 1800, previousPeriod: 1600, orders: 850, revenue: 8.2, week: 'Week 1', onTime: 92, delayed: 8 },
-            { date: 'Week 2', month: 'Wk2', users: 2100, previousPeriod: 1850, orders: 920, revenue: 9.1, week: 'Week 2', onTime: 88, delayed: 12 },
-            { date: 'Week 3', month: 'Wk3', users: 2400, previousPeriod: 2200, orders: 1050, revenue: 10.5, week: 'Week 3', onTime: 95, delayed: 5 },
-            { date: 'Week 4', month: 'Wk4', users: 2847, previousPeriod: 2550, orders: 1248, revenue: 12.4, week: 'Week 4', onTime: 91, delayed: 9 },
-          ];
-        case '90d':
-          return [
-            { date: 'Jan', month: 'Jan', users: 1800, previousPeriod: 1600, orders: 850, revenue: 8.2, week: 'Week 1', onTime: 90, delayed: 10 },
-            { date: 'Feb', month: 'Feb', users: 2100, previousPeriod: 1850, orders: 920, revenue: 9.1, week: 'Week 2', onTime: 89, delayed: 11 },
-            { date: 'Mar', month: 'Mar', users: 2400, previousPeriod: 2200, orders: 1050, revenue: 10.5, week: 'Week 3', onTime: 93, delayed: 7 },
-          ];
-        case '1y':
-          return [
-            { date: 'Q1', month: 'Q1', users: 1900, previousPeriod: 1700, orders: 850, revenue: 8.5, week: 'Week 1', onTime: 88, delayed: 12 },
-            { date: 'Q2', month: 'Q2', users: 2250, previousPeriod: 1950, orders: 1050, revenue: 10.5, week: 'Week 2', onTime: 91, delayed: 9 },
-            { date: 'Q3', month: 'Q3', users: 2500, previousPeriod: 2200, orders: 1150, revenue: 11.5, week: 'Week 3', onTime: 94, delayed: 6 },
-            { date: 'Q4', month: 'Q4', users: 2847, previousPeriod: 2550, orders: 1248, revenue: 12.4, week: 'Week 4', onTime: 92, delayed: 8 },
-          ];
-        default:
-          return [];
-      }
-    };
-
-    const dataPoints = getDataPoints();
-    
-    return {
-      userGrowthData: dataPoints.map(d => ({ date: d.date, users: d.users, previousPeriod: d.previousPeriod })),
-      orderVolumeData: dataPoints.map(d => ({ month: d.month, orders: d.orders, revenue: d.revenue })),
-      deliveryPerformanceData: dataPoints.map(d => ({ week: d.week, onTime: d.onTime, delayed: d.delayed })),
-    };
+    return chartDataState;
   };
 
   const { userGrowthData: dynamicUserGrowthData, orderVolumeData: dynamicOrderVolumeData, deliveryPerformanceData: dynamicDeliveryPerformanceData } = generateChartData();
-
-  const categoryData = [
-    { name: 'Vegetables', value: 35, color: '#10b981' },
-    { name: 'Fruits', value: 25, color: '#f59e0b' },
-    { name: 'Grains', value: 20, color: '#3b82f6' },
-    { name: 'Dairy', value: 12, color: '#8b5cf6' },
-    { name: 'Others', value: 8, color: '#6b7280' },
-  ];
-
-  const topFarmers: Farmer[] = [
-    {
-      rank: 1,
-      name: 'Green Valley Farm',
-      revenue: '₹2,84,000',
-      orders: 142,
-      trend: 'up',
-      location: 'Pune',
-      rating: 4.8,
-    },
-    {
-      rank: 2,
-      name: 'Sunrise Organics',
-      revenue: '₹1,96,000',
-      orders: 98,
-      trend: 'up',
-      location: 'Nashik',
-      rating: 4.6,
-    },
-    {
-      rank: 3,
-      name: 'Fresh Fields',
-      revenue: '₹1,52,000',
-      orders: 76,
-      trend: 'stable',
-      location: 'Satara',
-      rating: 4.7,
-    },
-    {
-      rank: 4,
-      name: 'Organic Roots',
-      revenue: '₹1,18,000',
-      orders: 59,
-      trend: 'down',
-      location: 'Kolhapur',
-      rating: 4.5,
-    },
-    {
-      rank: 5,
-      name: 'Harvest Hub',
-      revenue: '₹92,000',
-      orders: 46,
-      trend: 'up',
-      location: 'Sangli',
-      rating: 4.4,
-    },
-  ];
-
-  const topDrivers: Driver[] = [
-    {
-      rank: 1,
-      name: 'Priya Kulkarni',
-      deliveries: 182,
-      rating: '4.9',
-      onTime: 98,
-      location: 'Pune',
-    },
-    {
-      rank: 2,
-      name: 'Rakesh Patil',
-      deliveries: 156,
-      rating: '4.7',
-      onTime: 94,
-      location: 'Mumbai',
-    },
-    {
-      rank: 3,
-      name: 'Deepa Rao',
-      deliveries: 134,
-      rating: '4.8',
-      onTime: 96,
-      location: 'Nashik',
-    },
-    {
-      rank: 4,
-      name: 'Sunil More',
-      deliveries: 121,
-      rating: '4.5',
-      onTime: 91,
-      location: 'Satara',
-    },
-    {
-      rank: 5,
-      name: 'Amit Shah',
-      deliveries: 98,
-      rating: '4.3',
-      onTime: 87,
-      location: 'Kolhapur',
-    },
-  ];
 
   // Auto-refresh effect
   useEffect(() => {

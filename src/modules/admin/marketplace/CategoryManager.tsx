@@ -10,6 +10,7 @@ import {
   Check, X, Download, Upload, Search, Maximize2, Minimize2, LayoutGrid, Pencil,
 } from 'lucide-react';
 import './CategoryManager.css';
+import { API_BASE_URL } from '../../../config/api';
 
 // ============ Types ============
 type ViewMode = 'grid' | 'tree';
@@ -130,160 +131,7 @@ const COLOR_OPTIONS = [
   '#ec4899', '#f43f5e', '#78716c', '#64748b', '#475569',
 ];
 
-const DEFAULT_CATEGORIES: Category[] = [
-  {
-    id: '1',
-    name: 'Vegetables',
-    slug: 'vegetables',
-    icon: <Leaf size={16} />,
-    color: '#22c55e',
-    parent: null,
-    listingCount: 48,
-    active: true,
-    featured: true,
-    description: 'Fresh vegetables from local farms',
-    order: 1,
-    createdAt: '2025-01-15T10:00:00Z',
-    updatedAt: '2026-02-01T14:30:00Z',
-    metadata: { seoTitle: 'Fresh Vegetables', seoDescription: 'Buy fresh vegetables', keywords: ['vegetables', 'fresh', 'organic'] },
-  },
-  {
-    id: '1-1',
-    name: 'Leafy Greens',
-    slug: 'leafy-greens',
-    icon: <Salad size={16} />,
-    color: '#16a34a',
-    parent: '1',
-    listingCount: 15,
-    active: true,
-    featured: false,
-    description: 'Spinach, lettuce, kale and more',
-    order: 1,
-    createdAt: '2025-02-20T09:00:00Z',
-    updatedAt: '2026-01-28T11:00:00Z',
-  },
-  {
-    id: '1-2',
-    name: 'Root Vegetables',
-    slug: 'root-vegetables',
-    icon: <Carrot size={16} />,
-    color: '#ea580c',
-    parent: '1',
-    listingCount: 12,
-    active: true,
-    featured: false,
-    description: 'Carrots, potatoes, onions',
-    order: 2,
-    createdAt: '2025-02-22T10:00:00Z',
-    updatedAt: '2026-01-25T09:30:00Z',
-  },
-  {
-    id: '2',
-    name: 'Fruits',
-    slug: 'fruits',
-    icon: <Apple size={16} />,
-    color: '#ef4444',
-    parent: null,
-    listingCount: 35,
-    active: true,
-    featured: true,
-    description: 'Seasonal and exotic fruits',
-    order: 2,
-    createdAt: '2025-01-16T11:00:00Z',
-    updatedAt: '2026-02-05T16:00:00Z',
-    metadata: { seoTitle: 'Fresh Fruits', seoDescription: 'Buy fresh fruits', keywords: ['fruits', 'fresh', 'seasonal'] },
-  },
-  {
-    id: '2-1',
-    name: 'Citrus Fruits',
-    slug: 'citrus-fruits',
-    icon: <Citrus size={16} />,
-    color: '#f97316',
-    parent: '2',
-    listingCount: 10,
-    active: true,
-    featured: false,
-    description: 'Oranges, lemons, limes',
-    order: 1,
-    createdAt: '2025-03-01T08:00:00Z',
-    updatedAt: '2026-01-20T10:00:00Z',
-  },
-  {
-    id: '2-2',
-    name: 'Tropical Fruits',
-    slug: 'tropical-fruits',
-    icon: <Banana size={16} />,
-    color: '#eab308',
-    parent: '2',
-    listingCount: 8,
-    active: true,
-    featured: true,
-    description: 'Mangoes, papayas, pineapples',
-    order: 2,
-    createdAt: '2025-03-05T09:00:00Z',
-    updatedAt: '2026-01-22T14:00:00Z',
-  },
-  {
-    id: '3',
-    name: 'Grains & Cereals',
-    slug: 'grains-cereals',
-    icon: <Wheat size={16} />,
-    color: '#d97706',
-    parent: null,
-    listingCount: 22,
-    active: true,
-    featured: false,
-    description: 'Rice, wheat, millets and more',
-    order: 3,
-    createdAt: '2025-01-18T12:00:00Z',
-    updatedAt: '2026-01-30T15:00:00Z',
-  },
-  {
-    id: '4',
-    name: 'Dairy',
-    slug: 'dairy',
-    icon: <Milk size={16} />,
-    color: '#3b82f6',
-    parent: null,
-    listingCount: 18,
-    active: true,
-    featured: true,
-    description: 'Milk, cheese, paneer, curd',
-    order: 4,
-    createdAt: '2025-01-20T13:00:00Z',
-    updatedAt: '2026-02-02T10:00:00Z',
-  },
-  {
-    id: '5',
-    name: 'Prepared Food',
-    slug: 'prepared-food',
-    icon: <Soup size={16} />,
-    color: '#8b5cf6',
-    parent: null,
-    listingCount: 12,
-    active: false,
-    featured: false,
-    description: 'Ready-to-eat and cooked items',
-    order: 5,
-    createdAt: '2025-01-22T14:00:00Z',
-    updatedAt: '2026-01-10T09:00:00Z',
-  },
-  {
-    id: '6',
-    name: 'Spices & Herbs',
-    slug: 'spices-herbs',
-    icon: <Sprout size={16} />,
-    color: '#14b8a6',
-    parent: null,
-    listingCount: 15,
-    active: true,
-    featured: false,
-    description: 'Fresh and dried spices',
-    order: 6,
-    createdAt: '2025-01-25T15:00:00Z',
-    updatedAt: '2026-01-28T12:00:00Z',
-  },
-];
+const DEFAULT_CATEGORIES: Category[] = [];
 
 const EMPTY_FORM: CategoryFormData = {
   name: '',
@@ -766,6 +614,22 @@ const CategoryManager: React.FC = () => {
   // State
   const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Fetch categories from API on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/marketplace/categories`);
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(Array.isArray(data) ? data : data.categories || []);
+        }
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+      }
+    };
+    loadCategories();
+  }, []);
   const [form, setForm] = useState<CategoryFormData>(EMPTY_FORM);
   const [isEditing, setIsEditing] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('tree');
@@ -928,9 +792,6 @@ const CategoryManager: React.FC = () => {
 
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
     const now = new Date().toISOString();
     const slug = form.slug || generateSlug(form.name);
 

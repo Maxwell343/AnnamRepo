@@ -228,7 +228,6 @@ const AddressCard: React.FC<{
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    await new Promise(resolve => setTimeout(resolve, 300));
     onDelete(address.id);
     setShowDeleteConfirm(false);
   };
@@ -433,7 +432,7 @@ const AddressForm: React.FC<{
       setFormData(prev => ({ ...prev, coordinates: location }));
       showToast('Location detected successfully!', 'success');
       
-      // Reverse geocode to get address (mock implementation)
+      // Reverse geocode to get address using OpenStreetMap Nominatim
       fetchAddressFromCoordinates(location);
     }
   }, [location]);
@@ -441,15 +440,28 @@ const AddressForm: React.FC<{
   const fetchAddressFromCoordinates = async (coords: { lat: number; lng: number }) => {
     setIsFetchingLocation(true);
     try {
-      // In a real app, you would use a geocoding API like Google Maps or OpenStreetMap
-      // This is a mock implementation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock address data based on coordinates
-      // In production, replace with actual geocoding API call
-      showToast('Address details fetched from location', 'info');
+      // Use OpenStreetMap Nominatim for reverse geocoding (free, no API key required)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&addressdetails=1`,
+        { headers: { 'Accept-Language': 'en' } }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        const addr = data.address || {};
+        setFormData(prev => ({
+          ...prev,
+          addressLine1: [addr.road, addr.neighbourhood, addr.suburb].filter(Boolean).join(', ') || prev.addressLine1,
+          city: addr.city || addr.town || addr.village || prev.city,
+          state: addr.state || prev.state,
+          pincode: addr.postcode || prev.pincode,
+        }));
+        showToast('Address details fetched from location', 'info');
+      } else {
+        showToast('Could not fetch address from location', 'error');
+      }
     } catch (error) {
       console.error('Error fetching address:', error);
+      showToast('Could not fetch address from location', 'error');
     } finally {
       setIsFetchingLocation(false);
     }
@@ -528,9 +540,6 @@ const AddressForm: React.FC<{
     }
 
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
     
     onSubmit({
       ...formData,

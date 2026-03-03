@@ -5,6 +5,7 @@ import {
   Check, Clock, RefreshCw, Download, Zap, Users, Search, Filter,
   List, LayoutGrid, ArrowUp, ArrowDown, Eye, Circle
 } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './DriverPayouts.css';
 
 /* ─── Types ─── */
@@ -56,125 +57,6 @@ interface ToastNotification {
   title: string;
   message: string;
 }
-
-/* ─── Mock Data ─── */
-const generatePayouts = (): DriverPayout[] => [
-  {
-    id: '1', driverId: 'DRV-101', name: 'Rakesh Patil', initials: 'RP',
-    phone: '+91 98765 43210', email: 'rakesh.p@email.com',
-    deliveries: 28, earnings: 14200, commission: 1420, netPayout: 12780,
-    tips: 850, bonuses: 500, deductions: 0,
-    status: 'paid', paidDate: '2024-01-15',
-    bankAccount: '****6742', bankName: 'HDFC Bank', ifscCode: 'HDFC0001234',
-    rating: 4.8, completionRate: 97, avgDeliveryTime: '28 min',
-    joinDate: '2023-03-15', vehicleType: 'Motorcycle', zone: 'North Zone'
-  },
-  {
-    id: '2', driverId: 'DRV-102', name: 'Sunil More', initials: 'SM',
-    phone: '+91 98765 43211', email: 'sunil.m@email.com',
-    deliveries: 22, earnings: 11400, commission: 1140, netPayout: 10260,
-    tips: 620, bonuses: 0, deductions: 200,
-    status: 'pending', paidDate: '—',
-    bankAccount: '****3891', bankName: 'SBI', ifscCode: 'SBIN0005678',
-    rating: 4.5, completionRate: 94, avgDeliveryTime: '32 min',
-    joinDate: '2023-06-20', vehicleType: 'Motorcycle', zone: 'South Zone'
-  },
-  {
-    id: '3', driverId: 'DRV-103', name: 'Priya Kulkarni', initials: 'PK',
-    phone: '+91 98765 43212', email: 'priya.k@email.com',
-    deliveries: 35, earnings: 18500, commission: 1850, netPayout: 16650,
-    tips: 1200, bonuses: 1000, deductions: 0,
-    status: 'paid', paidDate: '2024-01-15',
-    bankAccount: '****2204', bankName: 'ICICI Bank', ifscCode: 'ICIC0009012',
-    rating: 4.9, completionRate: 99, avgDeliveryTime: '25 min',
-    joinDate: '2023-01-10', vehicleType: 'Car', zone: 'East Zone'
-  },
-  {
-    id: '4', driverId: 'DRV-104', name: 'Amit Shah', initials: 'AS',
-    phone: '+91 98765 43213', email: 'amit.s@email.com',
-    deliveries: 18, earnings: 9200, commission: 920, netPayout: 8280,
-    tips: 380, bonuses: 0, deductions: 500,
-    status: 'failed', paidDate: '—',
-    bankAccount: '****5510', bankName: 'Axis Bank', ifscCode: 'UTIB0003456',
-    rating: 4.2, completionRate: 88, avgDeliveryTime: '35 min',
-    joinDate: '2023-08-05', vehicleType: 'Motorcycle', zone: 'West Zone'
-  },
-  {
-    id: '5', driverId: 'DRV-105', name: 'Deepa Rao', initials: 'DR',
-    phone: '+91 98765 43214', email: 'deepa.r@email.com',
-    deliveries: 31, earnings: 16800, commission: 1680, netPayout: 15120,
-    tips: 950, bonuses: 750, deductions: 0,
-    status: 'pending', paidDate: '—',
-    bankAccount: '****8823', bankName: 'Kotak Bank', ifscCode: 'KKBK0007890',
-    rating: 4.7, completionRate: 96, avgDeliveryTime: '27 min',
-    joinDate: '2023-04-18', vehicleType: 'Motorcycle', zone: 'North Zone'
-  },
-  {
-    id: '6', driverId: 'DRV-106', name: 'Vikram Singh', initials: 'VS',
-    phone: '+91 98765 43215', email: 'vikram.s@email.com',
-    deliveries: 42, earnings: 22100, commission: 2210, netPayout: 19890,
-    tips: 1400, bonuses: 1500, deductions: 0,
-    status: 'processing', paidDate: '—',
-    bankAccount: '****1156', bankName: 'HDFC Bank', ifscCode: 'HDFC0002345',
-    rating: 4.9, completionRate: 98, avgDeliveryTime: '24 min',
-    joinDate: '2022-11-01', vehicleType: 'Car', zone: 'Central Zone'
-  },
-  {
-    id: '7', driverId: 'DRV-107', name: 'Meena Iyer', initials: 'MI',
-    phone: '+91 98765 43216', email: 'meena.i@email.com',
-    deliveries: 26, earnings: 13400, commission: 1340, netPayout: 12060,
-    tips: 700, bonuses: 300, deductions: 150,
-    status: 'paid', paidDate: '2024-01-15',
-    bankAccount: '****4478', bankName: 'SBI', ifscCode: 'SBIN0006789',
-    rating: 4.6, completionRate: 95, avgDeliveryTime: '29 min',
-    joinDate: '2023-05-22', vehicleType: 'Motorcycle', zone: 'South Zone'
-  },
-  {
-    id: '8', driverId: 'DRV-108', name: 'Ganesh Jadhav', initials: 'GJ',
-    phone: '+91 98765 43217', email: 'ganesh.j@email.com',
-    deliveries: 15, earnings: 7800, commission: 780, netPayout: 7020,
-    tips: 300, bonuses: 0, deductions: 350,
-    status: 'pending', paidDate: '—',
-    bankAccount: '****9934', bankName: 'PNB', ifscCode: 'PUNB0004567',
-    rating: 4.3, completionRate: 90, avgDeliveryTime: '33 min',
-    joinDate: '2023-09-10', vehicleType: 'Bicycle', zone: 'East Zone'
-  },
-  {
-    id: '9', driverId: 'DRV-109', name: 'Kavita Deshmukh', initials: 'KD',
-    phone: '+91 98765 43218', email: 'kavita.d@email.com',
-    deliveries: 38, earnings: 20200, commission: 2020, netPayout: 18180,
-    tips: 1100, bonuses: 800, deductions: 0,
-    status: 'paid', paidDate: '2024-01-15',
-    bankAccount: '****7761', bankName: 'ICICI Bank', ifscCode: 'ICIC0001234',
-    rating: 4.8, completionRate: 97, avgDeliveryTime: '26 min',
-    joinDate: '2023-02-14', vehicleType: 'Car', zone: 'West Zone'
-  },
-  {
-    id: '10', driverId: 'DRV-110', name: 'Arjun Reddy', initials: 'AR',
-    phone: '+91 98765 43219', email: 'arjun.r@email.com',
-    deliveries: 20, earnings: 10600, commission: 1060, netPayout: 9540,
-    tips: 480, bonuses: 200, deductions: 100,
-    status: 'failed', paidDate: '—',
-    bankAccount: '****3345', bankName: 'Canara Bank', ifscCode: 'CNRB0005678',
-    rating: 4.1, completionRate: 86, avgDeliveryTime: '36 min',
-    joinDate: '2023-07-30', vehicleType: 'Motorcycle', zone: 'Central Zone'
-  },
-];
-
-const generatePayoutHistory = (driverId: string): PayoutHistory[] => {
-  const statuses: PayoutStatus[] = ['paid', 'paid', 'paid', 'paid', 'failed'];
-  return Array.from({ length: 6 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (i + 1) * 15);
-    return {
-      id: `PH-${driverId}-${i}`,
-      date: d.toISOString(),
-      amount: Math.round(8000 + Math.random() * 12000),
-      status: statuses[Math.floor(Math.random() * statuses.length)],
-      transactionId: `TXN${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-    };
-  });
-};
 
 /* ─── Helpers ─── */
 const formatCurrency = (val: number): string =>
@@ -303,7 +185,7 @@ const DriverDetailModal: React.FC<{
   processing: boolean;
 }> = ({ driver, onClose, onProcess, processing }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'earnings' | 'history'>('overview');
-  const [history] = useState<PayoutHistory[]>(generatePayoutHistory(driver.driverId));
+  const [history] = useState<PayoutHistory[]>([]);
 
   const tabs = [
     { key: 'overview' as const, label: 'Overview', icon: <User size={16} /> },
@@ -588,7 +470,7 @@ const ConfirmDialog: React.FC<{
 
 /* ─── Main Component ─── */
 const DriverPayouts: React.FC = () => {
-  const [payouts, setPayouts] = useState<DriverPayout[]>(generatePayouts());
+  const [payouts, setPayouts] = useState<DriverPayout[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | PayoutStatus>('all');
   const [zoneFilter, setZoneFilter] = useState<string>('all');
@@ -604,6 +486,16 @@ const DriverPayouts: React.FC = () => {
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/admin/driver-payouts`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setPayouts(data);
+        else if (data.payouts) setPayouts(data.payouts);
+      })
+      .catch(() => {});
+  }, []);
 
   const zones = useMemo(() => {
     const z = [...new Set(payouts.map((p) => p.zone))];
@@ -694,7 +586,6 @@ const DriverPayouts: React.FC = () => {
   const processPayment = useCallback(
     async (id: string) => {
       setProcessingId(id);
-      await new Promise((r) => setTimeout(r, 2000));
       setPayouts((prev) =>
         prev.map((p) =>
           p.id === id
@@ -712,7 +603,6 @@ const DriverPayouts: React.FC = () => {
 
   const processBulkPayments = useCallback(async () => {
     setBulkProcessing(true);
-    await new Promise((r) => setTimeout(r, 3000));
     const ids = new Set(selectedDrivers);
     setPayouts((prev) =>
       prev.map((p) =>

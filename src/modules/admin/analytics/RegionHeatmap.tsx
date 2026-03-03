@@ -6,6 +6,7 @@ import {
   SlidersHorizontal, Receipt, Clock, Award, BarChart3,
   Circle, MapPin, LayoutGrid, CircleDot
 } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './RegionHeatmap.css';
 
 interface Region {
@@ -40,136 +41,7 @@ type MetricType = 'orders' | 'revenue' | 'farmers' | 'drivers';
 type SortType = 'name' | 'orders' | 'revenue' | 'growth';
 type ViewMode = 'heatmap' | 'bubbles' | 'bars' | 'map';
 
-const mockRegions: Region[] = [
-  { 
-    id: '1', 
-    name: 'Pune City', 
-    orders: 342, 
-    revenue: 428000,
-    revenueDisplay: '₹4,28,000', 
-    farmers: 45, 
-    drivers: 18, 
-    heat: 'high',
-    growth: 23.5,
-    coordinates: { x: 45, y: 55 },
-    avgOrderValue: 1251,
-    topProducts: ['Tomatoes', 'Onions', 'Potatoes'],
-    deliveryTime: 32,
-    satisfaction: 4.7
-  },
-  { 
-    id: '2', 
-    name: 'Mumbai Suburbs', 
-    orders: 286, 
-    revenue: 362000,
-    revenueDisplay: '₹3,62,000', 
-    farmers: 38, 
-    drivers: 22, 
-    heat: 'high',
-    growth: 18.2,
-    coordinates: { x: 25, y: 45 },
-    avgOrderValue: 1266,
-    topProducts: ['Leafy Greens', 'Fruits', 'Herbs'],
-    deliveryTime: 45,
-    satisfaction: 4.5
-  },
-  { 
-    id: '3', 
-    name: 'Nashik', 
-    orders: 156, 
-    revenue: 194000,
-    revenueDisplay: '₹1,94,000', 
-    farmers: 52, 
-    drivers: 12, 
-    heat: 'medium',
-    growth: 31.8,
-    coordinates: { x: 35, y: 25 },
-    avgOrderValue: 1244,
-    topProducts: ['Grapes', 'Onions', 'Pomegranate'],
-    deliveryTime: 28,
-    satisfaction: 4.8
-  },
-  { 
-    id: '4', 
-    name: 'Kolhapur', 
-    orders: 118, 
-    revenue: 148000,
-    revenueDisplay: '₹1,48,000', 
-    farmers: 34, 
-    drivers: 8, 
-    heat: 'medium',
-    growth: 12.4,
-    coordinates: { x: 30, y: 75 },
-    avgOrderValue: 1254,
-    topProducts: ['Sugarcane', 'Jaggery', 'Turmeric'],
-    deliveryTime: 35,
-    satisfaction: 4.6
-  },
-  { 
-    id: '5', 
-    name: 'Aurangabad', 
-    orders: 82, 
-    revenue: 98000,
-    revenueDisplay: '₹98,000', 
-    farmers: 24, 
-    drivers: 6, 
-    heat: 'low',
-    growth: 45.2,
-    coordinates: { x: 60, y: 35 },
-    avgOrderValue: 1195,
-    topProducts: ['Cotton', 'Soybean', 'Pulses'],
-    deliveryTime: 42,
-    satisfaction: 4.4
-  },
-  { 
-    id: '6', 
-    name: 'Nagpur', 
-    orders: 64, 
-    revenue: 76000,
-    revenueDisplay: '₹76,000', 
-    farmers: 18, 
-    drivers: 5, 
-    heat: 'low',
-    growth: 67.3,
-    coordinates: { x: 85, y: 30 },
-    avgOrderValue: 1188,
-    topProducts: ['Oranges', 'Chilies', 'Rice'],
-    deliveryTime: 38,
-    satisfaction: 4.3
-  },
-  { 
-    id: '7', 
-    name: 'Solapur', 
-    orders: 94, 
-    revenue: 112000,
-    revenueDisplay: '₹1,12,000', 
-    farmers: 28, 
-    drivers: 7, 
-    heat: 'medium',
-    growth: 28.9,
-    coordinates: { x: 55, y: 65 },
-    avgOrderValue: 1191,
-    topProducts: ['Pomegranate', 'Grapes', 'Onions'],
-    deliveryTime: 30,
-    satisfaction: 4.5
-  },
-  { 
-    id: '8', 
-    name: 'Satara', 
-    orders: 72, 
-    revenue: 86000,
-    revenueDisplay: '₹86,000', 
-    farmers: 22, 
-    drivers: 5, 
-    heat: 'low',
-    growth: 35.6,
-    coordinates: { x: 38, y: 68 },
-    avgOrderValue: 1194,
-    topProducts: ['Strawberries', 'Milk', 'Honey'],
-    deliveryTime: 33,
-    satisfaction: 4.6
-  },
-];
+
 
 const timeRanges: TimeRange[] = [
   { label: 'Today', value: 'today' },
@@ -226,12 +98,19 @@ const RegionHeatmap: React.FC = () => {
   const [compareMode, setCompareMode] = useState(false);
   const [compareRegions, setCompareRegions] = useState<string[]>([]);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [regions, setRegions] = useState<Region[]>([]);
   const mapRef = useRef<HTMLDivElement>(null);
 
-  // Simulate loading
+  // Fetch regions from API
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
+    setIsLoading(true);
+    fetch(`${API_BASE_URL}/api/admin/regions`)
+      .then(res => res.json())
+      .then(data => {
+        setRegions(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setRegions([]))
+      .finally(() => setIsLoading(false));
   }, []);
 
   // Animate on metric change
@@ -243,7 +122,7 @@ const RegionHeatmap: React.FC = () => {
 
   // Filtered and sorted regions
   const filteredRegions = useMemo(() => {
-    return mockRegions
+    return regions
       .filter(region => {
         const matchesSearch = region.name.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesHeat = heatFilter.includes(region.heat);
@@ -267,25 +146,25 @@ const RegionHeatmap: React.FC = () => {
         }
         return sortOrder === 'desc' ? -comparison : comparison;
       });
-  }, [searchQuery, sortBy, sortOrder, heatFilter]);
+  }, [regions, searchQuery, sortBy, sortOrder, heatFilter]);
 
   // Totals
   const totals = useMemo(() => ({
-    orders: mockRegions.reduce((s, r) => s + r.orders, 0),
-    revenue: mockRegions.reduce((s, r) => s + r.revenue, 0),
-    farmers: mockRegions.reduce((s, r) => s + r.farmers, 0),
-    drivers: mockRegions.reduce((s, r) => s + r.drivers, 0),
-  }), []);
+    orders: regions.reduce((s, r) => s + r.orders, 0),
+    revenue: regions.reduce((s, r) => s + r.revenue, 0),
+    farmers: regions.reduce((s, r) => s + r.farmers, 0),
+    drivers: regions.reduce((s, r) => s + r.drivers, 0),
+  }), [regions]);
 
   // Max values for scaling
   const maxValues = useMemo(() => ({
-    orders: Math.max(...mockRegions.map(r => r.orders)),
-    revenue: Math.max(...mockRegions.map(r => r.revenue)),
-    farmers: Math.max(...mockRegions.map(r => r.farmers)),
-    drivers: Math.max(...mockRegions.map(r => r.drivers)),
-  }), []);
+    orders: Math.max(0, ...regions.map(r => r.orders)),
+    revenue: Math.max(0, ...regions.map(r => r.revenue)),
+    farmers: Math.max(0, ...regions.map(r => r.farmers)),
+    drivers: Math.max(0, ...regions.map(r => r.drivers)),
+  }), [regions]);
 
-  const selected = selectedRegion ? mockRegions.find((r) => r.id === selectedRegion) : null;
+  const selected = selectedRegion ? regions.find((r) => r.id === selectedRegion) : null;
 
   const getMetricValue = useCallback((region: Region): number => {
     switch (metric) {
@@ -928,7 +807,7 @@ const RegionHeatmap: React.FC = () => {
   };
 
   const renderComparisonPanel = () => {
-    const compareData = compareRegions.map(id => mockRegions.find(r => r.id === id)!).filter(Boolean);
+    const compareData = compareRegions.map(id => regions.find(r => r.id === id)!).filter(Boolean);
     
     if (compareData.length === 0) return null;
     
@@ -995,7 +874,7 @@ const RegionHeatmap: React.FC = () => {
             Region Heatmap
           </h1>
           <p className="header-subtitle">
-            Visualize regional performance across {mockRegions.length} active regions
+            Visualize regional performance across {regions.length} active regions
           </p>
         </div>
         
@@ -1429,7 +1308,7 @@ const RegionHeatmap: React.FC = () => {
                 <div className="overview-item__icon"><MapPin size={20} /></div>
                 <div className="overview-item__content">
                   <div className="overview-item__value">
-                    <AnimatedCounter value={mockRegions.length} />
+                    <AnimatedCounter value={regions.length} />
                   </div>
                   <div className="overview-item__label">Active Regions</div>
                 </div>

@@ -7,6 +7,7 @@ import {
   Lock, Mail, MessageSquare, Package, Paperclip, Phone, Plus, PlusCircle,
   RefreshCw, Scale, Search, Smartphone, Timer, Truck, User, Wheat, X, XCircle
 } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './DisputeCenter.css';
 
 /* ─── Types ─── */
@@ -73,85 +74,9 @@ interface ToastNotification {
   message: string;
 }
 
-/* ─── Generate Mock Data ─── */
+/* ─── Disputes (fetched from API) ─── */
 const generateDisputes = (): Dispute[] => {
-  const categories: DisputeCategory[] = ['quality', 'delivery', 'payment', 'quantity', 'no_show', 'damage', 'other'];
-  const priorities: DisputePriority[] = ['critical', 'high', 'medium', 'low'];
-  const statuses: DisputeStatus[] = ['open', 'investigating', 'awaiting_response', 'resolved', 'escalated', 'closed'];
-  const tags = ['urgent', 'vip', 'repeat', 'refund_requested', 'legal_review', 'first_time'];
-
-  const parties: { name: string; role: PartyRole; email: string; phone: string }[] = [
-    { name: 'Ravi Sharma', role: 'customer', email: 'ravi.s@email.com', phone: '+91 98765 43210' },
-    { name: 'Hope NGO', role: 'ngo', email: 'contact@hopnego.org', phone: '+91 98765 43211' },
-    { name: 'Helping Hands NGO', role: 'ngo', email: 'info@helpinghands.org', phone: '+91 98765 43212' },
-    { name: 'City Food Bank', role: 'ngo', email: 'admin@cityfoodbank.org', phone: '+91 98765 43213' },
-    { name: 'Rakesh Patil', role: 'driver', email: 'rakesh.p@email.com', phone: '+91 98765 43214' },
-    { name: 'Priya Kulkarni', role: 'driver', email: 'priya.k@email.com', phone: '+91 98765 43215' },
-    { name: 'Green Valley Farm', role: 'farmer', email: 'contact@greenvalley.com', phone: '+91 98765 43216' },
-    { name: 'Sunrise Organics', role: 'farmer', email: 'info@sunriseorg.com', phone: '+91 98765 43217' },
-    { name: 'Fresh Fields', role: 'vendor', email: 'sales@freshfields.com', phone: '+91 98765 43218' },
-    { name: 'Amit Shah', role: 'driver', email: 'amit.s@email.com', phone: '+91 98765 43219' },
-  ];
-
-  const subjects: Record<DisputeCategory, string[]> = {
-    quality: ['Received rotten vegetables', 'Food quality below standard', 'Contaminated produce', 'Spoiled items in delivery'],
-    delivery: ['Late delivery — food spoiled', 'Delivery never arrived', 'Wrong address delivery', 'Damaged during transit'],
-    payment: ['Payout not received', 'Overcharged for order', 'Refund not processed', 'Commission dispute'],
-    quantity: ['Only 50% of ordered quantity received', 'Missing items in order', 'Short weight delivery', 'Incorrect item count'],
-    no_show: ['Recipient not present at dropoff', 'Driver did not arrive', 'Pickup location closed', 'Contact unreachable'],
-    damage: ['Package arrived damaged', 'Items crushed during delivery', 'Wet/water damaged goods', 'Packaging compromised'],
-    other: ['Account access issue', 'Rating dispute', 'Communication problem', 'Terms violation concern'],
-  };
-
-  const assignees = ['Priya M.', 'Rahul K.', 'Anita S.', 'Vikram T.', 'Deepa R.', null];
-
-  return Array.from({ length: 25 }, (_, i) => {
-    const category = categories[Math.floor(Math.random() * categories.length)];
-    const priority = priorities[Math.floor(Math.random() * priorities.length)];
-    const status = statuses[Math.floor(Math.random() * statuses.length)];
-    const filer = parties[Math.floor(Math.random() * parties.length)];
-    const opponent = parties.filter((p) => p.name !== filer.name)[Math.floor(Math.random() * (parties.length - 1))];
-    const subjectOptions = subjects[category];
-    const subject = subjectOptions[Math.floor(Math.random() * subjectOptions.length)];
-
-    const createdDate = new Date();
-    createdDate.setHours(createdDate.getHours() - Math.floor(Math.random() * 720));
-    const lastUpdateDate = new Date(createdDate);
-    lastUpdateDate.setMinutes(lastUpdateDate.getMinutes() + Math.floor(Math.random() * 120));
-
-    const slaDate = new Date(createdDate);
-    slaDate.setHours(slaDate.getHours() + (priority === 'critical' ? 4 : priority === 'high' ? 24 : priority === 'medium' ? 72 : 168));
-
-    const randomTags = tags.filter(() => Math.random() > 0.7);
-
-    return {
-      id: String(i + 1),
-      disputeId: `DSP-${400 - i}`,
-      orderId: `ORD-${2350 + Math.floor(Math.random() * 100)}`,
-      orderAmount: Math.round(500 + Math.random() * 10000),
-      filedBy: filer.name,
-      filedByRole: filer.role,
-      filedByEmail: filer.email,
-      filedByPhone: filer.phone,
-      against: opponent?.name || 'Platform',
-      againstRole: opponent?.role || 'platform',
-      category,
-      subject,
-      description: `This dispute was filed regarding ${subject.toLowerCase()}. The complainant has provided evidence and is requesting immediate resolution. ${priority === 'critical' || priority === 'high' ? 'This is a high-priority case requiring urgent attention.' : ''}`,
-      priority,
-      status,
-      createdAt: createdDate.toISOString(),
-      lastUpdate: lastUpdateDate.toISOString(),
-      assignedTo: assignees[Math.floor(Math.random() * assignees.length)] || undefined,
-      resolvedAt: status === 'resolved' || status === 'closed' ? lastUpdateDate.toISOString() : undefined,
-      resolution: status === 'resolved' || status === 'closed' ? 'Issue has been investigated and resolved per platform policies.' : undefined,
-      refundAmount: status === 'resolved' && Math.random() > 0.5 ? Math.round(200 + Math.random() * 2000) : undefined,
-      evidenceCount: Math.floor(Math.random() * 5),
-      messageCount: Math.floor(Math.random() * 12),
-      slaDeadline: slaDate.toISOString(),
-      tags: randomTags,
-    };
-  }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  return [];
 };
 
 const generateTimeline = (dispute: Dispute): TimelineEvent[] => {
@@ -434,7 +359,7 @@ const DisputeModal: React.FC<{
 
   const handleStatusUpdate = async () => {
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1000));
+    // TODO: Replace with API call to update dispute status
     onStatusChange(dispute.id, newStatus, resolutionNote);
     setIsSubmitting(false);
   };
@@ -844,6 +769,22 @@ const DisputeModal: React.FC<{
 const DisputeCenter: React.FC = () => {
   const navigate = useNavigate();
   const [disputes, setDisputes] = useState<Dispute[]>(generateDisputes());
+
+  // Fetch disputes from API on mount
+  useEffect(() => {
+    const fetchDisputes = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/disputes`);
+        if (res.ok) {
+          const data = await res.json();
+          setDisputes(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch disputes:', err);
+      }
+    };
+    fetchDisputes();
+  }, []);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | DisputeStatus>('all');
   const [priorityFilter, setPriorityFilter] = useState<'all' | DisputePriority>('all');
@@ -923,7 +864,7 @@ const DisputeCenter: React.FC = () => {
     escalated: disputes.filter((d) => d.status === 'escalated').length,
     resolved: disputes.filter((d) => d.status === 'resolved' || d.status === 'closed').length,
     critical: disputes.filter((d) => d.priority === 'critical' && d.status !== 'resolved' && d.status !== 'closed').length,
-    avgResolutionTime: '18h', // Mock
+    avgResolutionTime: '0h',
   }), [disputes]);
 
   const activeFilterCount = [statusFilter !== 'all', priorityFilter !== 'all', categoryFilter !== 'all'].filter(Boolean).length;

@@ -203,175 +203,14 @@ const useLocalStorage = <T,>(key: string, initialValue: T): [T, (value: T | ((pr
 };
 
 // ============================================
-// MOCK DATA
+// DEFAULT DATA (empty defaults - data comes from API)
 // ============================================
 
-const generateMockPaymentMethods = (): PaymentMethod[] => [
-  {
-    id: 'pm_1',
-    type: 'card',
-    name: 'HDFC Bank Debit Card',
-    details: '4532',
-    icon: <CreditCard size={16} />,
-    isDefault: true,
-    isVerified: true,
-    lastUsed: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    expiryDate: '12/26',
-    cardBrand: 'visa',
-    createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'pm_2',
-    type: 'upi',
-    name: 'UPI',
-    details: 'user@okaxis',
-    icon: <Smartphone size={16} />,
-    isDefault: false,
-    isVerified: true,
-    lastUsed: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'pm_3',
-    type: 'card',
-    name: 'ICICI Bank Credit Card',
-    details: '8901',
-    icon: <CreditCard size={16} />,
-    isDefault: false,
-    isVerified: true,
-    expiryDate: '08/25',
-    cardBrand: 'mastercard',
-    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'pm_4',
-    type: 'wallet',
-    name: 'Paytm Wallet',
-    details: 'Linked',
-    icon: <Smartphone size={16} />,
-    isDefault: false,
-    isVerified: true,
-    walletProvider: 'paytm',
-    createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString()
-  }
-];
+const getDefaultPaymentMethods = (): PaymentMethod[] => [];
 
-const generateMockTransactions = (): Transaction[] => [
-  {
-    id: 'txn_1',
-    type: 'payment',
-    amount: 1250,
-    status: 'success',
-    description: 'Order #ORD-2024-1234',
-    orderId: 'ORD-2024-1234',
-    paymentMethod: 'HDFC Bank •••• 4532',
-    date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'txn_2',
-    type: 'cashback',
-    amount: 50,
-    status: 'success',
-    description: 'Cashback on Order #ORD-2024-1234',
-    paymentMethod: 'Annam Wallet',
-    date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'txn_3',
-    type: 'refund',
-    amount: 350,
-    status: 'processing',
-    description: 'Refund for Order #ORD-2024-1200',
-    orderId: 'ORD-2024-1200',
-    paymentMethod: 'HDFC Bank •••• 4532',
-    date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    refundReason: 'Product quality issue'
-  },
-  {
-    id: 'txn_4',
-    type: 'payment',
-    amount: 890,
-    status: 'success',
-    description: 'Order #ORD-2024-1198',
-    orderId: 'ORD-2024-1198',
-    paymentMethod: 'UPI - user@okaxis',
-    date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'txn_5',
-    type: 'wallet_credit',
-    amount: 500,
-    status: 'success',
-    description: 'Added money to wallet',
-    paymentMethod: 'ICICI Bank •••• 8901',
-    date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'txn_6',
-    type: 'payment',
-    amount: 2100,
-    status: 'failed',
-    description: 'Order #ORD-2024-1150 (Failed)',
-    orderId: 'ORD-2024-1150',
-    paymentMethod: 'HDFC Bank •••• 4532',
-    date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'txn_7',
-    type: 'refund',
-    amount: 750,
-    status: 'success',
-    description: 'Refund for Order #ORD-2024-1100',
-    orderId: 'ORD-2024-1100',
-    paymentMethod: 'HDFC Bank •••• 4532',
-    date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
-  }
-];
+const getDefaultTransactions = (): Transaction[] => [];
 
-const generateMockOffers = (): Offer[] => [
-  {
-    id: 'offer_1',
-    title: '10% Cashback on UPI',
-    description: 'Get 10% cashback up to ₹100 on UPI payments',
-    discount: '10% up to ₹100',
-    validTill: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    minOrder: 500,
-    maxDiscount: 100,
-    paymentMethods: ['upi'],
-    isActive: true
-  },
-  {
-    id: 'offer_2',
-    title: 'HDFC Card Offer',
-    description: '15% instant discount on HDFC Bank cards',
-    code: 'HDFC15',
-    discount: '15% off',
-    validTill: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
-    minOrder: 1000,
-    maxDiscount: 300,
-    paymentMethods: ['card'],
-    isActive: true
-  },
-  {
-    id: 'offer_3',
-    title: 'First Wallet Payment',
-    description: 'Flat ₹50 off on first Annam Wallet payment',
-    code: 'WALLET50',
-    discount: '₹50 off',
-    validTill: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    paymentMethods: ['wallet'],
-    isActive: true
-  },
-  {
-    id: 'offer_4',
-    title: 'Weekend Special',
-    description: 'Extra 5% cashback on all payments this weekend',
-    discount: '5% cashback',
-    validTill: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-    paymentMethods: ['card', 'upi', 'wallet', 'netbanking'],
-    isActive: true
-  }
-];
+const getDefaultOffers = (): Offer[] => [];
 
 // ============================================
 // COMPONENTS
@@ -868,7 +707,6 @@ const AddPaymentMethodModal: React.FC<{
     if (step === 'upi' && !validateUPI()) return;
 
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
 
     const newMethod: Omit<PaymentMethod, 'id' | 'createdAt'> = {
       type: step as any,
@@ -1178,7 +1016,6 @@ const AddMoneyModal: React.FC<{
     }
 
     setIsProcessing(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
     onAdd(numAmount);
     setIsProcessing(false);
     onClose();
@@ -1399,15 +1236,15 @@ const CustomerPayments: React.FC = () => {
   // State
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<'methods' | 'transactions' | 'offers' | 'wallet'>('wallet');
-  const [paymentMethods, setPaymentMethods] = useLocalStorage<PaymentMethod[]>('customer-payment-methods', generateMockPaymentMethods());
-  const [transactions] = useState<Transaction[]>(generateMockTransactions());
-  const [offers] = useState<Offer[]>(generateMockOffers());
+  const [paymentMethods, setPaymentMethods] = useLocalStorage<PaymentMethod[]>('customer-payment-methods', getDefaultPaymentMethods());
+  const [transactions] = useState<Transaction[]>(getDefaultTransactions());
+  const [offers] = useState<Offer[]>(getDefaultOffers());
   const [wallet, setWallet] = useLocalStorage<WalletData>('customer-wallet', {
-    balance: 1250,
+    balance: 0,
     currency: 'INR',
     lastUpdated: new Date().toISOString(),
-    pendingCashback: 75,
-    lifetimeCashback: 2340
+    pendingCashback: 0,
+    lifetimeCashback: 0
   });
   
   // Modals

@@ -238,7 +238,8 @@ const HomePage: React.FC = () => {
           const { isExpired } = parseExpiryAndGetCountdown(listing.expiry || listing.expiry_date, listing.created_at);
           
           if (isExpired) {
-            fetch(`${API_ENDPOINTS.marketplace.listingById(listing.id.toString())}/details`, {
+            // Use correct endpoint for deleting the listing
+            fetch(`${API_ENDPOINTS.listings}/${listing.id.toString()}`, {
               method: 'DELETE',
               headers: { 'Content-Type': 'application/json' }
             }).catch(err => console.error('Error deleting expired listing:', err));
@@ -264,7 +265,7 @@ const HomePage: React.FC = () => {
         const parsedUser = JSON.parse(savedUser);
         // Validate user has required fields and valid role
         if (parsedUser && parsedUser.id && parsedUser.name && 
-            ['farmer', 'ngo', 'driver'].includes(parsedUser.role)) {
+            ['farmer', 'ngo', 'driver', 'customer'].includes(parsedUser.role)) {
           setUser(parsedUser);
           setLoading(false);
           
@@ -312,7 +313,8 @@ const HomePage: React.FC = () => {
     setClaimingId(listingId);
 
     try {
-      const response = await fetch(`${API_ENDPOINTS.marketplace.listings}/claim`, {
+      // Use the correct endpoint for claiming (from listing_routes.py)
+      const response = await fetch(`${API_ENDPOINTS.listings}/${listingId}/claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -364,7 +366,8 @@ const HomePage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(API_ENDPOINTS.marketplace.listingById(listingId.toString()), {
+      // Use correct endpoint from listing_routes.py
+      const response = await fetch(`${API_ENDPOINTS.listings}/${listingId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -397,7 +400,8 @@ const HomePage: React.FC = () => {
     if (user?.role !== 'driver') return;
 
     try {
-      const response = await fetch(`${API_ENDPOINTS.marketplace.listingById(listingId.toString())}/assign-driver`, {
+      // Use the correct endpoint for driver assignment (from listing_routes.py)
+      const response = await fetch(`${API_ENDPOINTS.listings}/${listingId}/assign-driver`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -750,6 +754,16 @@ const HomePage: React.FC = () => {
         }
         return null;
       
+      case 'customer':
+        return (
+          <button
+            className="btn-primary-action"
+            onClick={() => navigate(`/marketplace/product/${listing.id}`)}
+          >
+            🛒 View & Order
+          </button>
+        );
+
       default:
         return null;
     }
@@ -1050,7 +1064,7 @@ const HomePage: React.FC = () => {
                             {/* For drivers, show claimed quantity if available */}
                             {user?.role === 'driver' && listing.claimed_by && typeof listing.claimed_by === 'object' && listing.claimed_by.claim_quantity
                               ? `${listing.claimed_by.claim_quantity} kg (claimed)`
-                              : listing.quantity}
+                              : (listing.quantity || 'N/A')}
                           </span>
                         </div>
                         

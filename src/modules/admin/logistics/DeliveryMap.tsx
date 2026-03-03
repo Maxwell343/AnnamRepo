@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Map, ArrowRight } from 'lucide-react';
 import './DeliveryMap.css';
+import { API_BASE_URL } from '../../../config/api';
 
 interface RouteInfo {
   id: string;
@@ -13,21 +14,29 @@ interface RouteInfo {
   eta: string;
 }
 
-const mockRoutes: RouteInfo[] = [
-  { id: '1', orderId: 'ORD-2401', driver: 'Rakesh P.', pickup: 'Green Valley Farm', dropoff: 'Hope NGO Center', status: 'active', distance: '8.2 km', eta: '12 min' },
-  { id: '2', orderId: 'ORD-2402', driver: 'Sunil M.', pickup: 'Sunrise Organics', dropoff: 'City Food Bank', status: 'active', distance: '14.5 km', eta: '25 min' },
-  { id: '3', orderId: 'ORD-2404', driver: 'Amit S.', pickup: 'Organic Roots', dropoff: 'Community Kitchen', status: 'delayed', distance: '6.8 km', eta: '40+ min' },
-  { id: '4', orderId: 'ORD-2405', driver: 'Deepa R.', pickup: 'Harvest Hub', dropoff: '22, MG Road', status: 'active', distance: '3.1 km', eta: '8 min' },
-  { id: '5', orderId: 'ORD-2398', driver: 'Priya K.', pickup: 'Fresh Fields', dropoff: 'Annapurna Shelter', status: 'completed', distance: '11.0 km', eta: '—' },
-];
-
 type FilterType = 'all' | 'active' | 'delayed' | 'completed';
 
 const DeliveryMap: React.FC = () => {
   const [filter, setFilter] = useState<FilterType>('all');
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
+  const [routes, setRoutes] = useState<RouteInfo[]>([]);
 
-  const filtered = filter === 'all' ? mockRoutes : mockRoutes.filter((r) => r.status === filter);
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/delivery-routes`);
+        if (res.ok) {
+          const data = await res.json();
+          setRoutes(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch delivery routes:', err);
+      }
+    };
+    fetchRoutes();
+  }, []);
+
+  const filtered = filter === 'all' ? routes : routes.filter((r) => r.status === filter);
 
   const filters: { key: FilterType; label: string }[] = [
     { key: 'all', label: 'All Routes' },

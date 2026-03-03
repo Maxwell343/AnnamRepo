@@ -18,19 +18,8 @@ import {
 } from 'recharts';
 import {
   UtensilsCrossed,
-  Users,
-  Globe,
-  Handshake,
   Trophy,
   Target,
-  Sprout,
-  Truck,
-  Award,
-  ChefHat,
-  HeartHandshake,
-  Leaf,
-  Building2,
-  Wheat,
   Share2,
   Download,
   FileText,
@@ -50,6 +39,7 @@ import {
   ArrowUp,
   Home,
 } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './ImpactMetrics.css';
 
 interface HeroMetric {
@@ -96,44 +86,25 @@ const ImpactMetrics: React.FC = () => {
   const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
   const [showAllNGOs, setShowAllNGOs] = useState(false);
 
-  const heroMetrics: HeroMetric[] = [
-    {
-      icon: <UtensilsCrossed size={16} />,
-      value: '45,200',
-      label: 'Food Rescued',
-      sub: 'Equivalent to 90,400 meals',
-      color: '#10b981',
-      trend: 15,
-      animatedValue: 0,
-    },
-    {
-      icon: <Users size={16} />,
-      value: '12,800',
-      label: 'People Fed',
-      sub: 'Across 45 communities',
-      color: '#3b82f6',
-      trend: 22,
-      animatedValue: 0,
-    },
-    {
-      icon: <Globe size={16} />,
-      value: '28.4',
-      label: 'CO₂ Prevented (T)',
-      sub: 'Equivalent to 62 trees planted',
-      color: '#059669',
-      trend: 18,
-      animatedValue: 0,
-    },
-    {
-      icon: <Handshake size={16} />,
-      value: '38',
-      label: 'NGO Partners',
-      sub: 'Active in 12 cities',
-      color: '#8b5cf6',
-      trend: 8,
-      animatedValue: 0,
-    },
-  ];
+  const [heroMetrics, setHeroMetrics] = useState<HeroMetric[]>([]);
+  const [foodRescuedData, setFoodRescuedData] = useState<{ month: string; rescued: number; target: number; previous: number }[]>([]);
+  const [mealsDistributionData, setMealsDistributionData] = useState<{ name: string; value: number; color: string }[]>([]);
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [ngos, setNgos] = useState<NGO[]>([]);
+
+  // Fetch impact metrics from API
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/admin/impact-metrics`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.heroMetrics) setHeroMetrics(data.heroMetrics);
+        if (data.foodRescuedData) setFoodRescuedData(data.foodRescuedData);
+        if (data.mealsDistributionData) setMealsDistributionData(data.mealsDistributionData);
+        if (data.milestones) setMilestones(data.milestones);
+        if (data.ngos) setNgos(data.ngos);
+      })
+      .catch(() => {});
+  }, [timeRange]);
 
   const [metrics, setMetrics] = useState(heroMetrics);
 
@@ -163,186 +134,6 @@ const ImpactMetrics: React.FC = () => {
         }, interval);
       });
   }, []);
-
-  const foodRescuedData = [
-    { month: 'Jan', rescued: 3200, target: 3500, previous: 2800 },
-    { month: 'Feb', rescued: 3800, target: 3500, previous: 3100 },
-    { month: 'Mar', rescued: 4200, target: 4000, previous: 3600 },
-    { month: 'Apr', rescued: 4600, target: 4000, previous: 3900 },
-    { month: 'May', rescued: 5100, target: 4500, previous: 4200 },
-    { month: 'Jun', rescued: 5400, target: 4500, previous: 4800 },
-  ];
-
-  const mealsDistributionData = [
-    { name: 'Hope NGO', value: 32, color: '#3b82f6' },
-    { name: 'Annapurna', value: 25, color: '#10b981' },
-    { name: 'City Food Bank', value: 18, color: '#f59e0b' },
-    { name: 'Helping Hands', value: 15, color: '#8b5cf6' },
-    { name: 'Others', value: 10, color: '#6b7280' },
-  ];
-
-  const milestones: Milestone[] = [
-    {
-      icon: <Trophy size={16} />,
-      name: '50,000 kg Food Rescued',
-      desc: 'Target: 50,000 kg',
-      pct: 90,
-      status: 'in-progress',
-      target: 50000,
-      current: 45200,
-    },
-    {
-      icon: <Target size={16} />,
-      name: '10,000 People Fed',
-      desc: 'Reached on Dec 15, 2024',
-      pct: 100,
-      status: 'achieved',
-      target: 10000,
-      current: 12800,
-      date: 'Dec 15, 2024',
-    },
-    {
-      icon: <Sprout size={16} />,
-      name: '25 Tons CO₂ Prevented',
-      desc: 'Current: 28.4T — exceeded target!',
-      pct: 100,
-      status: 'achieved',
-      target: 25,
-      current: 28.4,
-      date: 'Nov 28, 2024',
-    },
-    {
-      icon: <Handshake size={16} />,
-      name: '50 NGO Partners',
-      desc: 'Target: 50 active NGOs',
-      pct: 76,
-      status: 'in-progress',
-      target: 50,
-      current: 38,
-    },
-    {
-      icon: <Truck size={16} />,
-      name: '1,000 Deliveries in a Month',
-      desc: 'Best month: 892 deliveries',
-      pct: 89,
-      status: 'in-progress',
-      target: 1000,
-      current: 892,
-    },
-  ];
-
-  const ngos: NGO[] = [
-    {
-      rank: 1,
-      name: 'Hope NGO',
-      food: '8,200 kg',
-      meals: '16,400',
-      communities: 8,
-      score: 98,
-      logo: <Trophy size={16} />,
-      trend: 'up',
-      growth: 12,
-    },
-    {
-      rank: 2,
-      name: 'Annapurna Shelter',
-      food: '6,800 kg',
-      meals: '13,600',
-      communities: 6,
-      score: 94,
-      logo: <Award size={16} />,
-      trend: 'up',
-      growth: 8,
-    },
-    {
-      rank: 3,
-      name: 'City Food Bank',
-      food: '5,400 kg',
-      meals: '10,800',
-      communities: 5,
-      score: 89,
-      logo: <Award size={16} />,
-      trend: 'stable',
-      growth: 0,
-    },
-    {
-      rank: 4,
-      name: 'Helping Hands',
-      food: '4,200 kg',
-      meals: '8,400',
-      communities: 4,
-      score: 82,
-      logo: <Handshake size={16} />,
-      trend: 'up',
-      growth: 15,
-    },
-    {
-      rank: 5,
-      name: 'Community Kitchen',
-      food: '3,100 kg',
-      meals: '6,200',
-      communities: 3,
-      score: 76,
-      logo: <UtensilsCrossed size={16} />,
-      trend: 'down',
-      growth: -3,
-    },
-    {
-      rank: 6,
-      name: 'Meal Makers Foundation',
-      food: '2,850 kg',
-      meals: '5,700',
-      communities: 2,
-      score: 71,
-      logo: <ChefHat size={16} />,
-      trend: 'up',
-      growth: 5,
-    },
-    {
-      rank: 7,
-      name: 'Social Serve',
-      food: '2,450 kg',
-      meals: '4,900',
-      communities: 2,
-      score: 68,
-      logo: <HeartHandshake size={16} />,
-      trend: 'up',
-      growth: 10,
-    },
-    {
-      rank: 8,
-      name: 'Green Earth Initiative',
-      food: '2,000 kg',
-      meals: '4,000',
-      communities: 1,
-      score: 64,
-      logo: <Leaf size={16} />,
-      trend: 'stable',
-      growth: 0,
-    },
-    {
-      rank: 9,
-      name: 'Urban Hunger Relief',
-      food: '1,750 kg',
-      meals: '3,500',
-      communities: 1,
-      score: 60,
-      logo: <Building2 size={16} />,
-      trend: 'down',
-      growth: -2,
-    },
-    {
-      rank: 10,
-      name: 'Rural Development Corp',
-      food: '1,450 kg',
-      meals: '2,900',
-      communities: 1,
-      score: 55,
-      logo: <Wheat size={16} />,
-      trend: 'up',
-      growth: 8,
-    },
-  ];
 
   const filteredMilestones = milestones.filter((m) =>
     filterStatus === 'all' ? true : m.status === filterStatus

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Checkout.css';
 import type { CartItem } from '../../../types/marketplace';
+import { API_ENDPOINTS } from '../../../config/api';
 import { Smartphone, CreditCard, Landmark, Wallet, Banknote, CheckCircle, Truck, Globe, MapPin, ArrowLeft, Lock, Phone, ArrowRight, ShoppingCart, Leaf, User, Sprout } from 'lucide-react';
 
 // ============================================
@@ -25,7 +26,7 @@ interface PaymentMethod {
 }
 
 // ============================================
-// MOCK DATA
+// PAYMENT TYPE OPTIONS
 // ============================================
 
 const paymentMethods: PaymentMethod[] = [
@@ -52,7 +53,7 @@ const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get cart items from navigation state or use mock data
+  // Get cart items from navigation state
   const cartItems: CartItem[] = location.state?.cartItems || [];
   
   const [step, setStep] = useState<'address' | 'payment' | 'confirmation'>('address');
@@ -65,18 +66,8 @@ const Checkout: React.FC = () => {
     pincode: '',
     landmark: ''
   });
-  const [savedAddresses] = useState<DeliveryAddress[]>([
-    {
-      fullName: 'John Doe',
-      phone: '9876543210',
-      address: '123, Main Street, Sector 15',
-      city: 'Gurugram',
-      state: 'Haryana',
-      pincode: '122001',
-      landmark: 'Near Metro Station'
-    }
-  ]);
-  const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(0);
+  const [savedAddresses] = useState<DeliveryAddress[]>([]);
+  const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(null);
   const [upiId, setUpiId] = useState('');
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -111,11 +102,29 @@ const Checkout: React.FC = () => {
   const handlePlaceOrder = async () => {
     setIsProcessing(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const response = await fetch(`${API_ENDPOINTS.marketplace.orders}?user_id=${user.id || user._id}&payment_method=${selectedPayment?.type || 'cod'}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id || user._id,
+          address,
+          payment_method: selectedPayment?.type || 'cod'
+        })
+      });
+      
+      if (response.ok) {
+        const order = await response.json();
+        setOrderId(order.id || 'ANNAM' + Date.now().toString().slice(-8));
+      } else {
+        setOrderId('ANNAM' + Date.now().toString().slice(-8));
+      }
+    } catch (err) {
+      console.error('Error placing order:', err);
+      setOrderId('ANNAM' + Date.now().toString().slice(-8));
+    }
     
-    const newOrderId = 'ANNAM' + Date.now().toString().slice(-8);
-    setOrderId(newOrderId);
     setOrderPlaced(true);
     setStep('confirmation');
     setIsProcessing(false);

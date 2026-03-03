@@ -527,7 +527,6 @@ const NGOSettings: React.FC = () => {
     }
 
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
     
     localStorage.clear();
     setShowDeleteModal(false);

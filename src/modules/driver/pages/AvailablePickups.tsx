@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AvailablePickups.css';
-import { API_ENDPOINTS } from '../../../config/api';
+import { API_ENDPOINTS, API_BASE_URL } from '../../../config/api';
 import { Salad, Apple, Wheat, Package, Flame, Zap, Truck, Circle, AlertTriangle, MapPin, Wallet, Search, X, RefreshCw, MailOpen, Ruler, Flag, Clock, Eye, CheckCircle, Timer, MapPinned, Phone, Map, FileText, MessageSquare, Check, Info, XCircle } from 'lucide-react';
 
 // --- Types ---
@@ -84,207 +84,22 @@ const AvailablePickups: React.FC = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error' | 'warning'>('success');
 
-  // Mock data - Replace with API call
-  const mockPickups: PickupTask[] = [
-    {
-      id: 1,
-      listing_id: 101,
-      title: 'Fresh Tomatoes',
-      quantity: '25 kg',
-      type: 'Vegetable',
-      priority: 'urgent',
-      farmer: {
-        id: 1,
-        name: 'Rajesh Kumar',
-        phone: '+91 98765 43210',
-        address: 'Green Valley Farm, Village Road, Nashik',
-        landmark: 'Near Shiva Temple'
-      },
-      ngo: {
-        id: 1,
-        name: 'Priya Sharma',
-        organization: 'Food For All Foundation',
-        phone: '+91 98765 12345',
-        address: '123, MG Road, Andheri East, Mumbai'
-      },
-      created_at: '2024-01-15T10:30:00',
-      expiry_time: '2024-01-15T18:00:00',
-      pickup_window_start: '09:00',
-      pickup_window_end: '14:00',
-      distance: 5.2,
-      estimated_time: '25 mins',
-      earnings: 150,
-      notes: 'Ripe tomatoes, handle with care',
-      special_instructions: 'Call before arriving'
-    },
-    {
-      id: 2,
-      listing_id: 102,
-      title: 'Organic Apples',
-      quantity: '30 kg',
-      type: 'Fruit',
-      priority: 'high',
-      farmer: {
-        id: 2,
-        name: 'Amit Patel',
-        phone: '+91 87654 32109',
-        address: 'Apple Orchards, Hill Station Road, Shimla',
-        landmark: 'Opposite Post Office'
-      },
-      ngo: {
-        id: 2,
-        name: 'Rahul Verma',
-        organization: 'Hunger Free India',
-        phone: '+91 76543 21098',
-        address: '456, Civil Lines, Chandigarh'
-      },
-      created_at: '2024-01-15T09:00:00',
-      expiry_time: '2024-01-16T12:00:00',
-      pickup_window_start: '10:00',
-      pickup_window_end: '16:00',
-      distance: 8.7,
-      estimated_time: '35 mins',
-      earnings: 180,
-      notes: 'Premium quality apples'
-    },
-    {
-      id: 3,
-      listing_id: 103,
-      title: 'Rice Bags',
-      quantity: '50 kg',
-      type: 'Grain',
-      priority: 'normal',
-      farmer: {
-        id: 3,
-        name: 'Suresh Reddy',
-        phone: '+91 76543 98765',
-        address: 'Paddy Fields, Rural Area, Guntur',
-        landmark: 'Near Water Tank'
-      },
-      ngo: {
-        id: 3,
-        name: 'Lakshmi Devi',
-        organization: 'Annapurna Trust',
-        phone: '+91 65432 10987',
-        address: '789, Temple Street, Vijayawada'
-      },
-      created_at: '2024-01-15T08:00:00',
-      expiry_time: '2024-01-20T18:00:00',
-      pickup_window_start: '08:00',
-      pickup_window_end: '18:00',
-      distance: 12.3,
-      estimated_time: '45 mins',
-      earnings: 250,
-      special_instructions: 'Heavy load - bring trolley'
-    },
-    {
-      id: 4,
-      listing_id: 104,
-      title: 'Mixed Vegetables',
-      quantity: '40 kg',
-      type: 'Vegetable',
-      priority: 'high',
-      farmer: {
-        id: 4,
-        name: 'Mohan Singh',
-        phone: '+91 54321 09876',
-        address: 'Vegetable Farm, Highway Road, Ludhiana',
-        landmark: 'Behind Petrol Pump'
-      },
-      ngo: {
-        id: 4,
-        name: 'Gurpreet Kaur',
-        organization: 'Langar Seva',
-        phone: '+91 43210 98765',
-        address: '321, Golden Temple Road, Amritsar'
-      },
-      created_at: '2024-01-15T11:00:00',
-      expiry_time: '2024-01-15T20:00:00',
-      pickup_window_start: '12:00',
-      pickup_window_end: '17:00',
-      distance: 3.5,
-      estimated_time: '15 mins',
-      earnings: 120,
-      notes: 'Includes carrots, potatoes, onions'
-    },
-    {
-      id: 5,
-      listing_id: 105,
-      title: 'Fresh Mangoes',
-      quantity: '35 kg',
-      type: 'Fruit',
-      priority: 'urgent',
-      farmer: {
-        id: 5,
-        name: 'Venkat Rao',
-        phone: '+91 32109 87654',
-        address: 'Mango Gardens, Ratnagiri',
-        landmark: 'Main Gate'
-      },
-      ngo: {
-        id: 5,
-        name: 'Sneha Patil',
-        organization: 'Child Welfare Society',
-        phone: '+91 21098 76543',
-        address: '567, School Lane, Pune'
-      },
-      created_at: '2024-01-15T07:00:00',
-      expiry_time: '2024-01-15T15:00:00',
-      pickup_window_start: '07:00',
-      pickup_window_end: '12:00',
-      distance: 6.8,
-      estimated_time: '30 mins',
-      earnings: 200,
-      notes: 'Alphonso mangoes - very ripe',
-      special_instructions: 'Keep cool, avoid direct sunlight'
-    },
-    {
-      id: 6,
-      listing_id: 106,
-      title: 'Wheat Flour',
-      quantity: '100 kg',
-      type: 'Grain',
-      priority: 'normal',
-      farmer: {
-        id: 6,
-        name: 'Baldev Singh',
-        phone: '+91 11223 34455',
-        address: 'Wheat Mill, Industrial Area, Karnal',
-        landmark: 'Near Railway Crossing'
-      },
-      ngo: {
-        id: 6,
-        name: 'Harpreet Kaur',
-        organization: 'Roti Bank',
-        phone: '+91 55443 32211',
-        address: '890, Market Road, Delhi'
-      },
-      created_at: '2024-01-15T06:00:00',
-      expiry_time: '2024-01-25T18:00:00',
-      pickup_window_start: '09:00',
-      pickup_window_end: '19:00',
-      distance: 22.5,
-      estimated_time: '55 mins',
-      earnings: 350,
-      special_instructions: 'Multiple bags - need loading help'
-    }
-  ];
-
-  // Fetch available pickups
+  // Fetch available pickups from API
   const fetchPickups = useCallback(async () => {
     if (!user) return;
     
     try {
-      // Replace with actual API call
-      // const response = await fetch('http://localhost:8000/api/available-pickups');
-      // const data = await response.json();
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setPickups(mockPickups);
-      setLoading(false);
+      const response = await fetch(`${API_BASE_URL}/api/available-pickups?driver_id=${user.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPickups(Array.isArray(data) ? data : data.pickups || []);
+      } else {
+        setPickups([]);
+      }
     } catch (err) {
       console.error('Error fetching pickups:', err);
+      setPickups([]);
+    } finally {
       setLoading(false);
     }
   }, [user]);
@@ -374,15 +189,15 @@ const AvailablePickups: React.FC = () => {
     setAcceptingId(pickupId);
     
     try {
-      // Replace with actual API call
-      // await fetch(`http://localhost:8000/api/pickups/${pickupId}/accept`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ driver_id: user?.id })
-      // });
+      const response = await fetch(`${API_BASE_URL}/api/pickups/${pickupId}/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ driver_id: user?.id })
+      });
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        throw new Error('Failed to accept pickup');
+      }
 
       // Remove from available list
       setPickups(prev => prev.filter(p => p.id !== pickupId));

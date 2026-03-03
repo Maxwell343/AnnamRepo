@@ -6,6 +6,7 @@ import {
   Search, RefreshCw, FileText, ScrollText, Info,
   Pencil, ArrowLeft,
 } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './KycReviewPanel.css';
 
 // ============ Types ============
@@ -406,104 +407,30 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [actionType, setActionType] = useState<'approve' | 'reject' | 'resubmit' | null>(null);
 
-  // Mock KYC data - Replace with actual API call
+  // KYC data state - fetched from API
   const [kycData, setKycData] = useState<KycData>({
     status: 'pending',
-    submittedAt: '2026-02-01T10:30:00Z',
-    lastUpdated: '2026-02-08T14:20:00Z',
-    priority: 'medium',
-    documents: [
-      {
-        id: 'doc1',
-        type: 'id_proof',
-        name: 'Aadhaar Card',
-        fileName: 'aadhaar_front.jpg',
-        fileSize: '1.2 MB',
-        uploadedAt: '2026-02-01T10:30:00Z',
-        status: 'pending',
-        previewUrl: 'https://via.placeholder.com/400x250/f3f4f6/6b7280?text=Aadhaar+Card',
-      },
-      {
-        id: 'doc2',
-        type: 'address_proof',
-        name: 'Utility Bill',
-        fileName: 'electricity_bill.pdf',
-        fileSize: '856 KB',
-        uploadedAt: '2026-02-01T10:32:00Z',
-        status: 'pending',
-        previewUrl: 'https://via.placeholder.com/400x250/f3f4f6/6b7280?text=Utility+Bill',
-      },
-      {
-        id: 'doc3',
-        type: 'photo',
-        name: 'Profile Photo',
-        fileName: 'selfie.jpg',
-        fileSize: '420 KB',
-        uploadedAt: '2026-02-01T10:35:00Z',
-        status: 'pending',
-        previewUrl: 'https://via.placeholder.com/400x250/f3f4f6/6b7280?text=Profile+Photo',
-      },
-      ...(user.role === 'driver'
-        ? [
-            {
-              id: 'doc4',
-              type: 'license' as const,
-              name: 'Driving License',
-              fileName: 'dl_front.jpg',
-              fileSize: '980 KB',
-              uploadedAt: '2026-02-01T10:38:00Z',
-              status: 'pending' as const,
-              previewUrl: 'https://via.placeholder.com/400x250/f3f4f6/6b7280?text=Driving+License',
-            },
-          ]
-        : []),
-      ...(user.role === 'ngo'
-        ? [
-            {
-              id: 'doc5',
-              type: 'registration' as const,
-              name: 'NGO Registration',
-              fileName: 'ngo_certificate.pdf',
-              fileSize: '2.1 MB',
-              uploadedAt: '2026-02-01T10:40:00Z',
-              status: 'pending' as const,
-              previewUrl: 'https://via.placeholder.com/400x250/f3f4f6/6b7280?text=NGO+Certificate',
-            },
-          ]
-        : []),
-    ],
-    timeline: [
-      {
-        id: 't1',
-        action: 'KYC Submitted',
-        description: 'User submitted all required documents for verification',
-        timestamp: '2026-02-01T10:40:00Z',
-        status: 'info',
-      },
-      {
-        id: 't2',
-        action: 'Auto-Verification Started',
-        description: 'System started automated document verification',
-        timestamp: '2026-02-01T10:41:00Z',
-        status: 'info',
-      },
-      {
-        id: 't3',
-        action: 'Manual Review Required',
-        description: 'Documents flagged for manual review',
-        timestamp: '2026-02-01T10:42:00Z',
-        status: 'warning',
-      },
-      {
-        id: 't4',
-        action: 'Assigned for Review',
-        description: 'KYC assigned to admin team for manual verification',
-        timestamp: '2026-02-02T09:00:00Z',
-        actor: 'System',
-        status: 'info',
-      },
-    ],
+    submittedAt: '',
+    lastUpdated: '',
+    documents: [],
+    timeline: [],
   });
+
+  // Fetch KYC data from API
+  useEffect(() => {
+    const loadKycData = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/users/${user.id}/kyc`);
+        if (response.ok) {
+          const data = await response.json();
+          setKycData(data);
+        }
+      } catch (error) {
+        console.error('Failed to load KYC data:', error);
+      }
+    };
+    loadKycData();
+  }, [user.id]);
 
   // Computed values
   const pendingDocuments = kycData.documents.filter((d) => d.status === 'pending');
@@ -611,9 +538,15 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
     setIsLoading(true);
     setActionType('approve');
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/${user.id}/kyc/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes }),
+      });
+      if (!response.ok) throw new Error('Failed to approve KYC');
       onApprove(notes);
+    } catch (error) {
+      console.error('Failed to approve KYC:', error);
     } finally {
       setIsLoading(false);
       setActionType(null);
@@ -626,8 +559,15 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
     setIsLoading(true);
     setActionType('reject');
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/${user.id}/kyc/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: getRejectionMessage(), notes }),
+      });
+      if (!response.ok) throw new Error('Failed to reject KYC');
       onReject(getRejectionMessage(), notes);
+    } catch (error) {
+      console.error('Failed to reject KYC:', error);
     } finally {
       setIsLoading(false);
       setActionType(null);
@@ -640,8 +580,15 @@ const KycReviewPanel: React.FC<KycReviewPanelProps> = ({
     setIsLoading(true);
     setActionType('resubmit');
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/${user.id}/kyc/resubmit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentIds: Array.from(selectedDocIds), reason: getRejectionMessage() }),
+      });
+      if (!response.ok) throw new Error('Failed to request resubmission');
       onRequestResubmission?.(Array.from(selectedDocIds), getRejectionMessage());
+    } catch (error) {
+      console.error('Failed to request resubmission:', error);
     } finally {
       setIsLoading(false);
       setActionType(null);

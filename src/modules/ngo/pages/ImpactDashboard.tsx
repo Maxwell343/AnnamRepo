@@ -1,132 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ImpactDashboard.css';
+import { API_ENDPOINTS } from '../../../config/api';
 import type { ImpactMetrics, DistrictAnalytics } from '../../../types/marketplace';
 import { ArrowLeft, Globe, BarChart3, TrendingUp, Map, ClipboardList, Leaf, UtensilsCrossed, Sprout, Droplet, User, Handshake, MapPin, CheckCircle, Trophy, Radio, AlertCircle, Banknote, Package, Settings, Link2, Wheat } from 'lucide-react';
 
 // ============================================
-// MOCK DATA
+// DEFAULT DATA (empty defaults - data comes from API)
 // ============================================
 
-const mockImpactMetrics: ImpactMetrics = {
-  foodSaved: 125000,
-  mealsProvided: 416666,
-  carbonSaved: 62500,
-  waterSaved: 3750000,
-  farmersSupported: 2456,
-  ngosPartnered: 187,
-  districtsServed: 342,
-  transactionsCompleted: 15678,
-  averageTimeSaved: 18
+const defaultImpactMetrics: ImpactMetrics = {
+  foodSaved: 0,
+  mealsProvided: 0,
+  carbonSaved: 0,
+  waterSaved: 0,
+  farmersSupported: 0,
+  ngosPartnered: 0,
+  districtsServed: 0,
+  transactionsCompleted: 0,
+  averageTimeSaved: 0
 };
-
-const mockDistrictData: DistrictAnalytics[] = [
-  {
-    districtName: 'Sonipat',
-    state: 'Haryana',
-    totalListings: 456,
-    activeListings: 89,
-    foodRescued: 12500,
-    topProducts: [
-      { name: 'Tomatoes', quantity: 3200 },
-      { name: 'Wheat', quantity: 2800 },
-      { name: 'Potatoes', quantity: 2100 }
-    ],
-    topFarmers: [
-      { id: '1', name: 'Ramesh Kumar', score: 94 },
-      { id: '2', name: 'Sunita Devi', score: 88 }
-    ],
-    ngoActivity: 23,
-    wastePreventionRate: 87
-  },
-  {
-    districtName: 'Gurugram',
-    state: 'Haryana',
-    totalListings: 678,
-    activeListings: 134,
-    foodRescued: 18200,
-    topProducts: [
-      { name: 'Leafy Greens', quantity: 4100 },
-      { name: 'Dairy', quantity: 3200 },
-      { name: 'Fruits', quantity: 2900 }
-    ],
-    topFarmers: [
-      { id: '3', name: 'Vikram Singh', score: 96 },
-      { id: '4', name: 'Priya Sharma', score: 93 }
-    ],
-    ngoActivity: 31,
-    wastePreventionRate: 92
-  },
-  {
-    districtName: 'Lucknow',
-    state: 'Uttar Pradesh',
-    totalListings: 534,
-    activeListings: 98,
-    foodRescued: 15800,
-    topProducts: [
-      { name: 'Rice', quantity: 5200 },
-      { name: 'Vegetables', quantity: 4100 },
-      { name: 'Pulses', quantity: 2800 }
-    ],
-    topFarmers: [
-      { id: '5', name: 'Lakshmi Bai', score: 82 },
-      { id: '6', name: 'Rajesh Yadav', score: 79 }
-    ],
-    ngoActivity: 27,
-    wastePreventionRate: 85
-  },
-  {
-    districtName: 'Jaipur',
-    state: 'Rajasthan',
-    totalListings: 412,
-    activeListings: 76,
-    foodRescued: 11200,
-    topProducts: [
-      { name: 'Spices', quantity: 3800 },
-      { name: 'Pulses', quantity: 2900 },
-      { name: 'Grains', quantity: 2400 }
-    ],
-    topFarmers: [
-      { id: '7', name: 'Mohammed Ismail', score: 91 },
-      { id: '8', name: 'Geeta Kumari', score: 85 }
-    ],
-    ngoActivity: 19,
-    wastePreventionRate: 81
-  },
-  {
-    districtName: 'Mohali',
-    state: 'Punjab',
-    totalListings: 389,
-    activeListings: 67,
-    foodRescued: 10500,
-    topProducts: [
-      { name: 'Wheat', quantity: 4200 },
-      { name: 'Mangoes', quantity: 2800 },
-      { name: 'Dairy', quantity: 1900 }
-    ],
-    topFarmers: [
-      { id: '9', name: 'Harpreet Singh', score: 89 },
-      { id: '10', name: 'Baldev Singh', score: 86 }
-    ],
-    ngoActivity: 15,
-    wastePreventionRate: 88
-  }
-];
-
-const mockTrendData = [
-  { date: 'Jan', foodSaved: 8500, transactions: 1200, mealsProvided: 28333 },
-  { date: 'Feb', foodSaved: 9200, transactions: 1350, mealsProvided: 30666 },
-  { date: 'Mar', foodSaved: 10800, transactions: 1480, mealsProvided: 36000 },
-  { date: 'Apr', foodSaved: 11500, transactions: 1620, mealsProvided: 38333 },
-  { date: 'May', foodSaved: 12300, transactions: 1780, mealsProvided: 41000 },
-  { date: 'Jun', foodSaved: 13200, transactions: 1920, mealsProvided: 44000 },
-  { date: 'Jul', foodSaved: 14100, transactions: 2050, mealsProvided: 47000 },
-  { date: 'Aug', foodSaved: 15500, transactions: 2180, mealsProvided: 51666 },
-  { date: 'Sep', foodSaved: 16800, transactions: 2340, mealsProvided: 56000 },
-  { date: 'Oct', foodSaved: 18200, transactions: 2480, mealsProvided: 60666 },
-  { date: 'Nov', foodSaved: 19500, transactions: 2650, mealsProvided: 65000 },
-  { date: 'Dec', foodSaved: 21000, transactions: 2800, mealsProvided: 70000 }
-];
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -206,8 +99,11 @@ const MiniBarChart: React.FC<{ data: { label: string; value: number }[]; maxValu
   );
 };
 
+// Trend Data Type
+type TrendDataPoint = { date: string; foodSaved: number; transactions: number; mealsProvided: number };
+
 // Trend Chart Component (Simple SVG line chart)
-const TrendChart: React.FC<{ data: typeof mockTrendData; dataKey: string }> = ({ data, dataKey }) => {
+const TrendChart: React.FC<{ data: TrendDataPoint[]; dataKey: string }> = ({ data, dataKey }) => {
   const values = data.map(d => d[dataKey as keyof typeof d] as number);
   const max = Math.max(...values);
   const min = Math.min(...values);
@@ -302,12 +198,46 @@ const ImpactDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'districts' | 'trends' | 'reports'>('overview');
   const [dateRange, setDateRange] = useState('year');
   const [selectedState, setSelectedState] = useState('all');
-  
+  const [impactMetrics, setImpactMetrics] = useState<ImpactMetrics>(defaultImpactMetrics);
+  const [districtData, setDistrictData] = useState<DistrictAnalytics[]>([]);
+  const [trendData, setTrendData] = useState<TrendDataPoint[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        const [metricsRes, districtsRes, trendsRes] = await Promise.all([
+          fetch(API_ENDPOINTS.marketplace.impact),
+          fetch(API_ENDPOINTS.marketplace.impactByDistrict),
+          fetch(API_ENDPOINTS.marketplace.impactTrends)
+        ]);
+        if (metricsRes.ok) {
+          const metricsData = await metricsRes.json();
+          setImpactMetrics(metricsData);
+        }
+        if (districtsRes.ok) {
+          const districtsJson = await districtsRes.json();
+          setDistrictData(districtsJson);
+        }
+        if (trendsRes.ok) {
+          const trendsJson = await trendsRes.json();
+          setTrendData(trendsJson);
+        }
+      } catch (err) {
+        console.error('Failed to fetch impact dashboard data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboardData();
+  }, [dateRange]);
+
   const states = ['all', 'Haryana', 'Punjab', 'Uttar Pradesh', 'Rajasthan', 'Delhi'];
   
   const filteredDistricts = selectedState === 'all' 
-    ? mockDistrictData 
-    : mockDistrictData.filter(d => d.state === selectedState);
+    ? districtData 
+    : districtData.filter(d => d.state === selectedState);
   
   const totalFoodRescued = filteredDistricts.reduce((sum, d) => sum + d.foodRescued, 0);
   const totalNGOs = filteredDistricts.reduce((sum, d) => sum + d.ngoActivity, 0);
@@ -387,54 +317,52 @@ const ImpactDashboard: React.FC = () => {
               <div className="metrics-grid">
                 <StatCard
                   icon={<Leaf size={20} />}
-                  value={mockImpactMetrics.foodSaved}
+                  value={impactMetrics.foodSaved}
                   label="Food Saved (kg)"
                   trend={{ value: 18, positive: true }}
                   color="#4CAF50"
                 />
                 <StatCard
                   icon={<UtensilsCrossed size={20} />}
-                  value={mockImpactMetrics.mealsProvided}
+                  value={impactMetrics.mealsProvided}
                   label="Meals Provided"
                   trend={{ value: 22, positive: true }}
                   color="#FF9800"
                 />
                 <StatCard
                   icon={<Sprout size={20} />}
-                  value={mockImpactMetrics.carbonSaved}
+                  value={impactMetrics.carbonSaved}
                   label="CO₂ Saved (kg)"
-                  subValue="Equivalent to planting 2,500 trees"
                   color="#00BCD4"
                 />
                 <StatCard
                   icon={<Droplet size={20} />}
-                  value={mockImpactMetrics.waterSaved}
+                  value={impactMetrics.waterSaved}
                   label="Water Saved (L)"
-                  subValue="3.75 million liters"
                   color="#2196F3"
                 />
                 <StatCard
                   icon={<User size={20} />}
-                  value={mockImpactMetrics.farmersSupported}
+                  value={impactMetrics.farmersSupported}
                   label="Farmers Supported"
                   trend={{ value: 15, positive: true }}
                   color="#8BC34A"
                 />
                 <StatCard
                   icon={<Handshake size={20} />}
-                  value={mockImpactMetrics.ngosPartnered}
+                  value={impactMetrics.ngosPartnered}
                   label="NGO Partners"
                   color="#E91E63"
                 />
                 <StatCard
                   icon={<MapPin size={20} />}
-                  value={mockImpactMetrics.districtsServed}
+                  value={impactMetrics.districtsServed}
                   label="Districts Served"
                   color="#9C27B0"
                 />
                 <StatCard
                   icon={<CheckCircle size={20} />}
-                  value={mockImpactMetrics.transactionsCompleted}
+                  value={impactMetrics.transactionsCompleted}
                   label="Transactions"
                   trend={{ value: 25, positive: true }}
                   color="#607D8B"
@@ -448,38 +376,44 @@ const ImpactDashboard: React.FC = () => {
                 <div className="insight-card">
                   <h3><BarChart3 size={18} /> Monthly Trend</h3>
                   <div className="insight-chart">
-                    <TrendChart data={mockTrendData} dataKey="foodSaved" />
-                  </div>
-                  <div className="insight-summary">
-                    <span className="trend-value positive">+147%</span>
-                    <span className="trend-label">Growth this year</span>
+                    {trendData.length > 0 ? (
+                      <TrendChart data={trendData} dataKey="foodSaved" />
+                    ) : (
+                      <p style={{ color: '#9E9E9E', fontSize: '0.85rem' }}>No trend data available</p>
+                    )}
                   </div>
                 </div>
                 
                 <div className="insight-card">
                   <h3><Trophy size={18} /> Top Performing States</h3>
-                  <MiniBarChart 
-                    data={[
-                      { label: 'Haryana', value: 30700 },
-                      { label: 'Punjab', value: 25400 },
-                      { label: 'UP', value: 22100 },
-                      { label: 'Rajasthan', value: 18500 },
-                      { label: 'Delhi', value: 15200 }
-                    ]}
-                  />
+                  {districtData.length > 0 ? (
+                    <MiniBarChart
+                      data={Object.entries(
+                        districtData.reduce<Record<string, number>>((acc, d) => {
+                          acc[d.state] = (acc[d.state] || 0) + d.foodRescued;
+                          return acc;
+                        }, {})
+                      ).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([label, value]) => ({ label, value }))}
+                    />
+                  ) : (
+                    <p style={{ color: '#9E9E9E', fontSize: '0.85rem' }}>No data available</p>
+                  )}
                 </div>
                 
                 <div className="insight-card">
                   <h3><Leaf size={18} /> Top Products Rescued</h3>
-                  <MiniBarChart 
-                    data={[
-                      { label: 'Vegetables', value: 45000 },
-                      { label: 'Grains', value: 32000 },
-                      { label: 'Fruits', value: 28000 },
-                      { label: 'Dairy', value: 12000 },
-                      { label: 'Pulses', value: 8000 }
-                    ]}
-                  />
+                  {districtData.length > 0 ? (
+                    <MiniBarChart
+                      data={Object.entries(
+                        districtData.flatMap(d => d.topProducts).reduce<Record<string, number>>((acc, p) => {
+                          acc[p.name] = (acc[p.name] || 0) + p.quantity;
+                          return acc;
+                        }, {})
+                      ).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([label, value]) => ({ label, value }))}
+                    />
+                  ) : (
+                    <p style={{ color: '#9E9E9E', fontSize: '0.85rem' }}>No data available</p>
+                  )}
                 </div>
               </div>
             </section>
@@ -488,22 +422,7 @@ const ImpactDashboard: React.FC = () => {
             <section className="activity-section">
               <h2><Radio size={20} /> Live Activity</h2>
               <div className="activity-feed">
-                {[
-                  { time: '2 min ago', action: 'Rescue', detail: '50kg Tomatoes rescued by Akshaya Patra, Gurugram', icon: <AlertCircle size={16} /> },
-                  { time: '5 min ago', action: 'Sale', detail: '200kg Wheat sold to processor in Sonipat', icon: <Banknote size={16} /> },
-                  { time: '8 min ago', action: 'Listing', detail: 'New listing: 150kg Organic Mangoes in Mohali', icon: <Package size={16} /> },
-                  { time: '12 min ago', action: 'Donation', detail: 'Auto-donation triggered: 80kg Spinach to Food Bank', icon: <Handshake size={16} /> },
-                  { time: '15 min ago', action: 'Rescue', detail: '120kg Rice rescued by Feeding India, Lucknow', icon: <AlertCircle size={16} /> }
-                ].map((activity, idx) => (
-                  <div key={idx} className="activity-item">
-                    <span className="activity-icon">{activity.icon}</span>
-                    <div className="activity-content">
-                      <span className="activity-time">{activity.time}</span>
-                      <span className="activity-action">{activity.action}</span>
-                      <span className="activity-detail">{activity.detail}</span>
-                    </div>
-                  </div>
-                ))}
+                <p style={{ color: '#9E9E9E', textAlign: 'center', padding: '1rem' }}>Live activity will appear here when transactions occur.</p>
               </div>
             </section>
           </div>
@@ -594,10 +513,10 @@ const ImpactDashboard: React.FC = () => {
                     ))}
                     
                     {/* X-axis labels */}
-                    {mockTrendData.map((d, i) => (
+                    {trendData.map((d, i) => (
                       <text 
                         key={i}
-                        x={50 + i * 30}
+                        x={50 + i * (trendData.length > 1 ? 330 / (trendData.length - 1) : 0)}
                         y="195"
                         textAnchor="middle"
                         fontSize="10"
@@ -608,28 +527,34 @@ const ImpactDashboard: React.FC = () => {
                     ))}
                     
                     {/* Line */}
-                    <polyline
-                      points={mockTrendData.map((d, i) => {
-                        const x = 50 + i * 30;
-                        const y = 180 - (d.foodSaved / 21000) * 160;
-                        return `${x},${y}`;
-                      }).join(' ')}
-                      fill="none"
-                      stroke="#1B5E20"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    
-                    {/* Area fill */}
-                    <polygon
-                      points={`50,180 ${mockTrendData.map((d, i) => {
-                        const x = 50 + i * 30;
-                        const y = 180 - (d.foodSaved / 21000) * 160;
-                        return `${x},${y}`;
-                      }).join(' ')} 380,180`}
-                      fill="url(#areaGradient)"
-                    />
+                    {trendData.length > 0 && (() => {
+                      const maxFood = Math.max(...trendData.map(d => d.foodSaved), 1);
+                      const step = trendData.length > 1 ? 330 / (trendData.length - 1) : 0;
+                      return (
+                        <>
+                          <polyline
+                            points={trendData.map((d, i) => {
+                              const x = 50 + i * step;
+                              const y = 180 - (d.foodSaved / maxFood) * 160;
+                              return `${x},${y}`;
+                            }).join(' ')}
+                            fill="none"
+                            stroke="#1B5E20"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <polygon
+                            points={`50,180 ${trendData.map((d, i) => {
+                              const x = 50 + i * step;
+                              const y = 180 - (d.foodSaved / maxFood) * 160;
+                              return `${x},${y}`;
+                            }).join(' ')} ${50 + (trendData.length - 1) * step},180`}
+                            fill="url(#areaGradient)"
+                          />
+                        </>
+                      );
+                    })()}
                     
                     <defs>
                       <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
@@ -642,15 +567,11 @@ const ImpactDashboard: React.FC = () => {
                 <div className="trend-summary">
                   <div className="summary-item">
                     <span className="label">Total This Year</span>
-                    <span className="value">125,000 kg</span>
+                    <span className="value">{formatNumber(trendData.reduce((sum, d) => sum + d.foodSaved, 0))} kg</span>
                   </div>
                   <div className="summary-item">
                     <span className="label">Avg Monthly</span>
-                    <span className="value">10,416 kg</span>
-                  </div>
-                  <div className="summary-item positive">
-                    <span className="label">YoY Growth</span>
-                    <span className="value">+147%</span>
+                    <span className="value">{trendData.length > 0 ? formatNumber(Math.round(trendData.reduce((sum, d) => sum + d.foodSaved, 0) / trendData.length)) : '0'} kg</span>
                   </div>
                 </div>
               </div>
@@ -658,19 +579,17 @@ const ImpactDashboard: React.FC = () => {
               <div className="trend-card">
                 <h3>Meals Provided</h3>
                 <div className="metric-large">
-                  <span className="value">416,666</span>
-                  <span className="trend positive">↑ 22% this month</span>
+                  <span className="value">{formatNumber(impactMetrics.mealsProvided)}</span>
                 </div>
-                <TrendChart data={mockTrendData} dataKey="mealsProvided" />
+                {trendData.length > 0 && <TrendChart data={trendData} dataKey="mealsProvided" />}
               </div>
               
               <div className="trend-card">
                 <h3>Transactions</h3>
                 <div className="metric-large">
-                  <span className="value">15,678</span>
-                  <span className="trend positive">↑ 25% this month</span>
+                  <span className="value">{formatNumber(impactMetrics.transactionsCompleted)}</span>
                 </div>
-                <TrendChart data={mockTrendData} dataKey="transactions" />
+                {trendData.length > 0 && <TrendChart data={trendData} dataKey="transactions" />}
               </div>
             </div>
           </div>

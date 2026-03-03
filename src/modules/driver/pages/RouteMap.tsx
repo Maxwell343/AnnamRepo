@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Package, Flag, Wheat, Home, MapPin, Truck, Map, Wallet, ScrollText, Trophy, Settings, LogOut, ClipboardList, Ruler, Timer, Clock, Globe, Circle, Check, FileText, Phone, Compass, Hourglass } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './RouteMap.css';
 
 interface User {
@@ -42,87 +43,6 @@ const RouteMap: React.FC = () => {
   const [isNavigating, setIsNavigating] = useState(false);
   const [showDirections, setShowDirections] = useState(true);
 
-  // Mock route data
-  const mockRoute: ActiveRoute = {
-    id: 1,
-    totalStops: 6,
-    completedStops: 2,
-    totalDistance: '45.8 km',
-    estimatedTime: '2h 15m',
-    startTime: '09:30 AM',
-    stops: [
-      {
-        id: 1,
-        type: 'pickup',
-        name: 'Green Valley Farm',
-        address: '123 Farm Road, Sector 42, Green Valley',
-        phone: '+91 98765 43210',
-        time: '09:30 AM',
-        status: 'completed',
-        items: 'Fresh Vegetables',
-        quantity: '25 kg',
-        notes: 'Gate code: 4521'
-      },
-      {
-        id: 2,
-        type: 'dropoff',
-        name: 'Hope Foundation',
-        address: '456 Community Center, Downtown',
-        phone: '+91 98765 43211',
-        time: '10:15 AM',
-        status: 'completed',
-        items: 'Fresh Vegetables',
-        quantity: '25 kg'
-      },
-      {
-        id: 3,
-        type: 'pickup',
-        name: 'Sunrise Organic Farm',
-        address: '789 Organic Lane, Rural District',
-        phone: '+91 98765 43212',
-        time: '11:00 AM',
-        status: 'current',
-        items: 'Organic Fruits',
-        quantity: '30 kg',
-        notes: 'Ask for Mr. Sharma'
-      },
-      {
-        id: 4,
-        type: 'dropoff',
-        name: 'Meals on Wheels',
-        address: '321 Service Road, City Center',
-        phone: '+91 98765 43213',
-        time: '11:45 AM',
-        status: 'pending',
-        items: 'Organic Fruits',
-        quantity: '30 kg'
-      },
-      {
-        id: 5,
-        type: 'pickup',
-        name: 'Golden Grain Store',
-        address: '555 Market Street, Industrial Area',
-        phone: '+91 98765 43214',
-        time: '12:30 PM',
-        status: 'pending',
-        items: 'Rice & Grains',
-        quantity: '50 kg',
-        notes: 'Heavy load - bring trolley'
-      },
-      {
-        id: 6,
-        type: 'dropoff',
-        name: 'Community Kitchen',
-        address: '888 Charity Lane, East District',
-        phone: '+91 98765 43215',
-        time: '01:15 PM',
-        status: 'pending',
-        items: 'Rice & Grains',
-        quantity: '50 kg'
-      }
-    ]
-  };
-
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (!storedUser) {
@@ -137,8 +57,24 @@ const RouteMap: React.FC = () => {
     }
 
     setUser(parsedUser);
-    setActiveRoute(mockRoute);
-    setLoading(false);
+    
+    // Fetch active route from API
+    const fetchRoute = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/drivers/${parsedUser.id || parsedUser._id}/active-route`);
+        if (response.ok) {
+          const data = await response.json();
+          setActiveRoute(data);
+        } else {
+          setActiveRoute(null);
+        }
+      } catch (err) {
+        console.error('Error fetching route:', err);
+        setActiveRoute(null);
+      }
+      setLoading(false);
+    };
+    fetchRoute();
   }, [navigate]);
 
   const handleLogout = () => {

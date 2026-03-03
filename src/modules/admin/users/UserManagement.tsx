@@ -237,114 +237,7 @@ const UserManagement: React.FC = () => {
         const data = await response.json();
         setUsers(data.users || []);
       } else {
-        // Fallback sample data for development
-        const sampleUsers: UserRecord[] = [
-          {
-            id: '1',
-            name: 'Ramesh Kumar',
-            email: 'ramesh@farm.in',
-            phone: '+91-9876543210',
-            role: 'farmer',
-            status: 'active',
-            kycVerified: true,
-            joinedAt: '2025-08-15',
-            lastActive: '2026-02-08',
-            totalTransactions: 145,
-            rating: 4.8,
-          },
-          {
-            id: '2',
-            name: 'Priya Devi',
-            email: 'priya@email.com',
-            phone: '+91-8765432109',
-            role: 'customer',
-            status: 'active',
-            kycVerified: true,
-            joinedAt: '2025-10-20',
-            lastActive: '2026-02-07',
-            totalTransactions: 32,
-            rating: 4.5,
-          },
-          {
-            id: '3',
-            name: 'Suresh Pal',
-            email: 'suresh@drive.in',
-            phone: '+91-7654321098',
-            role: 'driver',
-            status: 'active',
-            kycVerified: false,
-            joinedAt: '2025-12-01',
-            lastActive: '2026-02-08',
-            totalTransactions: 89,
-            rating: 4.9,
-          },
-          {
-            id: '4',
-            name: 'Helping Hands NGO',
-            email: 'info@helpinghands.org',
-            phone: '+91-6543210987',
-            role: 'ngo',
-            status: 'pending',
-            kycVerified: false,
-            joinedAt: '2026-01-15',
-            lastActive: '2026-02-06',
-            totalTransactions: 12,
-            rating: 5.0,
-          },
-          {
-            id: '5',
-            name: 'Anita Sharma',
-            email: 'anita.sharma@gmail.com',
-            phone: '+91-9988776655',
-            role: 'customer',
-            status: 'suspended',
-            kycVerified: true,
-            joinedAt: '2025-06-10',
-            lastActive: '2025-12-15',
-            totalTransactions: 8,
-            rating: 3.2,
-          },
-          {
-            id: '6',
-            name: 'Vikram Singh',
-            email: 'vikram.farmer@agri.in',
-            phone: '+91-8877665544',
-            role: 'farmer',
-            status: 'active',
-            kycVerified: true,
-            joinedAt: '2025-03-22',
-            lastActive: '2026-02-08',
-            totalTransactions: 267,
-            rating: 4.7,
-          },
-          {
-            id: '7',
-            name: 'Meena Kumari',
-            email: 'meena.k@driver.com',
-            phone: '+91-7766554433',
-            role: 'driver',
-            status: 'pending',
-            kycVerified: false,
-            joinedAt: '2026-02-01',
-            lastActive: '2026-02-08',
-            totalTransactions: 0,
-            rating: 0,
-          },
-          {
-            id: '8',
-            name: 'Food For All Foundation',
-            email: 'contact@foodforall.org',
-            phone: '+91-6655443322',
-            role: 'ngo',
-            status: 'active',
-            kycVerified: true,
-            joinedAt: '2025-01-05',
-            lastActive: '2026-02-07',
-            totalTransactions: 456,
-            rating: 4.9,
-          },
-        ];
-        setUsers(sampleUsers);
+        setUsers([]);
       }
     } catch (err) {
       setError('Failed to load users. Please try again.');
@@ -356,8 +249,12 @@ const UserManagement: React.FC = () => {
 
   const updateUserStatus = async (userId: string, newStatus: UserStatus) => {
     try {
-      // API call would go here
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      const response = await fetch(`${API_ENDPOINTS.admin.users}/${userId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!response.ok) throw new Error('Failed to update status');
       
       setUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, status: newStatus } : u))
@@ -373,7 +270,12 @@ const UserManagement: React.FC = () => {
   const bulkUpdateStatus = async (userIds: string[], newStatus: UserStatus) => {
     setBulkActionLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch(`${API_ENDPOINTS.admin.users}/bulk-status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds, status: newStatus }),
+      });
+      if (!response.ok) throw new Error('Failed to update users');
       
       setUsers((prev) =>
         prev.map((u) => (userIds.includes(u.id) ? { ...u, status: newStatus } : u))

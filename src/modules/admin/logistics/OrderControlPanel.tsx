@@ -6,6 +6,7 @@ import {
   CheckSquare, HelpCircle, Info, Trash2, Map,
 } from 'lucide-react';
 import './OrderControlPanel.css';
+import { API_BASE_URL } from '../../../config/api';
 
 // ============ Types ============
 type OrderStatus = 'pending' | 'assigned' | 'picked-up' | 'in-transit' | 'delivered' | 'cancelled' | 'failed';
@@ -131,224 +132,7 @@ const CUSTOMER_TYPE_CONFIG: Record<string, { icon: React.ReactNode; color: strin
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];
 
-const MOCK_DRIVERS: Driver[] = [
-  { id: 'd1', name: 'Rakesh Patel', phone: '+91-9876543210', rating: 4.8, vehicleType: 'Tempo', vehicleNumber: 'MH-12-AB-1234', status: 'available', currentLocation: 'Pune Central', completedToday: 5 },
-  { id: 'd2', name: 'Sunil Mehta', phone: '+91-9876543211', rating: 4.6, vehicleType: 'Mini Truck', vehicleNumber: 'MH-12-CD-5678', status: 'busy', currentLocation: 'Kothrud', completedToday: 3 },
-  { id: 'd3', name: 'Priya Kumar', phone: '+91-9876543212', rating: 4.9, vehicleType: 'Van', vehicleNumber: 'MH-12-EF-9012', status: 'available', currentLocation: 'Hadapsar', completedToday: 7 },
-  { id: 'd4', name: 'Deepa Rao', phone: '+91-9876543213', rating: 4.7, vehicleType: 'Tempo', vehicleNumber: 'MH-12-GH-3456', status: 'available', currentLocation: 'Aundh', completedToday: 4 },
-  { id: 'd5', name: 'Amit Singh', phone: '+91-9876543214', rating: 4.5, vehicleType: 'Mini Truck', vehicleNumber: 'MH-12-IJ-7890', status: 'offline', currentLocation: 'N/A', completedToday: 0 },
-];
-
-const MOCK_ORDERS: Order[] = [
-  {
-    id: '1',
-    orderId: 'ORD-2401',
-    customer: { id: 'c1', name: 'Hope NGO', type: 'ngo', phone: '+91-9876500001', email: 'contact@hopengo.org' },
-    pickup: { address: 'Green Valley Farm, Sector 15', city: 'Pune', contactName: 'Ramesh Kumar', contactPhone: '+91-9876543001' },
-    dropoff: { address: 'Hope NGO Center, MG Road', city: 'Pune', contactName: 'Volunteer Team', contactPhone: '+91-9876543002' },
-    driver: MOCK_DRIVERS[0],
-    status: 'in-transit',
-    priority: 'high',
-    items: [
-      { id: 'i1', name: 'Organic Tomatoes', quantity: 50, unit: 'kg', price: 35 },
-      { id: 'i2', name: 'Fresh Spinach', quantity: 20, unit: 'kg', price: 40 },
-      { id: 'i3', name: 'Carrots', quantity: 30, unit: 'kg', price: 25 },
-    ],
-    itemCount: 3,
-    subtotal: 2300,
-    deliveryFee: 150,
-    total: 2450,
-    currency: 'INR',
-    paymentMethod: 'Online',
-    paymentStatus: 'paid',
-    createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-    estimatedDelivery: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-    distance: 12.5,
-    duration: 35,
-    timeline: [
-      { id: 't1', status: 'created', description: 'Order placed', timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(), actor: 'Hope NGO' },
-      { id: 't2', status: 'assigned', description: 'Driver assigned', timestamp: new Date(Date.now() - 8 * 60 * 1000).toISOString(), actor: 'System' },
-      { id: 't3', status: 'picked-up', description: 'Order picked up from farm', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(), actor: 'Rakesh Patel' },
-      { id: 't4', status: 'in-transit', description: 'On the way to destination', timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(), actor: 'Rakesh Patel' },
-    ],
-  },
-  {
-    id: '2',
-    orderId: 'ORD-2402',
-    customer: { id: 'c2', name: 'City Food Bank', type: 'ngo', phone: '+91-9876500002' },
-    pickup: { address: 'Sunrise Organics, Wakad', city: 'Pune', contactName: 'Vikram Singh', contactPhone: '+91-9876543003' },
-    dropoff: { address: 'City Food Bank, Camp Area', city: 'Pune', contactName: 'Manager', contactPhone: '+91-9876543004' },
-    driver: MOCK_DRIVERS[1],
-    status: 'assigned',
-    priority: 'medium',
-    items: [
-      { id: 'i4', name: 'Rice', quantity: 100, unit: 'kg', price: 35 },
-      { id: 'i5', name: 'Dal', quantity: 30, unit: 'kg', price: 80 },
-    ],
-    itemCount: 5,
-    subtotal: 3900,
-    deliveryFee: 300,
-    total: 4200,
-    currency: 'INR',
-    paymentMethod: 'COD',
-    paymentStatus: 'pending',
-    createdAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-    estimatedDelivery: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-    distance: 18.2,
-    duration: 45,
-    timeline: [
-      { id: 't5', status: 'created', description: 'Order placed', timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString() },
-      { id: 't6', status: 'assigned', description: 'Driver assigned', timestamp: new Date(Date.now() - 20 * 60 * 1000).toISOString() },
-    ],
-  },
-  {
-    id: '3',
-    orderId: 'ORD-2403',
-    customer: { id: 'c3', name: 'Annapurna Shelter', type: 'ngo', phone: '+91-9876500003' },
-    pickup: { address: 'Fresh Fields Farm, Hinjewadi', city: 'Pune', contactName: 'Farmer Collective', contactPhone: '+91-9876543005' },
-    dropoff: { address: 'Annapurna Shelter, Koregaon Park', city: 'Pune', contactName: 'Shelter Manager', contactPhone: '+91-9876543006' },
-    driver: MOCK_DRIVERS[2],
-    status: 'delivered',
-    priority: 'low',
-    items: [
-      { id: 'i6', name: 'Mixed Vegetables', quantity: 40, unit: 'kg', price: 45 },
-    ],
-    itemCount: 2,
-    subtotal: 1650,
-    deliveryFee: 150,
-    total: 1800,
-    currency: 'INR',
-    paymentMethod: 'Online',
-    paymentStatus: 'paid',
-    createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    actualDelivery: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-    distance: 8.5,
-    duration: 25,
-    timeline: [
-      { id: 't7', status: 'created', description: 'Order placed', timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString() },
-      { id: 't8', status: 'assigned', description: 'Driver assigned', timestamp: new Date(Date.now() - 55 * 60 * 1000).toISOString() },
-      { id: 't9', status: 'picked-up', description: 'Order picked up', timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString() },
-      { id: 't10', status: 'in-transit', description: 'In transit', timestamp: new Date(Date.now() - 40 * 60 * 1000).toISOString() },
-      { id: 't11', status: 'delivered', description: 'Order delivered successfully', timestamp: new Date(Date.now() - 20 * 60 * 1000).toISOString() },
-    ],
-  },
-  {
-    id: '4',
-    orderId: 'ORD-2404',
-    customer: { id: 'c4', name: 'Community Kitchen', type: 'ngo', phone: '+91-9876500004' },
-    pickup: { address: 'Organic Roots, Baner', city: 'Pune', contactName: 'Store Manager', contactPhone: '+91-9876543007' },
-    dropoff: { address: 'Community Kitchen, Shivaji Nagar', city: 'Pune', contactName: 'Head Chef', contactPhone: '+91-9876543008' },
-    driver: null,
-    status: 'pending',
-    priority: 'urgent',
-    items: [
-      { id: 'i7', name: 'Potatoes', quantity: 80, unit: 'kg', price: 25 },
-      { id: 'i8', name: 'Onions', quantity: 60, unit: 'kg', price: 30 },
-      { id: 'i9', name: 'Tomatoes', quantity: 40, unit: 'kg', price: 35 },
-    ],
-    itemCount: 8,
-    subtotal: 6000,
-    deliveryFee: 500,
-    total: 6500,
-    currency: 'INR',
-    paymentMethod: 'Online',
-    paymentStatus: 'paid',
-    createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-    estimatedDelivery: new Date(Date.now() + 90 * 60 * 1000).toISOString(),
-    notes: 'Urgent delivery needed for lunch preparation',
-    distance: 15.8,
-    duration: 40,
-    timeline: [
-      { id: 't12', status: 'created', description: 'Order placed with high priority', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString() },
-    ],
-  },
-  {
-    id: '5',
-    orderId: 'ORD-2405',
-    customer: { id: 'c5', name: 'Ravi Sharma', type: 'individual', phone: '+91-9876500005' },
-    pickup: { address: 'Harvest Hub, Viman Nagar', city: 'Pune', contactName: 'Hub Manager', contactPhone: '+91-9876543009' },
-    dropoff: { address: '22, MG Road, Camp', city: 'Pune', contactName: 'Ravi Sharma', contactPhone: '+91-9876500005' },
-    driver: MOCK_DRIVERS[3],
-    status: 'in-transit',
-    priority: 'medium',
-    items: [
-      { id: 'i10', name: 'Fresh Fruits Basket', quantity: 1, unit: 'basket', price: 350 },
-    ],
-    itemCount: 1,
-    subtotal: 350,
-    deliveryFee: 0,
-    total: 350,
-    currency: 'INR',
-    paymentMethod: 'Online',
-    paymentStatus: 'paid',
-    createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    estimatedDelivery: new Date(Date.now() + 20 * 60 * 1000).toISOString(),
-    distance: 6.2,
-    duration: 18,
-    timeline: [
-      { id: 't13', status: 'created', description: 'Order placed', timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString() },
-      { id: 't14', status: 'assigned', description: 'Driver assigned', timestamp: new Date(Date.now() - 12 * 60 * 1000).toISOString() },
-      { id: 't15', status: 'picked-up', description: 'Order picked up', timestamp: new Date(Date.now() - 8 * 60 * 1000).toISOString() },
-      { id: 't16', status: 'in-transit', description: 'On the way', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString() },
-    ],
-  },
-  {
-    id: '6',
-    orderId: 'ORD-2399',
-    customer: { id: 'c6', name: 'Helping Hands NGO', type: 'ngo', phone: '+91-9876500006' },
-    pickup: { address: 'Valley Fresh, Kharadi', city: 'Pune', contactName: 'Farm Owner', contactPhone: '+91-9876543010' },
-    dropoff: { address: 'HH Center, Kalyani Nagar', city: 'Pune', contactName: 'NGO Coordinator', contactPhone: '+91-9876543011' },
-    driver: null,
-    status: 'cancelled',
-    priority: 'low',
-    items: [
-      { id: 'i11', name: 'Assorted Vegetables', quantity: 60, unit: 'kg', price: 40 },
-    ],
-    itemCount: 4,
-    subtotal: 2800,
-    deliveryFee: 300,
-    total: 3100,
-    currency: 'INR',
-    paymentMethod: 'Online',
-    paymentStatus: 'refunded',
-    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-    notes: 'Cancelled due to inventory shortage',
-    distance: 10.5,
-    duration: 30,
-    timeline: [
-      { id: 't17', status: 'created', description: 'Order placed', timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString() },
-      { id: 't18', status: 'cancelled', description: 'Order cancelled - Inventory shortage', timestamp: new Date(Date.now() - 2.5 * 60 * 60 * 1000).toISOString(), actor: 'Admin' },
-    ],
-  },
-  {
-    id: '7',
-    orderId: 'ORD-2406',
-    customer: { id: 'c7', name: 'Metro Restaurant', type: 'business', phone: '+91-9876500007' },
-    pickup: { address: 'Farm Direct, Undri', city: 'Pune', contactName: 'Supplier', contactPhone: '+91-9876543012' },
-    dropoff: { address: 'Metro Restaurant, FC Road', city: 'Pune', contactName: 'Kitchen Manager', contactPhone: '+91-9876543013' },
-    driver: null,
-    status: 'pending',
-    priority: 'high',
-    items: [
-      { id: 'i12', name: 'Premium Vegetables', quantity: 100, unit: 'kg', price: 50 },
-    ],
-    itemCount: 6,
-    subtotal: 5000,
-    deliveryFee: 400,
-    total: 5400,
-    currency: 'INR',
-    paymentMethod: 'Credit',
-    paymentStatus: 'pending',
-    createdAt: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
-    scheduledAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-    notes: 'Scheduled delivery for lunch prep',
-    distance: 14.3,
-    duration: 38,
-    timeline: [
-      { id: 't19', status: 'created', description: 'Scheduled order placed', timestamp: new Date(Date.now() - 8 * 60 * 1000).toISOString() },
-    ],
-  },
-];
+// Drivers and orders are fetched from the API
 
 // ============ Helper Functions ============
 const formatCurrency = (amount: number, currency: string = 'INR'): string => {
@@ -1843,8 +1627,24 @@ const ManualOrderModal: React.FC<{
 // ============ Main Component ============
 const OrderControlPanel: React.FC = () => {
   // State
-  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
-  const [drivers] = useState<Driver[]>(MOCK_DRIVERS);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [ordersRes, driversRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/admin/orders`),
+          fetch(`${API_BASE_URL}/api/admin/drivers`)
+        ]);
+        if (ordersRes.ok) setOrders(await ordersRes.json());
+        if (driversRes.ok) setDrivers(await driversRes.json());
+      } catch (err) {
+        console.error('Failed to fetch orders/drivers:', err);
+      }
+    };
+    fetchData();
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [showManualOrderModal, setShowManualOrderModal] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -2236,9 +2036,6 @@ const OrderControlPanel: React.FC = () => {
   // Create manual order
   const handleCreateManualOrder = async (data: ManualOrderFormData) => {
     setIsCreatingOrder(true);
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800));
 
     const now = new Date().toISOString();
     const orderNum = orders.length + 1;

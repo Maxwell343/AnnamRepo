@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, Package, Clock, CheckCircle, Circle } from 'lucide-react';
 import './LiveOperations.css';
+import { API_BASE_URL } from '../../../config/api';
 
 interface LiveOrder {
   id: string;
@@ -20,27 +21,28 @@ interface DriverStatus {
   currentTask: string;
 }
 
-const mockOrders: LiveOrder[] = [
-  { id: '1', orderId: 'ORD-2401', pickup: 'Green Valley Farm', dropoff: 'Hope NGO Center', driver: 'Rakesh P.', status: 'transit', eta: '12 min' },
-  { id: '2', orderId: 'ORD-2402', pickup: 'Sunrise Organics', dropoff: 'City Food Bank', driver: 'Sunil M.', status: 'pickup', eta: '25 min' },
-  { id: '3', orderId: 'ORD-2403', pickup: 'Fresh Fields', dropoff: 'Annapurna Shelter', driver: 'Priya K.', status: 'delivered', eta: '—' },
-  { id: '4', orderId: 'ORD-2404', pickup: 'Organic Roots', dropoff: 'Community Kitchen', driver: 'Amit S.', status: 'delayed', eta: '40+ min' },
-  { id: '5', orderId: 'ORD-2405', pickup: 'Harvest Hub', dropoff: '22, MG Road', driver: 'Deepa R.', status: 'transit', eta: '8 min' },
-];
-
-const mockDrivers: DriverStatus[] = [
-  { id: '1', name: 'Rakesh Patil', initials: 'RP', status: 'busy', currentTask: 'ORD-2401 in transit' },
-  { id: '2', name: 'Sunil More', initials: 'SM', status: 'busy', currentTask: 'Heading to pickup' },
-  { id: '3', name: 'Priya Kulkarni', initials: 'PK', status: 'online', currentTask: 'Available' },
-  { id: '4', name: 'Amit Shah', initials: 'AS', status: 'busy', currentTask: 'Delayed – traffic' },
-  { id: '5', name: 'Deepa Rao', initials: 'DR', status: 'online', currentTask: 'ORD-2405 in transit' },
-  { id: '6', name: 'Kiran Jadhav', initials: 'KJ', status: 'offline', currentTask: 'Last seen 2h ago' },
-];
-
 const LiveOperations: React.FC = () => {
-  const [orders] = useState<LiveOrder[]>(mockOrders);
-  const [drivers] = useState<DriverStatus[]>(mockDrivers);
+  const [orders, setOrders] = useState<LiveOrder[]>([]);
+  const [drivers, setDrivers] = useState<DriverStatus[]>([]);
   const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const fetchLiveData = async () => {
+      try {
+        const [ordersRes, driversRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/admin/live-orders`),
+          fetch(`${API_BASE_URL}/api/admin/driver-statuses`)
+        ]);
+        if (ordersRes.ok) setOrders(await ordersRes.json());
+        if (driversRes.ok) setDrivers(await driversRes.json());
+      } catch (err) {
+        console.error('Failed to fetch live operations data:', err);
+      }
+    };
+    fetchLiveData();
+    const dataInterval = setInterval(fetchLiveData, 30000);
+    return () => clearInterval(dataInterval);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 30000);

@@ -76,9 +76,6 @@ const MyDeliveries: React.FC = () => {
   const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   // Fetch deliveries from API
-  const mockDeliveries: DeliveryTask[] = [];
-
-  // Fetch deliveries from API
   const fetchDeliveries = useCallback(async () => {
     if (!user) return;
     
@@ -208,15 +205,16 @@ const MyDeliveries: React.FC = () => {
     setUpdatingId(deliveryId);
     
     try {
-      // Replace with actual API call
-      // await fetch(`http://localhost:8000/api/deliveries/${deliveryId}/status`, {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ status: newStatus, driver_id: user?.id })
-      // });
+      // Update status via API
+      const response = await fetch(API_ENDPOINTS.deliveryTaskStatus(deliveryId.toString()), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus, driver_id: user?.id })
+      });
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
 
       setDeliveries(prev => prev.map(d => 
         d.id === deliveryId 

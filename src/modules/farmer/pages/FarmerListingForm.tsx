@@ -29,31 +29,38 @@ const getProductIcon = (type: ProductType): string => {
   return icons[type];
 };
 
-// Mock price suggestions based on product type
-const getSmartPriceSuggestion = (productType: ProductType, quantity: number): SmartPriceSuggestion => {
-  const priceRanges: Record<ProductType, { avg: number; low: number; high: number }> = {
-    Vegetable: { avg: 45, low: 25, high: 80 },
-    Fruit: { avg: 120, low: 50, high: 400 },
-    Grain: { avg: 35, low: 20, high: 60 },
-    Dairy: { avg: 60, low: 40, high: 100 },
-    Pulses: { avg: 90, low: 60, high: 150 },
-    Spices: { avg: 250, low: 100, high: 500 },
-    Other: { avg: 50, low: 20, high: 100 }
-  };
-  
-  const range = priceRanges[productType];
-  const demandLevels: ('high' | 'medium' | 'low')[] = ['high', 'medium', 'low'];
-  
+// Fetch price suggestion from API, with client-side fallback
+const getSmartPriceSuggestion = async (productType: ProductType, quantity: number): Promise<SmartPriceSuggestion> => {
+  try {
+    const response = await fetch(API_ENDPOINTS.marketplace.priceSuggestion, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_type: productType, quantity })
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        suggestedPrice: data.suggested_price || data.suggestedPrice || 0,
+        reasoning: `Based on current market data for ${productType}`,
+        marketComparison: {
+          averagePrice: data.market_average || 0,
+          lowestPrice: data.min_price || 0,
+          highestPrice: data.max_price || 0
+        },
+        demandLevel: 'medium',
+        competitorCount: 0
+      };
+    }
+  } catch (err) {
+    console.error('Error fetching price suggestion:', err);
+  }
+  // Fallback: return zeros if API fails
   return {
-    suggestedPrice: range.avg,
-    reasoning: `Based on current market trends and ${quantity}+ similar listings`,
-    marketComparison: {
-      averagePrice: range.avg,
-      lowestPrice: range.low,
-      highestPrice: range.high
-    },
-    demandLevel: demandLevels[Math.floor(Math.random() * 3)],
-    competitorCount: Math.floor(Math.random() * 50) + 10
+    suggestedPrice: 0,
+    reasoning: 'Price suggestion unavailable',
+    marketComparison: { averagePrice: 0, lowestPrice: 0, highestPrice: 0 },
+    demandLevel: 'medium',
+    competitorCount: 0
   };
 };
 
@@ -236,8 +243,9 @@ const FarmerListingForm: React.FC = () => {
   // Get smart price suggestion when relevant fields change
   useEffect(() => {
     if (formData.quantity > 0) {
-      const suggestion = getSmartPriceSuggestion(formData.productType, formData.quantity);
-      setPriceSuggestion(suggestion);
+      getSmartPriceSuggestion(formData.productType, formData.quantity).then(suggestion => {
+        setPriceSuggestion(suggestion);
+      });
     }
   }, [formData.productType, formData.quantity]);
   
@@ -248,15 +256,43 @@ const FarmerListingForm: React.FC = () => {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-          // In real app, reverse geocode to get address
-          setLocation({
-            lat: latitude,
-            lng: longitude,
-            address: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
-            district: 'Your District',
-            state: 'Your State',
-            pincode: '000000'
-          });
+          // Reverse geocode using OpenStreetMap Nominatim
+          try {
+            const geoResponse = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
+              { headers: { 'Accept-Language': 'en' } }
+            );
+            if (geoResponse.ok) {
+              const geoData = await geoResponse.json();
+              const addr = geoData.address || {};
+              setLocation({
+                lat: latitude,
+                lng: longitude,
+                address: geoData.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+                district: addr.county || addr.city_district || addr.city || '',
+                state: addr.state || '',
+                pincode: addr.postcode || ''
+              });
+            } else {
+              setLocation({
+                lat: latitude,
+                lng: longitude,
+                address: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+                district: '',
+                state: '',
+                pincode: ''
+              });
+            }
+          } catch {
+            setLocation({
+              lat: latitude,
+              lng: longitude,
+              address: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              district: '',
+              state: '',
+              pincode: ''
+            });
+          }
           setLocationLoading(false);
         },
         (error) => {
@@ -461,10 +497,7 @@ const FarmerListingForm: React.FC = () => {
       navigate('/marketplace');
       
     } catch (err: any) {
-      setError(err.message || 'Something went wrong');
-      // For demo, still navigate
-      alert('🎉 Listing created successfully! (Demo mode)');
-      navigate('/marketplace');
+      setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

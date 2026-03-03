@@ -6,6 +6,7 @@ import {
   DollarSign, Download, Eye, Factory, Handshake, Info,
   RefreshCw, Scale, Search, ShoppingCart, Undo2, User, X, XCircle,
 } from 'lucide-react';
+import { API_BASE_URL } from '../../../config/api';
 import './Transactions.css';
 
 /* ─── Types ─── */
@@ -41,64 +42,6 @@ interface ToastNotification {
   title: string;
   message: string;
 }
-
-/* ─── Generate Mock Data ─── */
-const generateTransactions = (): Transaction[] => {
-  const types: TxnType[] = ['order', 'payout', 'refund', 'commission', 'adjustment', 'subscription'];
-  const statuses: TxnStatus[] = ['success', 'success', 'success', 'pending', 'failed', 'reversed'];
-  const methods = ['UPI', 'Credit Card', 'Debit Card', 'Net Banking', 'Bank Transfer', 'Wallet', 'Internal'];
-  const parties = [
-    { name: 'Hope NGO', type: 'ngo' as const },
-    { name: 'City Food Bank', type: 'ngo' as const },
-    { name: 'Rakesh Patil', type: 'driver' as const },
-    { name: 'Priya Kulkarni', type: 'driver' as const },
-    { name: 'Sunil More', type: 'driver' as const },
-    { name: 'Ravi Sharma', type: 'customer' as const },
-    { name: 'Amit Shah', type: 'customer' as const },
-    { name: 'Deepa Rao', type: 'customer' as const },
-    { name: 'FreshFarm Supplies', type: 'vendor' as const },
-    { name: 'Platform', type: 'platform' as const },
-    { name: 'Green Valley Dairy', type: 'vendor' as const },
-    { name: 'Vikram Singh', type: 'driver' as const },
-    { name: 'Meena Iyer', type: 'customer' as const },
-  ];
-
-  return Array.from({ length: 50 }, (_, i) => {
-    const type = types[Math.floor(Math.random() * types.length)];
-    const status = statuses[Math.floor(Math.random() * statuses.length)];
-    const party = parties[Math.floor(Math.random() * parties.length)];
-    const method = methods[Math.floor(Math.random() * methods.length)];
-    const direction: TxnDirection = ['order', 'commission', 'subscription'].includes(type) ? 'credit' : 'debit';
-    const amount = Math.round(200 + Math.random() * 15000);
-    const d = new Date();
-    d.setMinutes(d.getMinutes() - Math.floor(Math.random() * 60 * 24 * 90));
-    const ordNum = 2400 + Math.floor(Math.random() * 200);
-
-    return {
-      id: String(i + 1),
-      txnId: `TXN-${90280 + i}`,
-      date: d.toISOString(),
-      type,
-      description:
-        type === 'order' ? `Order ORD-${ordNum}` :
-        type === 'payout' ? `Driver payout - ${party.name}` :
-        type === 'refund' ? `Refund for ORD-${ordNum}` :
-        type === 'commission' ? `Commission on ORD-${ordNum}` :
-        type === 'adjustment' ? `Balance adjustment` :
-        `Subscription renewal`,
-      party: party.name,
-      partyType: party.type,
-      amount,
-      direction,
-      method,
-      status,
-      orderId: ['order', 'refund', 'commission'].includes(type) ? `ORD-${ordNum}` : undefined,
-      fee: Math.round(amount * 0.02),
-      reference: `REF${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
-      notes: Math.random() > 0.7 ? 'Flagged for review' : undefined,
-    };
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-};
 
 /* ─── Helpers ─── */
 const formatCurrency = (val: number): string =>
@@ -354,7 +297,7 @@ const TransactionModal: React.FC<{
 
 /* ─── Main Component ─── */
 const Transactions: React.FC = () => {
-  const [allTransactions] = useState<Transaction[]>(generateTransactions());
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | TxnType>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | TxnStatus>('all');
@@ -372,6 +315,16 @@ const Transactions: React.FC = () => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/admin/transactions`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setAllTransactions(data);
+        else if (data.transactions) setAllTransactions(data.transactions);
+      })
+      .catch(() => {});
+  }, []);
 
   const addToast = useCallback((type: ToastNotification['type'], title: string, message: string) => {
     setToasts((prev) => [...prev, { id: Date.now().toString(), type, title, message }]);
@@ -480,7 +433,7 @@ const Transactions: React.FC = () => {
 
   const handleExport = () => {
     setIsExporting(true);
-    setTimeout(() => {
+    {
       const headers = ['TXN ID', 'Date', 'Time', 'Type', 'Description', 'Party', 'Party Type', 'Direction', 'Amount (INR)', 'Fee (INR)', 'Net Amount (INR)', 'Method', 'Status', 'Order ID', 'Reference', 'Notes'];
       const rows = filtered.map((t) => [
         t.txnId, formatDate(t.date), formatTime(t.date), typeConfig[t.type].label,
@@ -500,7 +453,7 @@ const Transactions: React.FC = () => {
       URL.revokeObjectURL(url);
       setIsExporting(false);
       addToast('success', 'Export Complete', `${filtered.length} transactions exported to CSV`);
-    }, 400);
+    }
   };
 
   const handleRetry = (txn: Transaction) => {

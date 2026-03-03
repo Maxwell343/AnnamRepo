@@ -63,31 +63,6 @@ const EditListing: React.FC = () => {
     created_at: ''
   });
 
-  // Mock data - Replace with API call
-  const mockListing: ListingData = {
-    id: 1,
-    title: 'Fresh Organic Tomatoes',
-    quantity: '25',
-    unit: 'kg',
-    type: 'Vegetable',
-    expiry: '3',
-    expiryUnit: 'days',
-    description: 'Freshly harvested organic tomatoes from our farm. No pesticides used. Perfect for restaurants or NGO distribution.',
-    image: null,
-    pickup_location: 'Green Valley Farm, Village Road, Near Temple, Nashik, Maharashtra 422001',
-    pickup_time_start: '08:00',
-    pickup_time_end: '17:00',
-    contact_phone: '+91 98765 43210',
-    status: 'available',
-    created_at: '2024-01-15T10:30:00',
-    claimed_quantity: '10',
-    claimed_by: {
-      id: 1,
-      name: 'Priya Sharma',
-      organization: 'Food For All Foundation'
-    }
-  };
-
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
@@ -208,17 +183,16 @@ const EditListing: React.FC = () => {
     setSaving(true);
 
     try {
-      // Replace with actual API call
-      // const response = await fetch(`http://localhost:8000/api/listings/${id}`, {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
+      const response = await fetch(API_ENDPOINTS.marketplace.listingById(id!), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        throw new Error('Failed to update listing');
+      }
 
-      // Update localStorage or state
       setShowSuccessToast(true);
       setHasChanges(false);
       setOriginalListing(formData);
@@ -237,10 +211,10 @@ const EditListing: React.FC = () => {
 
   const handleDelete = async () => {
     try {
-      // Replace with actual API call
-      // await fetch(`http://localhost:8000/api/listings/${id}`, { method: 'DELETE' });
-
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const response = await fetch(API_ENDPOINTS.marketplace.listingById(id!), { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error('Failed to delete listing');
+      }
       navigate('/my-listings');
     } catch (err) {
       console.error('Error deleting listing:', err);
