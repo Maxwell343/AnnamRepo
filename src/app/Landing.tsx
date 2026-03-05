@@ -310,7 +310,7 @@ const Landing = () => {
             </TextReveal>
           </h1>
           
-          <p className="hero-description">
+          <div className="hero-description">
             <TextReveal delay={200}>
               Annam bridges the gap between farmers, NGOs, and volunteers
             </TextReveal>
@@ -320,7 +320,7 @@ const Landing = () => {
             <TextReveal delay={400}>
               a sustainable food ecosystem for everyone.
             </TextReveal>
-          </p>
+          </div>
           
           <div className="hero-cta">
             <MagneticButton 

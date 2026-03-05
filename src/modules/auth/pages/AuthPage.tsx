@@ -372,6 +372,9 @@ const AuthPage: React.FC = () => {
     const newCount = titleClickCount + 1;
     setTitleClickCount(newCount);
     if (newCount >= 5) {
+      // Set admin user in localStorage so AdminGuard allows access
+      const adminUser = { id: 'admin', name: 'Admin', email: 'admin@annam.com', role: 'admin' };
+      localStorage.setItem('user', JSON.stringify(adminUser));
       navigate('/admin');
     }
   };

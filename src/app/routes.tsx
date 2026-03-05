@@ -56,6 +56,9 @@ import {
 // Admin module
 import { AdminRoutes } from '../modules/admin'
 
+// Guards
+import { ProtectedRoute, RoleGuard, AdminGuard } from '../guards'
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -68,55 +71,55 @@ export default function AppRoutes() {
       <Route path="/verify-otp" element={<VerifyOTP />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* ── Standalone Pages (no sidebar) ── */}
-      <Route path="/impact-dashboard" element={<ImpactDashboard />} />
-      <Route path="/checkout" element={<Checkout />} />
-      <Route path="/customer-home" element={<CustomerHomepage />} />
-
       {/* ── Public Marketplace ── */}
       <Route path="/marketplace" element={<Marketplace />} />
       <Route path="/marketplace/category/:category" element={<Marketplace />} />
       <Route path="/marketplace/product/:productId" element={<Marketplace />} />
 
+      {/* ── Protected Standalone Pages (no sidebar) ── */}
+      <Route path="/impact-dashboard" element={<ProtectedRoute><RoleGuard allowedRoles={['ngo']}><ImpactDashboard /></RoleGuard></ProtectedRoute>} />
+      <Route path="/checkout" element={<ProtectedRoute><RoleGuard allowedRoles={['customer']}><Checkout /></RoleGuard></ProtectedRoute>} />
+      <Route path="/customer-home" element={<ProtectedRoute><RoleGuard allowedRoles={['customer']}><CustomerHomepage /></RoleGuard></ProtectedRoute>} />
+
       {/* ── Admin Panel ── */}
-      <Route path="/admin/*" element={<AdminRoutes />} />
+      <Route path="/admin/*" element={<AdminGuard><AdminRoutes /></AdminGuard>} />
 
       {/* ── Dashboard Routes (with sidebar layout) ── */}
-      <Route element={<DashboardLayout><Outlet /></DashboardLayout>}>
-        {/* Shared */}
+      <Route element={<ProtectedRoute><DashboardLayout><Outlet /></DashboardLayout></ProtectedRoute>}>
+        {/* Shared — all logged-in roles */}
         <Route path="/home" element={<HomePage />} />
         <Route path="/dashboard" element={<HomePage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/settings" element={<SettingsPage />} />
 
         {/* Farmer */}
-        <Route path="/listing" element={<ListingForm />} />
-        <Route path="/my-listings" element={<MyListings />} />
-        <Route path="/edit-listing/:id" element={<EditListing />} />
-        <Route path="/farmer-settings" element={<FarmerSettings />} />
-        <Route path="/farmer/new-listing" element={<FarmerListingForm />} />
-        <Route path="/farmer/edit-listing/:listingId" element={<FarmerListingForm />} />
-        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/listing" element={<RoleGuard allowedRoles={['farmer']}><ListingForm /></RoleGuard>} />
+        <Route path="/my-listings" element={<RoleGuard allowedRoles={['farmer']}><MyListings /></RoleGuard>} />
+        <Route path="/edit-listing/:id" element={<RoleGuard allowedRoles={['farmer']}><EditListing /></RoleGuard>} />
+        <Route path="/farmer-settings" element={<RoleGuard allowedRoles={['farmer']}><FarmerSettings /></RoleGuard>} />
+        <Route path="/farmer/new-listing" element={<RoleGuard allowedRoles={['farmer']}><FarmerListingForm /></RoleGuard>} />
+        <Route path="/farmer/edit-listing/:listingId" element={<RoleGuard allowedRoles={['farmer']}><FarmerListingForm /></RoleGuard>} />
+        <Route path="/analytics" element={<RoleGuard allowedRoles={['farmer']}><Analytics /></RoleGuard>} />
 
         {/* Customer */}
-        <Route path="/order-tracking" element={<OrderTracking />} />
-        <Route path="/order-tracking/:orderId" element={<OrderTracking />} />
-        <Route path="/tracking" element={<OrderTracking />} />
-        <Route path="/addresses" element={<CustomerAddresses />} />
-        <Route path="/payments" element={<CustomerPayments />} />
-        <Route path="/customer-settings" element={<CustomerSettings />} />
+        <Route path="/order-tracking" element={<RoleGuard allowedRoles={['customer']}><OrderTracking /></RoleGuard>} />
+        <Route path="/order-tracking/:orderId" element={<RoleGuard allowedRoles={['customer']}><OrderTracking /></RoleGuard>} />
+        <Route path="/tracking" element={<RoleGuard allowedRoles={['customer']}><OrderTracking /></RoleGuard>} />
+        <Route path="/addresses" element={<RoleGuard allowedRoles={['customer']}><CustomerAddresses /></RoleGuard>} />
+        <Route path="/payments" element={<RoleGuard allowedRoles={['customer']}><CustomerPayments /></RoleGuard>} />
+        <Route path="/customer-settings" element={<RoleGuard allowedRoles={['customer']}><CustomerSettings /></RoleGuard>} />
 
         {/* Driver */}
-        <Route path="/available-pickups" element={<AvailablePickups />} />
-        <Route path="/my-deliveries" element={<MyDeliveries />} />
-        <Route path="/driver-settings" element={<DriverSettings />} />
-        <Route path="/earnings" element={<Earnings />} />
-        <Route path="/route-map" element={<RouteMap />} />
+        <Route path="/available-pickups" element={<RoleGuard allowedRoles={['driver']}><AvailablePickups /></RoleGuard>} />
+        <Route path="/my-deliveries" element={<RoleGuard allowedRoles={['driver']}><MyDeliveries /></RoleGuard>} />
+        <Route path="/driver-settings" element={<RoleGuard allowedRoles={['driver']}><DriverSettings /></RoleGuard>} />
+        <Route path="/earnings" element={<RoleGuard allowedRoles={['driver']}><Earnings /></RoleGuard>} />
+        <Route path="/route-map" element={<RoleGuard allowedRoles={['driver']}><RouteMap /></RoleGuard>} />
 
         {/* NGO */}
-        <Route path="/leaderboards" element={<ImpactPage />} />
-        <Route path="/ngo-settings" element={<NgoSettings />} />
-        <Route path="/claimed-donations" element={<ClaimedDonations />} />
+        <Route path="/leaderboards" element={<RoleGuard allowedRoles={['ngo']}><ImpactPage /></RoleGuard>} />
+        <Route path="/ngo-settings" element={<RoleGuard allowedRoles={['ngo']}><NgoSettings /></RoleGuard>} />
+        <Route path="/claimed-donations" element={<RoleGuard allowedRoles={['ngo']}><ClaimedDonations /></RoleGuard>} />
       </Route>
     </Routes>
   )
