@@ -18,7 +18,7 @@ import {
 // Farmer module
 import {
   FarmerListingForm,
-  FarmerSettings,
+  FarmerProfileSetup,
   EditListing,
   MyListings,
   ListingForm,
@@ -57,7 +57,7 @@ import {
 import { AdminRoutes } from '../modules/admin'
 
 // Guards
-import { ProtectedRoute, RoleGuard, AdminGuard } from '../guards'
+import { ProtectedRoute, RoleGuard, AdminGuard, FarmerProfileGuard } from '../guards'
 
 export default function AppRoutes() {
   return (
@@ -93,13 +93,13 @@ export default function AppRoutes() {
         <Route path="/settings" element={<SettingsPage />} />
 
         {/* Farmer */}
-        <Route path="/listing" element={<RoleGuard allowedRoles={['farmer']}><ListingForm /></RoleGuard>} />
-        <Route path="/my-listings" element={<RoleGuard allowedRoles={['farmer']}><MyListings /></RoleGuard>} />
-        <Route path="/edit-listing/:id" element={<RoleGuard allowedRoles={['farmer']}><EditListing /></RoleGuard>} />
-        <Route path="/farmer-settings" element={<RoleGuard allowedRoles={['farmer']}><FarmerSettings /></RoleGuard>} />
-        <Route path="/farmer/new-listing" element={<RoleGuard allowedRoles={['farmer']}><FarmerListingForm /></RoleGuard>} />
-        <Route path="/farmer/edit-listing/:listingId" element={<RoleGuard allowedRoles={['farmer']}><FarmerListingForm /></RoleGuard>} />
-        <Route path="/analytics" element={<RoleGuard allowedRoles={['farmer']}><Analytics /></RoleGuard>} />
+        <Route path="/farmer/complete-profile" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileSetup /></RoleGuard>} />
+        <Route path="/listing" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileGuard><ListingForm /></FarmerProfileGuard></RoleGuard>} />
+        <Route path="/my-listings" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileGuard><MyListings /></FarmerProfileGuard></RoleGuard>} />
+        <Route path="/edit-listing/:id" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileGuard><EditListing /></FarmerProfileGuard></RoleGuard>} />
+        <Route path="/farmer/new-listing" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileGuard><FarmerListingForm /></FarmerProfileGuard></RoleGuard>} />
+        <Route path="/farmer/edit-listing/:listingId" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileGuard><FarmerListingForm /></FarmerProfileGuard></RoleGuard>} />
+        <Route path="/analytics" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileGuard><Analytics /></FarmerProfileGuard></RoleGuard>} />
 
         {/* Customer */}
         <Route path="/order-tracking" element={<RoleGuard allowedRoles={['customer']}><OrderTracking /></RoleGuard>} />

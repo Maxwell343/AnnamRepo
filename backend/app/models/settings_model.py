@@ -78,6 +78,46 @@ class NgoSettingsModel(BaseModel):
     organization_name: Optional[str] = None
     organization_email: Optional[str] = None
     organization_phone: Optional[str] = None
+
+
+class FarmerProfileModel(BaseModel):
+    farmer_id: str
+
+    # Personal
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    aadhaar: Optional[str] = None
+    profile_photo: Optional[str] = None
+
+    # Farm Location
+    farm_address: Optional[str] = None
+    village: Optional[str] = None
+    taluka: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+    pincode: Optional[str] = None
+    gps_lat: Optional[str] = None
+    gps_lng: Optional[str] = None
+
+    # Farm Details
+    farm_size: Optional[str] = None
+    farm_size_unit: Optional[str] = "acres"
+    farming_type: Optional[str] = None
+    storage_facilities: Optional[List[str]] = None
+
+    # Crops
+    primary_crops: Optional[List[str]] = None
+
+    # Rescue Preferences
+    auto_ngo_rescue: Optional[bool] = False
+    min_selling_price: Optional[str] = None
+    discount_threshold: Optional[str] = None
+    preferred_ngos: Optional[List[str]] = None
+
+    # Status
+    profile_complete: Optional[bool] = False
+    completed_at: Optional[str] = None
     registration_number: Optional[str] = None
     pan_number: Optional[str] = None
     

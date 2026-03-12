@@ -23,6 +23,7 @@ export const API_ENDPOINTS = {
   
   // Settings
   farmerSettings: (id: string) => `${API_BASE_URL}/api/settings/farmer/${id}`,
+  farmerProfile: (id: string) => `${API_BASE_URL}/api/farmer/profile/${id}`,
   driverSettings: (id: string) => `${API_BASE_URL}/api/settings/driver/${id}`,
   ngoSettings: (id: string) => `${API_BASE_URL}/api/settings/ngo/${id}`,
   

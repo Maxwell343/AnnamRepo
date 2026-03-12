@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from app.models.settings_model import DriverSettingsModel, FarmerSettingsModel, NgoSettingsModel
+from datetime import datetime
+from app.models.settings_model import DriverSettingsModel, FarmerSettingsModel, NgoSettingsModel, FarmerProfileModel
 from app.services.settings_service import (
     get_driver_settings, save_driver_settings,
     get_farmer_settings, save_farmer_settings,
@@ -94,6 +95,28 @@ async def update_ngo_settings_route(ngo_id: str, settings: NgoSettingsModel):
     settings_dict["ngo_id"] = ngo_id
     result = await save_ngo_settings(settings_dict)
     return {"message": "Settings updated successfully", "settings": result}
+
+
+# ==================== FARMER PROFILE (SETUP WIZARD) ====================
+
+@router.get("/api/farmer/profile/{farmer_id}")
+async def get_farmer_profile_route(farmer_id: str):
+    """Get farmer profile setup data"""
+    profile = await get_farmer_settings(farmer_id)
+    if not profile:
+        return {"farmer_id": farmer_id, "profile_complete": False}
+    return profile
+
+
+@router.put("/api/farmer/profile/{farmer_id}")
+async def update_farmer_profile_route(farmer_id: str, profile: FarmerProfileModel):
+    """Save farmer profile from the setup wizard"""
+    profile_dict = profile.dict(exclude_unset=True)
+    profile_dict["farmer_id"] = farmer_id
+    profile_dict["profile_complete"] = True
+    profile_dict["completed_at"] = datetime.utcnow().isoformat()
+    result = await save_farmer_settings(profile_dict)
+    return {"message": "Profile saved successfully", "profile": result}
 
 
 # ==================== USER PROFILE ====================

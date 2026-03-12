@@ -103,7 +103,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     };
 
     const getSettingsRoute = () => {
-      if (user.role === 'farmer') return '/farmer-settings';
+      if (user.role === 'farmer') return '/farmer/complete-profile';
       if (user.role === 'driver') return '/driver-settings';
       if (user.role === 'ngo') return '/ngo-settings';
       return '/settings';

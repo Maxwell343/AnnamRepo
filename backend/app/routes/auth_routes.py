@@ -3,8 +3,21 @@ from pydantic import BaseModel
 from typing import Optional
 from app.models.user_model import UserCreate, UserLogin, ForgotPasswordRequest, VerifyOTPRequest, ResetPasswordRequest
 from app.services.auth_service import create_user, authenticate_user, generate_otp, verify_otp, reset_password, get_user_by_email, create_google_user, authenticate_google_user
+from app.core.database import get_database
 
 router = APIRouter(prefix="/api", tags=["Auth"])
+
+
+def _get_profile_complete(user_id: str, role: str) -> bool:
+    """Return True if a farmer has completed their profile setup."""
+    if role != 'farmer':
+        return True
+    try:
+        db = get_database()
+        settings = db.farmer_settings.find_one({"farmer_id": user_id})
+        return bool(settings and settings.get("profile_complete"))
+    except Exception:
+        return False
 
 
 # Google Auth Models
@@ -55,12 +68,14 @@ def login(user: UserLogin):
     if not db_user:
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
+    _uid = str(db_user["_id"])
     return {
         "user": {
-            "id": str(db_user["_id"]),
+            "id": _uid,
             "name": db_user.get("name"),
             "email": db_user.get("email"),
-            "role": db_user.get("role")
+            "role": db_user.get("role"),
+            "profileComplete": _get_profile_complete(_uid, db_user.get("role", ""))
         }
     }
 
@@ -81,12 +96,14 @@ def google_login(request: GoogleLoginRequest):
     if not user:
         raise HTTPException(status_code=404, detail="User not found. Please sign up first.")
     
+    _uid = str(user["_id"])
     return {
         "user": {
-            "id": str(user["_id"]),
+            "id": _uid,
             "name": user.get("name"),
             "email": user.get("email"),
-            "role": user.get("role")
+            "role": user.get("role"),
+            "profileComplete": _get_profile_complete(_uid, user.get("role", ""))
         }
     }
 
@@ -115,7 +132,8 @@ def google_signup(request: GoogleSignupRequest):
             "id": str(new_user["_id"]),
             "name": new_user.get("name"),
             "email": new_user.get("email"),
-            "role": new_user.get("role")
+            "role": new_user.get("role"),
+            "profileComplete": False
         }
     }
 

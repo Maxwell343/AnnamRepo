@@ -11,7 +11,7 @@ const SettingsPage: React.FC = () => {
     if (savedUser) {
       const user = JSON.parse(savedUser);
       if (user.role === 'farmer') {
-        navigate('/farmer-settings');
+        navigate('/farmer/complete-profile');
         return;
       } else if (user.role === 'driver') {
         navigate('/driver-settings');

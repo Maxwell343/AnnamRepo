@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Listing.css';
-import '../../../app/HomePage.css';
 import { API_ENDPOINTS } from '../../../config/api';
 import { MapContainer, TileLayer, CircleMarker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { LeafletMouseEvent } from 'leaflet';
+import { ArrowLeft, ChevronRight, MapPin, Package, Camera, Upload } from 'lucide-react';
 
 type LatLng = { lat: number; lng: number };
 
@@ -30,9 +30,7 @@ const MapFlyTo: React.FC<{ center: LatLng; zoom: number }> = ({ center, zoom }) 
 
 const ListingForm: React.FC = () => {
   const navigate = useNavigate();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  
-  // State to hold form data
+
   const [formData, setFormData] = useState({
     title: '',
     quantity: '',
@@ -41,18 +39,17 @@ const ListingForm: React.FC = () => {
     expiry: '',
     description: '',
     image: '',
-    pickupAddress: ''
+    pickupAddress: '',
   });
   const [imagePreview, setImagePreview] = useState<string>('');
   const [pickupCoords, setPickupCoords] = useState<LatLng | null>(null);
-  const [showMapPicker, setShowMapPicker] = useState(false);
 
   const defaultCenter = useMemo<LatLng>(() => ({ lat: 20.5937, lng: 78.9629 }), []);
   const [mapCenter, setMapCenter] = useState<LatLng>(defaultCenter);
   const [mapZoom, setMapZoom] = useState(5);
   const [farmerLocation, setFarmerLocation] = useState<string>('');
-
   const [profileChecking, setProfileChecking] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -186,9 +183,9 @@ const ListingForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setIsSubmitting(true);
+
     try {
-      // Get the user from localStorage
       const savedUser = localStorage.getItem('user');
       if (!savedUser) {
         alert('You must be logged in to create a listing');
@@ -205,24 +202,11 @@ const ListingForm: React.FC = () => {
         : coordsText;
 
       if (!pickup_address) {
-        alert('Please enter a pickup address or pick a location on the map.');
+        alert('Please enter a pickup address or pin a location on the map.');
+        setIsSubmitting(false);
         return;
       }
 
-      console.log('Submitting listing with data:', {
-        farmer_id: user.id,
-        farmer_name: user.name,
-        title: formData.title,
-        quantity: formData.quantity,
-        price: formData.price,
-        type: formData.type,
-        expiry_date: formData.expiry,
-        description: formData.description,
-        pickup_address,
-        imageSize: formData.image ? formData.image.length : 0
-      });
-
-      // Send data to backend API
       const response = await fetch(API_ENDPOINTS.listings, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -236,192 +220,230 @@ const ListingForm: React.FC = () => {
           expiry_date: formData.expiry,
           description: formData.description,
           pickup_address,
-          image: formData.image
+          image: formData.image,
         }),
       });
 
       const data = await response.json();
-      console.log('Backend response:', data, 'Status:', response.status);
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to create listing');
-      }
+      if (!response.ok) throw new Error(data.message || 'Failed to create listing');
 
       alert('Listing created successfully!');
-      console.log('Listing created! Redirecting to dashboard in 500ms');
-      
-      // Small delay to ensure backend is ready
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 500);
+      setTimeout(() => navigate('/dashboard'), 500);
     } catch (err: unknown) {
-      console.error('Listing submission error:', err);
       const message = err instanceof Error ? err.message : 'Failed to create listing';
       if (message.toLowerCase().includes('failed to fetch')) {
         alert('Error: Failed to reach backend. Please ensure the backend server is running and try again.');
       } else {
         alert(`Error: ${message}`);
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    navigate('/auth');
-  };
+  if (profileChecking) {
+    return (
+      <div className="lf-loading">
+        <div className="lf-spinner" />
+        <p>Checking profile…</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="listing-page">
-      {profileChecking ? (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ width: '40px', height: '40px', border: '4px solid #e0e0e0', borderTop: '4px solid #2e7d32', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-          <p style={{ color: '#757575', fontSize: '14px' }}>Checking profile...</p>
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div className="lf-page">
+
+      {/* ── Top Bar ── */}
+      <div className="lf-topbar">
+        <div className="lf-breadcrumb">
+          <button className="lf-back-btn" onClick={() => navigate('/dashboard')}>
+            <ArrowLeft size={15} />
+            Back
+          </button>
+          <ChevronRight size={14} className="lf-bc-sep" />
+          <span className="lf-bc-link" onClick={() => navigate('/my-listings')}>My Listings</span>
+          <ChevronRight size={14} className="lf-bc-sep" />
+          <span className="lf-bc-current">Create Listing</span>
         </div>
-      ) : (
-      <>
-      <header className="top-header">
-          <div className="header-left">
-            <h1 className="page-title">➕ Add Listing</h1>
-            <p className="page-subtitle">Create a new donation listing</p>
-          </div>
-        </header>
+        <div className="lf-topbar-actions">
+          <button type="button" className="lf-btn-discard" onClick={() => navigate('/my-listings')}>
+            Discard
+          </button>
+          <button
+            type="submit"
+            form="listing-form"
+            className="lf-btn-publish"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Publishing…' : 'Publish Listing'}
+          </button>
+        </div>
+      </div>
 
-        <div className="form-container">
-          <div className="form-card">
-            <div className="form-header">
-              <h2>🌽 Food Details</h2>
-              <p>Update information for your donation</p>
-            </div>
+      {/* ── Page Body ── */}
+      <div className="lf-body">
+        <h1 className="lf-page-title">Create Listing</h1>
 
-            <form onSubmit={handleSubmit}>
-          {/* Image Upload */}
-          <div className="form-group">
-            <label>Food Image</label>
-            <input 
-              type="file" 
-              accept="image/*" 
-              className="form-control" 
-              onChange={handleImageChange}
-            />
-            {imagePreview && (
-              <div style={{marginTop: '10px', textAlign: 'center'}}>
-                <img 
-                  src={imagePreview} 
-                  alt="Preview" 
-                  style={{maxWidth: '100%', maxHeight: '150px', borderRadius: '8px'}}
+        <form id="listing-form" onSubmit={handleSubmit} className="lf-layout">
+
+          {/* ──────────── LEFT COLUMN ──────────── */}
+          <div className="lf-left">
+
+            {/* Food Details Card */}
+            <div className="lf-card">
+              <div className="lf-card-header">
+                <Package size={17} />
+                <h2>Food Details</h2>
+              </div>
+
+              <div className="lf-field">
+                <label>Item Name</label>
+                <input
+                  type="text"
+                  name="title"
+                  className="lf-input"
+                  placeholder="e.g. Fresh Tomatoes"
+                  value={formData.title}
+                  onChange={handleChange}
+                  required
                 />
               </div>
-            )}
-          </div>
 
-          {/* Item Name */}
-          <div className="form-group">
-            <label>Item Name</label>
-            <input 
-              type="text" 
-              name="title" 
-              className="form-control" 
-              placeholder="e.g. Fresh Tomatoes"
-              value={formData.title}
-              onChange={handleChange}
-              required 
-            />
-          </div>
+              <div className="lf-row">
+                <div className="lf-field">
+                  <label>Category</label>
+                  <select name="type" className="lf-input" value={formData.type} onChange={handleChange}>
+                    <option value="Vegetable">Vegetable</option>
+                    <option value="Fruit">Fruit</option>
+                    <option value="Grain">Grain</option>
+                    <option value="Dairy">Dairy</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className="lf-field">
+                  <label>Quantity (kg)</label>
+                  <input
+                    type="number"
+                    name="quantity"
+                    className="lf-input"
+                    placeholder="e.g. 50"
+                    value={formData.quantity}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
 
-          {/* Quantity & Type Row */}
-          <div style={{ display: 'flex', gap: '15px' }}>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Quantity (kg)</label>
-              <input 
-                type="number" 
-                name="quantity" 
-                className="form-control" 
-                placeholder="50"
-                value={formData.quantity}
-                onChange={handleChange}
-                required 
-              />
+              <div className="lf-row">
+                <div className="lf-field">
+                  <label>Price (₹ per kg)</label>
+                  <div className="lf-prefix-wrap">
+                    <span className="lf-prefix">₹</span>
+                    <input
+                      type="number"
+                      name="price"
+                      className="lf-input lf-input-prefixed"
+                      placeholder="0"
+                      value={formData.price}
+                      onChange={handleChange}
+                      min={0}
+                      step={1}
+                    />
+                  </div>
+                </div>
+                <div className="lf-field">
+                  <label>Expiry</label>
+                  <input
+                    type="text"
+                    name="expiry"
+                    className="lf-input"
+                    placeholder='e.g. "3 days" or "24 hours"'
+                    value={formData.expiry}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="lf-field">
+                <label>Additional Notes</label>
+                <textarea
+                  name="description"
+                  className="lf-input lf-textarea"
+                  rows={3}
+                  placeholder="e.g. Grade B quality. Pickup before 5 PM."
+                  value={formData.description}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
 
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Type</label>
-              <select 
-                name="type" 
-                className="form-control" 
-                value={formData.type}
-                onChange={handleChange}
-              >
-                <option value="Vegetable">Vegetable</option>
-                <option value="Fruit">Fruit</option>
-                <option value="Grain">Grain</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
+            {/* Photo Card */}
+            <div className="lf-card">
+              <div className="lf-card-header">
+                <Camera size={17} />
+                <h2>Food Photo</h2>
+              </div>
 
-          {/* Price */}
-          <div className="form-group">
-            <label>Price (₹ per kg)</label>
-            <input
-              type="number"
-              name="price"
-              className="form-control"
-              placeholder="0"
-              value={formData.price}
-              onChange={handleChange}
-              min={0}
-              step={1}
-            />
-          </div>
-
-          {/* Expiry Date */}
-          <div className="form-group">
-            <label>Expires In (Days or "2 days", "24 hours")</label>
-            <input 
-              type="text" 
-              name="expiry" 
-              className="form-control" 
-              placeholder="e.g. 2 days OR 24 hours OR just 2"
-              value={formData.expiry}
-              onChange={handleChange}
-              required 
-            />
-          </div>
-
-          {/* Location */}
-          <div className="form-group">
-            <label>📍 Pickup Address</label>
-            <input 
-              type="text" 
-              name="pickupAddress" 
-              className="form-control" 
-              placeholder="Enter pickup address manually"
-              value={formData.pickupAddress}
-              onChange={handleChange}
-              title="Enter the pickup address, or pick a location from the map."
-            />
-
-            <div className="map-picker-actions">
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => setShowMapPicker(v => !v)}
-              >
-                {showMapPicker ? 'Hide Map' : 'Pick on Map'}
-              </button>
-              {pickupCoords && (
-                <span className="map-picker-coords">Selected: {formatCoords(pickupCoords)}</span>
+              {imagePreview ? (
+                <div className="lf-image-preview">
+                  <img src={imagePreview} alt="Preview" />
+                  <button
+                    type="button"
+                    className="lf-image-remove"
+                    onClick={() => {
+                      setImagePreview('');
+                      setFormData(f => ({ ...f, image: '' }));
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <label className="lf-upload-zone">
+                  <Upload size={26} />
+                  <span>Click to upload photo</span>
+                  <small>JPEG or PNG, max 5 MB</small>
+                  <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
+                </label>
               )}
             </div>
+          </div>
 
-            {showMapPicker && (
-              <div className="map-picker">
+          {/* ──────────── RIGHT COLUMN ──────────── */}
+          <div className="lf-right">
+            <div className="lf-card lf-card-sticky">
+              <div className="lf-card-header">
+                <MapPin size={17} />
+                <h2>Pickup Location</h2>
+              </div>
+
+              <div className="lf-field">
+                <label>Street Address</label>
+                <input
+                  type="text"
+                  name="pickupAddress"
+                  className="lf-input"
+                  placeholder="Enter full pickup address"
+                  value={formData.pickupAddress}
+                  onChange={handleChange}
+                />
+              </div>
+
+              {pickupCoords && (
+                <div className="lf-coords-badge">
+                  <MapPin size={12} />
+                  {formatCoords(pickupCoords)}
+                </div>
+              )}
+
+              <div className="lf-map-wrap">
                 <MapContainer
                   center={[mapCenter.lat, mapCenter.lng]}
                   zoom={mapZoom}
-                  scrollWheelZoom={true}
-                  className="map-picker-map"
+                  scrollWheelZoom
+                  className="lf-map"
                 >
                   <TileLayer
                     attribution="&copy; OpenStreetMap contributors"
@@ -430,42 +452,34 @@ const ListingForm: React.FC = () => {
                   <MapFlyTo center={mapCenter} zoom={mapZoom} />
                   <MapClickToPick onPick={setPickupCoords} />
                   {pickupCoords && (
-                    <CircleMarker center={[pickupCoords.lat, pickupCoords.lng]} radius={10} pathOptions={{ color: '#064e3b' }} />
+                    <CircleMarker
+                      center={[pickupCoords.lat, pickupCoords.lng]}
+                      radius={10}
+                      pathOptions={{ color: '#064e3b', fillColor: '#064e3b', fillOpacity: 0.45 }}
+                    />
                   )}
                 </MapContainer>
+                <p className="lf-map-hint">Click on the map to pin the exact pickup location</p>
               </div>
-            )}
+
+              {/* Live Summary */}
+              {(formData.title || formData.quantity) && (
+                <div className="lf-summary">
+                  <p className="lf-summary-title">LISTING SUMMARY</p>
+                  {formData.title    && <div className="lf-summary-row"><span>Item</span><strong>{formData.title}</strong></div>}
+                  {formData.quantity && <div className="lf-summary-row"><span>Quantity</span><strong>{formData.quantity} kg</strong></div>}
+                  {formData.price    && <div className="lf-summary-row"><span>Price</span><strong>₹{formData.price}/kg</strong></div>}
+                  {formData.type     && <div className="lf-summary-row"><span>Category</span><strong>{formData.type}</strong></div>}
+                  {formData.expiry   && <div className="lf-summary-row"><span>Expires in</span><strong>{formData.expiry}</strong></div>}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Description */}
-          <div className="form-group">
-            <label>Additional Notes</label>
-            <textarea 
-              name="description" 
-              className="form-control" 
-              rows={3} 
-              placeholder="e.g. Need pickup before 5 PM. Grade B quality."
-              value={formData.description}
-              onChange={handleChange}
-            ></textarea>
-          </div>
-
-          {/* Buttons */}
-          <div className="btn-group">
-            <button type="button" className="btn-cancel" onClick={() => navigate('/dashboard')}>
-              Cancel
-            </button>
-            <button type="submit" className="btn-submit">
-              Save Details
-            </button>
-          </div>
-            </form>
-          </div>
-        </div>
-      </>
-      )}
+        </form>
+      </div>
     </div>
-    );
-  };
-  
-  export default ListingForm;
+  );
+};
+
+export default ListingForm;
