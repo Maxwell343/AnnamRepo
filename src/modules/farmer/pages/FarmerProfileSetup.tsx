@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './FarmerProfileSetup.css';
 import { API_ENDPOINTS } from '../../../config/api';
 
@@ -86,6 +86,8 @@ const INITIAL: ProfileData = {
 
 const FarmerProfileSetup: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = (location.state as any)?.returnTo;
   const [step, setStep] = useState(1);
   const [data, setData] = useState<ProfileData>(INITIAL);
   const [errors, setErrors] = useState<Errors>({});
@@ -143,6 +145,20 @@ const FarmerProfileSetup: React.FC = () => {
               discountThreshold: p.discount_threshold || '',
               preferredNgos: p.preferred_ngos || [],
             });
+
+            // Mark profile as complete if required fields exist
+            const hasRequired = !!(p.full_name && p.phone && p.farm_address && p.district && p.state && p.pincode && p.farm_size && p.farming_type && (p.primary_crops?.length > 0));
+            if (hasRequired) {
+              const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+              if (!currentUser.profileComplete) {
+                localStorage.setItem('user', JSON.stringify({ ...currentUser, profileComplete: true }));
+              }
+              // If redirected here by the guard, go back to the original page
+              if (returnTo) {
+                navigate(returnTo, { replace: true });
+                return;
+              }
+            }
           }
         }
       } catch {
