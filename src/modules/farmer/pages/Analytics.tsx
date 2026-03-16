@@ -52,7 +52,6 @@ const Analytics: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'trends' | 'impact'>('overview');
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('month');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // State for API data
   const [stats, setStats] = useState<DonationStats>({
@@ -165,11 +164,6 @@ const Analytics: React.FC = () => {
     
     setLoading(false);
   }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    navigate('/');
-  };
 
   // Calculate max value for chart scaling
   const maxDonations = Math.max(...monthlyData.map(d => d.donations));

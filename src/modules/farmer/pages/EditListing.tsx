@@ -12,7 +12,7 @@ interface ListingData {
   title: string;
   quantity: string;
   unit: string;
-  type: 'Vegetable' | 'Fruit' | 'Grain' | 'Other';
+  type: 'Vegetable' | 'Fruit' | 'Grain' | 'Dairy' | 'Other';
   expiry: string;
   expiryUnit: 'hours' | 'days';
   description: string;
@@ -84,7 +84,7 @@ const EditListing: React.FC = () => {
   const fetchListing = async () => {
     try {
       if (!id) throw new Error('Listing ID is required');
-      const response = await fetch(API_ENDPOINTS.marketplace.listingById(id));
+      const response = await fetch(`${API_ENDPOINTS.listings}/${id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch listing');
       }
@@ -183,7 +183,7 @@ const EditListing: React.FC = () => {
     setSaving(true);
 
     try {
-      const response = await fetch(API_ENDPOINTS.marketplace.listingById(id!), {
+      const response = await fetch(`${API_ENDPOINTS.listings}/${id!}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -211,7 +211,7 @@ const EditListing: React.FC = () => {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(API_ENDPOINTS.marketplace.listingById(id!), { method: 'DELETE' });
+      const response = await fetch(`${API_ENDPOINTS.listings}/${id!}`, { method: 'DELETE' });
       if (!response.ok) {
         throw new Error('Failed to delete listing');
       }
@@ -236,6 +236,7 @@ const EditListing: React.FC = () => {
       case 'Vegetable': return '🥦';
       case 'Fruit': return '🍎';
       case 'Grain': return '🌾';
+      case 'Dairy': return '🥛';
       default: return '🍱';
     }
   };
@@ -375,6 +376,7 @@ const EditListing: React.FC = () => {
                   <option value="Vegetable">🥦 Vegetable</option>
                   <option value="Fruit">🍎 Fruit</option>
                   <option value="Grain">🌾 Grain</option>
+                  <option value="Dairy">🥛 Dairy</option>
                   <option value="Other">🍱 Other</option>
                 </select>
               </div>

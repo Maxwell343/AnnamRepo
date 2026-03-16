@@ -23,6 +23,7 @@ import {
   MyListings,
   ListingForm,
   Analytics,
+  FarmerDashboard,
 } from '../modules/farmer'
 
 // Customer module
@@ -59,6 +60,18 @@ import { AdminRoutes } from '../modules/admin'
 // Guards
 import { ProtectedRoute, RoleGuard, AdminGuard, FarmerProfileGuard } from '../guards'
 
+// Role-based dashboard — renders the right dashboard for each role
+function RoleDashboard() {
+  try {
+    const raw = localStorage.getItem('user')
+    if (raw) {
+      const user = JSON.parse(raw)
+      if (user?.role === 'farmer') return <FarmerDashboard />
+    }
+  } catch { /* ignore */ }
+  return <HomePage />
+}
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -86,9 +99,9 @@ export default function AppRoutes() {
 
       {/* ── Dashboard Routes (with sidebar layout) ── */}
       <Route element={<ProtectedRoute><DashboardLayout><Outlet /></DashboardLayout></ProtectedRoute>}>
-        {/* Shared — all logged-in roles */}
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/dashboard" element={<HomePage />} />
+        {/* Shared — role-specific dashboards */}
+        <Route path="/home" element={<RoleDashboard />} />
+        <Route path="/dashboard" element={<RoleDashboard />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/settings" element={<SettingsPage />} />
 

@@ -294,3 +294,99 @@ def ngo_stats(ngo_id: str):
     """Get statistics for an NGO"""
     stats = get_ngo_stats(ngo_id)
     return stats
+
+
+# ============== FARMER DASHBOARD ==============
+
+@router.get("/farmer/{farmer_id}/dashboard")
+def farmer_dashboard(farmer_id: str):
+    """Get aggregated farmer dashboard data — stats, recent listings, activity timeline"""
+    from datetime import datetime
+
+    # Get all farmer listings (including expired for full stats)
+    all_listings = get_all_listings({
+        "$or": [
+            {"farmer_id": farmer_id},
+            {"farmer_id": int(farmer_id) if farmer_id.isdigit() else farmer_id}
+        ]
+    }, include_expired=True)
+
+    # Active (non-expired) listings
+    active_listings = [l for l in all_listings if l.get("status") != "expired"]
+
+    # Counts
+    total = len(all_listings)
+    available = len([l for l in active_listings if l.get("status") == "available"])
+    claimed = len([l for l in active_listings if l.get("status") == "claimed"])
+    assigned = len([l for l in active_listings if l.get("status") in ("assigned", "in_transit")])
+    delivered = len([l for l in all_listings if l.get("status") == "delivered"])
+    expired = len([l for l in all_listings if l.get("status") == "expired"])
+
+    # Total quantity donated (try to parse numeric part)
+    total_kg = 0
+    for l in all_listings:
+        qty = l.get("quantity", "0")
+        try:
+            import re
+            nums = re.findall(r"[\d.]+", str(qty))
+            if nums:
+                total_kg += float(nums[0])
+        except:
+            pass
+
+    # Claim rate
+    claim_rate = round((claimed + assigned + delivered) / total * 100) if total > 0 else 0
+
+    # Recent 5 listings (sorted by created_at desc)
+    recent_listings = sorted(
+        active_listings,
+        key=lambda x: x.get("created_at", ""),
+        reverse=True
+    )[:5]
+
+    # Activity timeline from all listings
+    activities = []
+    for l in sorted(all_listings, key=lambda x: x.get("updated_at", x.get("created_at", "")), reverse=True)[:10]:
+        status = l.get("status", "available")
+        action_map = {
+            "available": "Listed",
+            "claimed": "Claimed by NGO",
+            "assigned": "Driver Assigned",
+            "in_transit": "In Transit",
+            "delivered": "Delivered",
+            "expired": "Expired"
+        }
+        icon_map = {
+            "available": "📦",
+            "claimed": "🤝",
+            "assigned": "🚚",
+            "in_transit": "🚛",
+            "delivered": "✅",
+            "expired": "⏰"
+        }
+        activities.append({
+            "id": l.get("id"),
+            "title": l.get("title", "Untitled"),
+            "action": action_map.get(status, status),
+            "icon": icon_map.get(status, "📋"),
+            "status": status,
+            "quantity": l.get("quantity", ""),
+            "type": l.get("type", "Other"),
+            "time": l.get("updated_at") or l.get("created_at") or ""
+        })
+
+    return {
+        "stats": {
+            "total": total,
+            "available": available,
+            "claimed": claimed,
+            "assigned": assigned,
+            "delivered": delivered,
+            "expired": expired,
+            "total_kg": round(total_kg, 1),
+            "claim_rate": claim_rate,
+            "active": len(active_listings),
+        },
+        "recent_listings": recent_listings,
+        "activities": activities,
+    }
