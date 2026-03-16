@@ -11,7 +11,7 @@ import { useState, useEffect, useRef } from 'react';
 const heroImage = 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80';
 const farmImage = 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&q=80';
 const communityImage = 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=600&q=80';
-const deliveryImage = 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600&q=80';
+const deliveryImage = '/delivery.png';
 const testimonial1 = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80';
 const testimonial2 = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80';
 const testimonial3 = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80';

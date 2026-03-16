@@ -3,7 +3,7 @@ import {
   Clock, Check, X, AlertTriangle, Leaf, Apple, Wheat, Milk, Flame, Package,
   ClipboardList, Flag, Star, Eye, Search, CheckCircle, XCircle, DollarSign,
   MapPin, Calendar, MessageCircle, ArrowUp, ArrowDown, RefreshCw, Download,
-  Tag, SlidersHorizontal, LayoutGrid, List, CheckSquare, Info, Circle
+  Tag, SlidersHorizontal, LayoutGrid, List, CheckSquare, Info
 } from 'lucide-react';
 import ListingReviewModal from './ListingReviewModal';
 import { API_ENDPOINTS } from '../../../config/api';
@@ -1504,7 +1504,7 @@ const ListingModeration: React.FC = () => {
             price: selectedListing.price.toString(),
             status: selectedListing.status,
             submittedAt: selectedListing.submittedAt,
-            icon: selectedListing.icon,
+            icon: '📦',
           }}
           onClose={() => setSelectedListing(null)}
           onApprove={() => {
