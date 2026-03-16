@@ -188,16 +188,16 @@ const NGOSettings: React.FC = () => {
   });
 
   const sections = [
-    { id: 'organization', label: 'Organization', icon: <Building size={16} /> },
-    { id: 'admin', label: 'Admin Profile', icon: <User size={16} /> },
-    { id: 'cause', label: 'Cause & Impact', icon: <Target size={16} /> },
-    { id: 'compliance', label: 'Compliance', icon: <ClipboardList size={16} /> },
-    { id: 'payment', label: 'Donations', icon: <HeartHandshake size={16} /> },
-    { id: 'social', label: 'Social Media', icon: <Globe2 size={16} /> },
-    { id: 'notifications', label: 'Notifications', icon: <Bell size={16} /> },
-    { id: 'preferences', label: 'Preferences', icon: <Settings size={16} /> },
-    { id: 'branding', label: 'Branding', icon: <Palette size={16} /> },
-    { id: 'security', label: 'Security', icon: <Lock size={16} /> },
+    { id: 'organization', label: 'Organization', icon: <Building size={16} />, optional: false },
+    { id: 'admin', label: 'Admin Profile', icon: <User size={16} />, optional: false },
+    { id: 'cause', label: 'Cause & Impact', icon: <Target size={16} />, optional: false },
+    { id: 'compliance', label: 'Compliance', icon: <ClipboardList size={16} />, optional: false },
+    { id: 'payment', label: 'Donations', icon: <HeartHandshake size={16} />, optional: false },
+    { id: 'social', label: 'Social Media', icon: <Globe2 size={16} />, optional: false },
+    { id: 'branding', label: 'Branding', icon: <Palette size={16} />, optional: false },
+    { id: 'preferences', label: 'Preferences', icon: <Settings size={16} />, optional: true },
+    { id: 'notifications', label: 'Notifications', icon: <Bell size={16} />, optional: true },
+    { id: 'security', label: 'Security', icon: <Lock size={16} />, optional: true },
   ];
 
   useEffect(() => {
@@ -495,6 +495,8 @@ const NGOSettings: React.FC = () => {
     if (savedUser) {
       const user = JSON.parse(savedUser);
       user.name = formData.adminName;
+      const isNowComplete = !!(formData.adminName.trim() && formData.adminPhone.trim() && formData.organizationName.trim() && formData.address.trim());
+      user.profileComplete = isNowComplete;
       localStorage.setItem('user', JSON.stringify(user));
     }
 
@@ -584,91 +586,79 @@ const NGOSettings: React.FC = () => {
     );
   }
 
+  const activeSectionMeta = sections.find((s) => s.id === activeSection) || sections[0];
+  const activeSectionIndex = Math.max(0, sections.findIndex((s) => s.id === activeSection));
+  const profileCompletion = calculateCompletion(formData);
+  const hasCompletedCoreProfile = isNgoCoreProfileComplete(formData);
+  const flowProgress = Math.round(((activeSectionIndex + 1) / sections.length) * 100);
+
   return (
     <div className="ngo-settings-container">
-      {incompleteProfile && (
-        <div className="ngo-profile-incomplete-banner">
-          <div className="banner-content">
-            <AlertTriangle size={22} />
-            <div>
-              <strong>Complete your organization profile to access donations</strong>
-              <p>Please fill in your <em>Admin Name</em>, <em>Phone</em>, <em>Organization Name</em>, and <em>Address</em> before you can claim donations.</p>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Sidebar Navigation */}
-      <aside className="ngo-settings-sidebar">
-        <div className="sidebar-header">
-          <button className="back-btn" onClick={() => navigate('/home')} title="Back to Home">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-          </button>
-          <h1>Settings</h1>
-        </div>
-
-        <div className="sidebar-profile">
-          <div 
-            className="org-logo"
-            onClick={() => setShowLogoModal(true)}
-          >
-            {formData.logo ? (
-              <img src={formData.logo} alt="Organization Logo" />
-            ) : (
-              <span className="logo-placeholder"><Building size={32} /></span>
-            )}
-            <div className="logo-edit-overlay">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                <circle cx="12" cy="13" r="4"/>
+      <header className="ngo-flow-header">
+        <div className="ngo-flow-header-inner">
+          <div className="ngo-flow-brand">
+            <button className="back-btn" onClick={() => navigate('/home')} title="Back to Home">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
               </svg>
-            </div>
-          </div>
-          <div className="profile-info">
-            <h3>{formData.organizationName || 'Organization'}</h3>
-            <p>{formData.organizationEmail || 'No email'}</p>
-            <div className="badges-row">
-              <span className="role-badge ngo">
-                <span className="badge-icon"><Building size={14} /></span>
-                NGO
-              </span>
-              <span className={`verification-badge ${verificationStatus}`}>
-                {verificationStatus === 'verified' && <><Check size={14} /> Verified</>}
-                {verificationStatus === 'pending' && <><Clock size={14} /> Pending</>}
-                {verificationStatus === 'rejected' && <><X size={14} /> Rejected</>}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <nav className="sidebar-nav">
-          {sections.map(section => (
-            <button
-              key={section.id}
-              className={`nav-item ${activeSection === section.id ? 'active' : ''}`}
-              onClick={() => setActiveSection(section.id)}
-            >
-              <span className="nav-icon">{section.icon}</span>
-              <span className="nav-label">{section.label}</span>
             </button>
-          ))}
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="completion-indicator">
-            <div className="completion-bar">
-              <div 
-                className="completion-fill" 
-                style={{ width: `${calculateCompletion(formData)}%` }}
-              ></div>
+            <div
+              className="ngo-flow-logo"
+              onClick={() => setShowLogoModal(true)}
+              title="Update NGO logo"
+            >
+              {formData.logo ? (
+                <img src={formData.logo} alt="Organization Logo" />
+              ) : (
+                <span className="logo-placeholder"><Building size={20} /></span>
+              )}
             </div>
-            <span className="completion-text">
-              Profile {calculateCompletion(formData)}% complete
-            </span>
+            <span className="ngo-flow-brand-text">ANNAM</span>
+          </div>
+
+          <div className="ngo-flow-title">
+            <h1>{hasCompletedCoreProfile ? 'NGO Settings' : 'Complete Your NGO Profile'}</h1>
+            <p>
+              {hasCompletedCoreProfile
+                ? `${formData.organizationName || 'Organization'} profile is complete`
+                : `Step ${activeSectionIndex + 1} of ${sections.length} — ${activeSectionMeta.label}`}
+            </p>
+          </div>
+
+          <div className="ngo-flow-completion-pill">
+            <span>{profileCompletion}%</span>
           </div>
         </div>
-      </aside>
+      </header>
+
+      {!hasCompletedCoreProfile && (
+        <>
+          <div className="ngo-flow-progress-bar">
+            <div className="ngo-flow-progress-fill" style={{ width: `${flowProgress}%` }} />
+          </div>
+
+          <div className="ngo-flow-steps-row">
+            {sections.map((section, index) => {
+              const isDone = isSectionComplete(section.id, formData);
+              const isActive = section.id === activeSection;
+              return (
+                <button
+                  key={section.id}
+                  type="button"
+                  className={`ngo-flow-step ${isDone ? 'done' : ''} ${isActive ? 'active' : ''}`}
+                  onClick={() => setActiveSection(section.id)}
+                >
+                  <div className="ngo-flow-step-circle">
+                    {!isActive && isDone ? <span>✓</span> : <span>{section.icon}</span>}
+                  </div>
+                  <span className="ngo-flow-step-label">{section.label}</span>
+                  {section.optional && <span className="ngo-flow-optional-badge">Optional</span>}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {/* Main Content */}
       <main className="ngo-settings-main">
@@ -2215,6 +2205,46 @@ const NGOSettings: React.FC = () => {
 };
 
 // Helper function to calculate profile completion
+function isSectionComplete(sectionId: string, data: FormData): boolean {
+  switch (sectionId) {
+    case 'organization':
+      return !!(data.organizationName.trim() && data.organizationEmail.trim() && data.organizationPhone.trim());
+    case 'admin':
+      return !!(data.adminName.trim() && data.adminEmail.trim() && data.adminPhone.trim());
+    case 'cause':
+      return !!(data.mission.trim() && data.causeAreas.length > 0);
+    case 'compliance':
+      return !!(data.registrationNumber.trim() && data.panNumber.trim());
+    case 'payment':
+      return !!(data.bankAccountName.trim() && data.bankAccountNumber.trim() && data.bankIFSC.trim());
+    case 'social':
+      return !!(
+        data.facebook.trim() ||
+        data.twitter.trim() ||
+        data.instagram.trim() ||
+        data.linkedin.trim() ||
+        data.youtube.trim()
+      );
+    case 'branding':
+      return !!(data.logo || data.coverImage);
+    case 'preferences':
+    case 'notifications':
+    case 'security':
+      return false;
+    default:
+      return false;
+  }
+}
+
+function isNgoCoreProfileComplete(data: FormData): boolean {
+  return !!(
+    data.adminName.trim() &&
+    data.adminPhone.trim() &&
+    data.organizationName.trim() &&
+    data.address.trim()
+  );
+}
+
 function calculateCompletion(data: FormData): number {
   const fields = [
     data.organizationName,

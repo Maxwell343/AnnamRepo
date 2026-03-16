@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, Package, Flag, Wheat, Home, MapPin, Truck, Map, Wallet, ScrollText, Trophy, Settings, LogOut, ClipboardList, Ruler, Timer, Clock, Globe, Circle, Check, FileText, Phone, Compass, Hourglass } from 'lucide-react';
+import { CheckCircle, Package, Flag, MapPin, Truck, Map, ClipboardList, Ruler, Timer, Clock, Globe, Circle, Check, FileText, Phone, Compass, Hourglass } from 'lucide-react';
 import { API_BASE_URL } from '../../../config/api';
 import './RouteMap.css';
 
@@ -37,10 +37,8 @@ const RouteMap: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeRoute, setActiveRoute] = useState<ActiveRoute | null>(null);
   const [selectedStop, setSelectedStop] = useState<RouteStop | null>(null);
-  const [isNavigating, setIsNavigating] = useState(false);
   const [showDirections, setShowDirections] = useState(true);
 
   useEffect(() => {
@@ -77,26 +75,8 @@ const RouteMap: React.FC = () => {
     fetchRoute();
   }, [navigate]);
 
-  const handleLogout = () => {
-    // Clear all user-related data from localStorage
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('farmerSettings');
-    localStorage.removeItem('ngoSettings');
-    localStorage.removeItem('userSettings');
-    localStorage.removeItem('driverSettings');
-    localStorage.removeItem('userPhone');
-    localStorage.removeItem('farmName');
-    localStorage.removeItem('farmLocation');
-    localStorage.removeItem('userLanguage');
-    localStorage.removeItem('ngoName');
-    localStorage.removeItem('driverOnline');
-    navigate('/auth');
-  };
-
   const handleStartNavigation = (stop: RouteStop) => {
     setSelectedStop(stop);
-    setIsNavigating(true);
     // In real app, this would open Google Maps or native navigation
     window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stop.address)}`, '_blank');
   };
@@ -151,66 +131,7 @@ const RouteMap: React.FC = () => {
 
   return (
     <div className="routemap-container">
-      {/* Sidebar */}
-      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
-        <div className="sidebar-header">
-          <div className="logo-section">
-            <span className="logo-icon"><Wheat size={20} /></span>
-            {!sidebarCollapsed && <span className="logo-text">Annam</span>}
-          </div>
-          <button 
-            className="collapse-btn"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          >
-            {sidebarCollapsed ? '»' : '«'}
-          </button>
-        </div>
-        
-        <nav className="sidebar-nav">
-          <div className="nav-item" onClick={() => navigate('/home')}>
-            <span className="nav-icon"><Home size={18} /></span>
-            {!sidebarCollapsed && <span className="nav-label">Dashboard</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/my-deliveries')}>
-            <span className="nav-icon"><MapPin size={18} /></span>
-            {!sidebarCollapsed && <span className="nav-label">My Deliveries</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/available-pickups')}>
-            <span className="nav-icon"><Truck size={18} /></span>
-            {!sidebarCollapsed && <span className="nav-label">Available Pickups</span>}
-          </div>
-          <div className="nav-item active">
-            <span className="nav-icon"><Map size={18} /></span>
-            {!sidebarCollapsed && <span className="nav-label">Route Map</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/earnings')}>
-            <span className="nav-icon"><Wallet size={18} /></span>
-            {!sidebarCollapsed && <span className="nav-label">Earnings</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/history')}>
-            <span className="nav-icon"><ScrollText size={18} /></span>
-            {!sidebarCollapsed && <span className="nav-label">History</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/leaderboards')}>
-            <span className="nav-icon"><Trophy size={18} /></span>
-            {!sidebarCollapsed && <span className="nav-label">Leaderboards</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate('/driver-settings')}>
-            <span className="nav-icon"><Settings size={18} /></span>
-            {!sidebarCollapsed && <span className="nav-label">Settings</span>}
-          </div>
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="nav-item logout-item" onClick={handleLogout}>
-            <span className="nav-icon"><LogOut size={18} /></span>
-            {!sidebarCollapsed && <span className="nav-label">Logout</span>}
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="main-content">
+      <div className="routemap-page-content">
         {/* Header */}
         <header className="top-header">
           <div className="header-left">
@@ -428,7 +349,7 @@ const RouteMap: React.FC = () => {
             </button>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 };

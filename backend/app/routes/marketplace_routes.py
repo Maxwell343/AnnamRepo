@@ -334,6 +334,44 @@ async def delete_listing(listing_id: str):
 # CATEGORY ENDPOINTS
 # ============================================
 
+@router.get("/categories")
+async def get_marketplace_categories():
+    """Return category list for admin marketplace category manager."""
+    return {
+        "categories": [
+            {
+                "id": "cat_veg",
+                "name": "Vegetables",
+                "slug": "vegetables",
+                "icon": "leaf",
+                "color": "#16a34a",
+                "parent": None,
+                "listingCount": 0,
+                "active": True,
+                "featured": True,
+                "description": "Fresh vegetables",
+                "order": 1,
+                "createdAt": datetime.utcnow().isoformat(),
+                "updatedAt": datetime.utcnow().isoformat(),
+            },
+            {
+                "id": "cat_fruit",
+                "name": "Fruits",
+                "slug": "fruits",
+                "icon": "apple",
+                "color": "#f59e0b",
+                "parent": None,
+                "listingCount": 0,
+                "active": True,
+                "featured": True,
+                "description": "Seasonal fruits",
+                "order": 2,
+                "createdAt": datetime.utcnow().isoformat(),
+                "updatedAt": datetime.utcnow().isoformat(),
+            },
+        ]
+    }
+
 @router.get("/near-expiry", response_model=List[MarketplaceListingResponse])
 async def get_near_expiry_listings():
     """Get listings that are near expiry (priority rescue)"""

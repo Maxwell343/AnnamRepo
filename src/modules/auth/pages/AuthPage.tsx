@@ -8,6 +8,7 @@ import { API_ENDPOINTS } from '../../../config/api';
 declare global {
   interface Window {
     google: any;
+    __annamGoogleInitialized?: boolean;
   }
 }
 
@@ -27,6 +28,7 @@ interface User {
   name: string;
   email: string;
   role: 'farmer' | 'ngo' | 'driver' | 'customer' | 'admin';
+  profileComplete?: boolean;
 }
 
 interface GoogleUserData {
@@ -36,7 +38,7 @@ interface GoogleUserData {
   credential: string;
 }
 
-const GOOGLE_CLIENT_ID = '252459668976-fdlbf40t3jh7h8eg13o308th2gp7r22k.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '252459668976-fdlbf40t3jh7h8eg13o308th2gp7r22k.apps.googleusercontent.com';
 
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
@@ -73,15 +75,19 @@ const AuthPage: React.FC = () => {
   useEffect(() => {
     const initializeGoogle = () => {
       if (window.google && window.google.accounts) {
+        if (window.__annamGoogleInitialized) return;
+
         window.google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
           callback: handleGoogleResponse,
           ux_mode: 'popup',
         });
+        window.__annamGoogleInitialized = true;
         
         // Render hidden button for triggering
         const hiddenBtn = document.getElementById('google-btn-hidden');
         if (hiddenBtn) {
+          hiddenBtn.innerHTML = '';
           window.google.accounts.id.renderButton(hiddenBtn, {
             type: 'standard',
             theme: 'outline',
@@ -218,20 +224,74 @@ const AuthPage: React.FC = () => {
           id: loginData.user.id,
           name: loginData.user.name,
           email: loginData.user.email,
-          role: loginData.user.role
+          role: loginData.user.role,
+          profileComplete: !!loginData.user.profileComplete,
         };
         localStorage.setItem('user', JSON.stringify(user));
         window.dispatchEvent(new CustomEvent('annam-role-transition', { detail: { path: getRedirectUrl(user.role), role: user.role } }));
-        console.log('New user, showing role modal...');
-        setGoogleUserData(userData);
-        setSelectedRole('farmer');
-        setGooglePhone('');
-        setGoogleCity('');
-        setGoogleNgoName('');
-        setGoogleVehicleType('');
-        setError('');
-        setShowRoleModal(true);
+        return;
       }
+
+      // User does not exist: auto-create from the same Google account
+      // with safe defaults, then proceed as a normal logged-in farmer.
+      console.log('User not found, creating new Google user...');
+      const signupResponse = await fetch(API_ENDPOINTS.googleAuth.signup, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userData.email,
+          name: userData.name,
+          credential: userData.credential,
+          role: 'farmer',
+          phone: '',
+          city: '',
+        }),
+      });
+
+      if (!signupResponse.ok) {
+        // If this is a race/duplicate case, try login one more time.
+        const retryLogin = await fetch(API_ENDPOINTS.googleAuth.login, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userData.email, credential: userData.credential }),
+        });
+
+        if (!retryLogin.ok) {
+          let errorMessage = 'Failed to create account with Google';
+          try {
+            const errData = await signupResponse.json();
+            errorMessage = errData.detail || errData.message || errorMessage;
+          } catch {
+            errorMessage = `Server error (${signupResponse.status}). Please try again.`;
+          }
+          setError(errorMessage);
+          return;
+        }
+
+        const retryData = await retryLogin.json();
+        const retryUser: User = {
+          id: retryData.user.id,
+          name: retryData.user.name,
+          email: retryData.user.email,
+          role: retryData.user.role,
+          profileComplete: !!retryData.user.profileComplete,
+        };
+        localStorage.setItem('user', JSON.stringify(retryUser));
+        window.dispatchEvent(new CustomEvent('annam-role-transition', { detail: { path: getRedirectUrl(retryUser.role), role: retryUser.role } }));
+        return;
+      }
+
+      const signupData = await signupResponse.json();
+      const newUser: User = {
+        id: signupData.user.id,
+        name: signupData.user.name,
+        email: signupData.user.email,
+        role: signupData.user.role,
+        profileComplete: !!signupData.user.profileComplete,
+      };
+      localStorage.setItem('user', JSON.stringify(newUser));
+      window.dispatchEvent(new CustomEvent('annam-role-transition', { detail: { path: getRedirectUrl(newUser.role), role: newUser.role } }));
+      return;
     } catch (err: any) {
       console.error('Google auth error:', err);
       const errorMsg = err.message || 'Google authentication failed';
@@ -310,7 +370,8 @@ const AuthPage: React.FC = () => {
         id: data.user.id,
         name: data.user.name,
         email: data.user.email,
-        role: data.user.role
+        role: data.user.role,
+        profileComplete: false,
       };
       localStorage.setItem('user', JSON.stringify(user));
       window.dispatchEvent(new CustomEvent('annam-role-transition', { detail: { path: getRedirectUrl(), role: user.role } }));
@@ -440,7 +501,8 @@ const AuthPage: React.FC = () => {
           id: data.user.id,
           name: data.user.name,
           email: data.user.email,
-          role: data.user.role
+          role: data.user.role,
+          profileComplete: !!data.user.profileComplete,
         };
 
         localStorage.setItem('user', JSON.stringify(user));

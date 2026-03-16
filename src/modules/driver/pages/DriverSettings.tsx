@@ -244,6 +244,12 @@ const DriverSettings: React.FC = () => {
       const user = JSON.parse(savedUser);
       user.name = formData.fullName;
       user.vehicle_number = formData.vehicleNumber;
+      user.profileComplete = !!(
+        formData.fullName.trim() &&
+        formData.phone.trim() &&
+        formData.vehicleNumber.trim() &&
+        formData.drivingLicenseNumber.trim()
+      );
       localStorage.setItem('user', JSON.stringify(user));
     }
 
@@ -770,9 +776,16 @@ const DriverSettings: React.FC = () => {
     }
   };
 
+  const hasCompletedCoreProfile = !!(
+    formData.fullName.trim() &&
+    formData.phone.trim() &&
+    formData.vehicleNumber.trim() &&
+    formData.drivingLicenseNumber.trim()
+  );
+
   return (
     <div className="settings-container driver-theme">
-      {incompleteProfile && (
+      {incompleteProfile && !hasCompletedCoreProfile && (
         <div className="driver-profile-incomplete-banner">
           <div className="banner-content">
             <AlertTriangle size={22} />
@@ -790,7 +803,7 @@ const DriverSettings: React.FC = () => {
           <button className="back-btn" onClick={() => navigate('/home')}>
             ←
           </button>
-          <h2><Truck size={20} /> Driver Settings</h2>
+          <h2><Truck size={20} /> {hasCompletedCoreProfile ? 'Driver Settings' : 'Complete Your Driver Profile'}</h2>
           <div className={`online-status ${isOnline ? 'online' : 'offline'}`}>
             <span className="status-dot"></span>
             <span className="status-text">{isOnline ? 'Online' : 'Offline'}</span>

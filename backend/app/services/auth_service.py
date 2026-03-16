@@ -8,11 +8,17 @@ from datetime import datetime, timedelta
 # In-memory store for OTPs (use Redis in production)
 otp_store = {}
 
+
+def _normalize_email(email: str) -> str:
+    return (email or "").strip().lower()
+
 def create_user(user_data: dict):
-    existing = users_collection.find_one({"email": user_data["email"]})
+    normalized_email = _normalize_email(user_data.get("email", ""))
+    existing = users_collection.find_one({"email": normalized_email})
     if existing:
         return None
 
+    user_data["email"] = normalized_email
     user_data["password"] = hash_password(user_data["password"])
     result = users_collection.insert_one(user_data)
 
@@ -20,7 +26,7 @@ def create_user(user_data: dict):
     return user_data
 
 def authenticate_user(email: str, password: str):
-    user = users_collection.find_one({"email": email})
+    user = users_collection.find_one({"email": _normalize_email(email)})
     if not user:
         return None
 
@@ -32,7 +38,7 @@ def authenticate_user(email: str, password: str):
 
 def get_user_by_email(email: str):
     """Get user by email address"""
-    return users_collection.find_one({"email": email})
+    return users_collection.find_one({"email": _normalize_email(email)})
 
 
 def generate_otp(email: str) -> str:
@@ -109,10 +115,12 @@ def reset_password(email: str, reset_token: str, new_password: str) -> bool:
 
 def create_google_user(user_data: dict):
     """Create a new user via Google OAuth (no password required)"""
-    existing = users_collection.find_one({"email": user_data["email"]})
+    normalized_email = _normalize_email(user_data.get("email", ""))
+    existing = users_collection.find_one({"email": normalized_email})
     if existing:
         return None
 
+    user_data["email"] = normalized_email
     # No password hash needed for Google users
     user_data["password"] = None  # Google users don't have a password
     result = users_collection.insert_one(user_data)
@@ -123,5 +131,5 @@ def create_google_user(user_data: dict):
 
 def authenticate_google_user(email: str):
     """Authenticate a user via Google OAuth (just check if exists)"""
-    user = users_collection.find_one({"email": email})
+    user = users_collection.find_one({"email": _normalize_email(email)})
     return user

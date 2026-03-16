@@ -1,6 +1,7 @@
 from app.core.database import get_database
 from typing import Optional, Dict, Any
 from datetime import datetime
+from bson import ObjectId
 
 db = get_database()
 
@@ -41,6 +42,24 @@ async def save_driver_settings(settings_data: Dict) -> Dict:
 async def get_farmer_settings(farmer_id: str) -> Optional[Dict]:
     """Get farmer settings by farmer ID"""
     settings = db.farmer_settings.find_one({"farmer_id": farmer_id})
+
+    # Recovery path for legacy/mismatched records:
+    # if profile wasn't linked by farmer_id, try to find by the user's email and relink.
+    if not settings:
+        try:
+            user = db.users.find_one({"_id": ObjectId(farmer_id)}, {"email": 1})
+            email = user.get("email") if user else None
+            if email:
+                settings = db.farmer_settings.find_one({"email": email})
+                if settings and settings.get("farmer_id") != farmer_id:
+                    db.farmer_settings.update_one(
+                        {"_id": settings["_id"]},
+                        {"$set": {"farmer_id": farmer_id, "updated_at": datetime.utcnow().isoformat()}}
+                    )
+                    settings["farmer_id"] = farmer_id
+        except Exception:
+            settings = None
+
     if settings:
         settings["_id"] = str(settings["_id"])
     return settings
@@ -50,12 +69,16 @@ async def save_farmer_settings(settings_data: Dict) -> Dict:
     """Save or update farmer settings"""
     farmer_id = settings_data.get("farmer_id")
     existing = db.farmer_settings.find_one({"farmer_id": farmer_id})
+
+    # If nothing is linked by farmer_id yet, try matching an older record by email.
+    if not existing and settings_data.get("email"):
+        existing = db.farmer_settings.find_one({"email": settings_data.get("email")})
     
     settings_data["updated_at"] = datetime.utcnow().isoformat()
     
     if existing:
         db.farmer_settings.update_one(
-            {"farmer_id": farmer_id},
+            {"_id": existing["_id"]},
             {"$set": settings_data}
         )
         settings_data["_id"] = str(existing["_id"])

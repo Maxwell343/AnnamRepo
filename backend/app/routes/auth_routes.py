@@ -9,13 +9,76 @@ router = APIRouter(prefix="/api", tags=["Auth"])
 
 
 def _get_profile_complete(user_id: str, role: str) -> bool:
-    """Return True if a farmer has completed their profile setup."""
-    if role != 'farmer':
+    """Return True if role-specific profile setup is complete."""
+    if role not in ('farmer', 'ngo'):
         return True
     try:
         db = get_database()
-        settings = db.farmer_settings.find_one({"farmer_id": user_id})
-        return bool(settings and settings.get("profile_complete"))
+        from bson import ObjectId
+
+        if role == 'farmer':
+            settings = db.farmer_settings.find_one({"farmer_id": user_id})
+            if settings and settings.get("profile_complete"):
+                return True
+
+            # Fallback for older records linked by email but not farmer_id.
+            user_for_email = db.users.find_one({"_id": ObjectId(user_id)}, {"email": 1})
+            email = user_for_email.get("email") if user_for_email else None
+            if email:
+                email_settings = db.farmer_settings.find_one({"email": email})
+                if email_settings and email_settings.get("profile_complete"):
+                    if email_settings.get("farmer_id") != user_id:
+                        db.farmer_settings.update_one(
+                            {"_id": email_settings["_id"]},
+                            {"$set": {"farmer_id": user_id}}
+                        )
+                    return True
+
+        if role == 'ngo':
+            settings = db.ngo_settings.find_one({"ngo_id": user_id})
+            if settings and settings.get("profile_complete"):
+                return True
+
+            # Fallback for older records linked by email but not ngo_id.
+            user_for_email = db.users.find_one({"_id": ObjectId(user_id)}, {"email": 1})
+            email = user_for_email.get("email") if user_for_email else None
+            if email:
+                email_settings = db.ngo_settings.find_one({
+                    "$or": [
+                        {"admin_email": email},
+                        {"organization_email": email}
+                    ]
+                })
+                if email_settings:
+                    if email_settings.get("ngo_id") != user_id:
+                        db.ngo_settings.update_one(
+                            {"_id": email_settings["_id"]},
+                            {"$set": {"ngo_id": user_id}}
+                        )
+                    if email_settings.get("profile_complete"):
+                        return True
+
+                    # Compatibility: infer completion from mandatory NGO fields.
+                    inferred_complete = bool(
+                        (email_settings.get("admin_name") or "").strip()
+                        and (email_settings.get("admin_phone") or "").strip()
+                        and (email_settings.get("organization_name") or "").strip()
+                        and (email_settings.get("address") or "").strip()
+                    )
+                    if inferred_complete:
+                        db.ngo_settings.update_one(
+                            {"_id": email_settings["_id"]},
+                            {"$set": {"profile_complete": True, "ngo_id": user_id}}
+                        )
+                        return True
+
+        # Backward/compatibility fallback: some flows persisted completion on user document.
+        user = db.users.find_one({"_id": ObjectId(user_id)})
+        return bool(user and (
+            user.get("profile_complete")
+            or user.get("profileComplete")
+            or user.get("profileCompleted")
+        ))
     except Exception:
         return False
 

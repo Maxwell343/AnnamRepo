@@ -3,9 +3,16 @@
    ============================================ */
 
 .routemap-container {
-  display: flex;
+  display: block;
+  width: 100%;
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+}
+
+.routemap-page-content {
+  width: 100%;
+  min-width: 0;
+  padding: 24px;
 }
 
 /* Loading State */
@@ -32,7 +39,7 @@
 }
 
 /* Sidebar Styles */
-.sidebar {
+.routemap-container .sidebar {
   width: 260px;
   background: linear-gradient(180deg, #e65100 0%, #f57c00 100%);
   color: white;
@@ -44,11 +51,11 @@
   z-index: 100;
 }
 
-.sidebar.collapsed {
+.routemap-container .sidebar.collapsed {
   width: 80px;
 }
 
-.sidebar-header {
+.routemap-container .sidebar-header {
   padding: 20px;
   display: flex;
   align-items: center;
@@ -56,23 +63,23 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.logo-section {
+.routemap-container .logo-section {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.logo-icon {
+.routemap-container .logo-icon {
   font-size: 28px;
 }
 
-.logo-text {
+.routemap-container .logo-text {
   font-size: 18px;
   font-weight: 700;
   color: white;
 }
 
-.collapse-btn {
+.routemap-container .collapse-btn {
   background: rgba(255, 255, 255, 0.2);
   border: none;
   color: white;
@@ -83,11 +90,11 @@
   transition: all 0.2s;
 }
 
-.collapse-btn:hover {
+.routemap-container .collapse-btn:hover {
   background: rgba(255, 255, 255, 0.3);
 }
 
-.sidebar-nav {
+.routemap-container .sidebar-nav {
   flex: 1;
   padding: 20px 12px;
   display: flex;
@@ -95,7 +102,7 @@
   gap: 8px;
 }
 
-.nav-item {
+.routemap-container .nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -105,47 +112,47 @@
   transition: all 0.2s;
 }
 
-.nav-item:hover {
+.routemap-container .nav-item:hover {
   background: rgba(255, 255, 255, 0.15);
 }
 
-.nav-item.active {
+.routemap-container .nav-item.active {
   background: rgba(255, 255, 255, 0.25);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.nav-icon {
+.routemap-container .nav-icon {
   font-size: 20px;
 }
 
-.nav-label {
+.routemap-container .nav-label {
   font-size: 14px;
   font-weight: 500;
 }
 
-.sidebar-footer {
+.routemap-container .sidebar-footer {
   padding: 20px 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.logout-item:hover {
+.routemap-container .logout-item:hover {
   background: rgba(244, 67, 54, 0.3) !important;
 }
 
 /* Main Content */
-.main-content {
+.routemap-container .main-content {
   flex: 1;
   margin-left: 260px;
   padding: 24px;
   transition: margin-left 0.3s ease;
 }
 
-.sidebar.collapsed ~ .main-content {
+.routemap-container .sidebar.collapsed ~ .main-content {
   margin-left: 80px;
 }
 
 /* Header */
-.top-header {
+.routemap-container .top-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -156,20 +163,20 @@
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
-.page-title {
+.routemap-container .page-title {
   font-size: 28px;
   font-weight: 800;
   color: #1a1a2e;
   margin: 0;
 }
 
-.page-subtitle {
+.routemap-container .page-subtitle {
   font-size: 14px;
   color: #757575;
   margin: 4px 0 0 0;
 }
 
-.header-right {
+.routemap-container .header-right {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -197,13 +204,13 @@
   color: white;
 }
 
-.user-profile {
+.routemap-container .user-profile {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.user-avatar {
+.routemap-container .user-avatar {
   width: 44px;
   height: 44px;
   border-radius: 12px;
@@ -774,15 +781,15 @@
 }
 
 @media (max-width: 768px) {
-  .sidebar {
+  .routemap-container .sidebar {
     transform: translateX(-100%);
   }
 
-  .sidebar.collapsed {
+  .routemap-container .sidebar.collapsed {
     transform: translateX(-100%);
   }
 
-  .main-content {
+  .routemap-container .main-content {
     margin-left: 0;
     padding: 16px;
   }
@@ -791,13 +798,13 @@
     grid-template-columns: 1fr;
   }
 
-  .top-header {
+  .routemap-container .top-header {
     flex-direction: column;
     gap: 16px;
     text-align: center;
   }
 
-  .header-right {
+  .routemap-container .header-right {
     width: 100%;
     justify-content: center;
   }

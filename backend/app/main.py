@@ -5,6 +5,7 @@ from app.routes.listing_routes import router as listing_router
 from app.routes.settings_routes import router as settings_router
 from app.routes.notification_routes import router as notification_router
 from app.routes.marketplace_routes import router as marketplace_router
+from app.routes.admin_routes import router as admin_router
 
 app = FastAPI(title="ANNAM Backend")
 
@@ -21,6 +22,7 @@ app.include_router(listing_router)
 app.include_router(settings_router)
 app.include_router(notification_router)
 app.include_router(marketplace_router)
+app.include_router(admin_router)
 
 @app.get("/")
 def root():

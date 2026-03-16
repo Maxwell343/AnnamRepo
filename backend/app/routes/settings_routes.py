@@ -84,7 +84,38 @@ async def get_ngo_settings_route(ngo_id: str):
 async def save_ngo_settings_route(settings: NgoSettingsModel):
     """Save NGO settings"""
     settings_dict = settings.dict(exclude_unset=True)
+    is_profile_complete = bool(
+        (settings_dict.get("admin_name") or "").strip()
+        and (settings_dict.get("admin_phone") or "").strip()
+        and (settings_dict.get("organization_name") or "").strip()
+        and (settings_dict.get("address") or "").strip()
+    )
+    settings_dict["profile_complete"] = is_profile_complete
+    if is_profile_complete:
+        settings_dict["completed_at"] = datetime.utcnow().isoformat()
     result = await save_ngo_settings(settings_dict)
+
+    if settings_dict.get("ngo_id"):
+        await update_user_profile(settings_dict["ngo_id"], {
+            "name": settings_dict.get("admin_name") or settings_dict.get("organization_name"),
+            "email": settings_dict.get("admin_email") or settings_dict.get("organization_email"),
+            "phone": settings_dict.get("admin_phone") or settings_dict.get("organization_phone"),
+            "address": settings_dict.get("address"),
+            "city": settings_dict.get("city"),
+            "state": settings_dict.get("state"),
+            "pincode": settings_dict.get("pincode"),
+            "profile_complete": is_profile_complete,
+            "profileComplete": is_profile_complete,
+            "profileCompleted": is_profile_complete,
+            "ngo_profile": {
+                "organization_name": settings_dict.get("organization_name"),
+                "organization_email": settings_dict.get("organization_email"),
+                "organization_phone": settings_dict.get("organization_phone"),
+                "admin_name": settings_dict.get("admin_name"),
+                "admin_email": settings_dict.get("admin_email"),
+                "admin_phone": settings_dict.get("admin_phone"),
+            }
+        })
     return {"message": "Settings saved successfully", "settings": result}
 
 
@@ -93,7 +124,39 @@ async def update_ngo_settings_route(ngo_id: str, settings: NgoSettingsModel):
     """Update NGO settings"""
     settings_dict = settings.dict(exclude_unset=True)
     settings_dict["ngo_id"] = ngo_id
+    is_profile_complete = bool(
+        (settings_dict.get("admin_name") or "").strip()
+        and (settings_dict.get("admin_phone") or "").strip()
+        and (settings_dict.get("organization_name") or "").strip()
+        and (settings_dict.get("address") or "").strip()
+    )
+    settings_dict["profile_complete"] = is_profile_complete
+    if is_profile_complete:
+        settings_dict["completed_at"] = datetime.utcnow().isoformat()
+
     result = await save_ngo_settings(settings_dict)
+
+    await update_user_profile(ngo_id, {
+        "name": settings_dict.get("admin_name") or settings_dict.get("organization_name"),
+        "email": settings_dict.get("admin_email") or settings_dict.get("organization_email"),
+        "phone": settings_dict.get("admin_phone") or settings_dict.get("organization_phone"),
+        "address": settings_dict.get("address"),
+        "city": settings_dict.get("city"),
+        "state": settings_dict.get("state"),
+        "pincode": settings_dict.get("pincode"),
+        "profile_complete": is_profile_complete,
+        "profileComplete": is_profile_complete,
+        "profileCompleted": is_profile_complete,
+        "ngo_profile": {
+            "organization_name": settings_dict.get("organization_name"),
+            "organization_email": settings_dict.get("organization_email"),
+            "organization_phone": settings_dict.get("organization_phone"),
+            "admin_name": settings_dict.get("admin_name"),
+            "admin_email": settings_dict.get("admin_email"),
+            "admin_phone": settings_dict.get("admin_phone"),
+        }
+    })
+
     return {"message": "Settings updated successfully", "settings": result}
 
 
@@ -116,6 +179,29 @@ async def update_farmer_profile_route(farmer_id: str, profile: FarmerProfileMode
     profile_dict["profile_complete"] = True
     profile_dict["completed_at"] = datetime.utcnow().isoformat()
     result = await save_farmer_settings(profile_dict)
+
+    # Keep the main user document in sync so admin/user views see latest profile state.
+    await update_user_profile(farmer_id, {
+        "name": profile_dict.get("full_name"),
+        "email": profile_dict.get("email"),
+        "phone": profile_dict.get("phone"),
+        "address": profile_dict.get("farm_address"),
+        "city": profile_dict.get("village"),
+        "district": profile_dict.get("district"),
+        "state": profile_dict.get("state"),
+        "pincode": profile_dict.get("pincode"),
+        "profile_complete": True,
+        "profileComplete": True,
+        "profileCompleted": True,
+        "farmer_profile": {
+            "farm_size": profile_dict.get("farm_size"),
+            "farm_size_unit": profile_dict.get("farm_size_unit"),
+            "farming_type": profile_dict.get("farming_type"),
+            "primary_crops": profile_dict.get("primary_crops", []),
+            "storage_facilities": profile_dict.get("storage_facilities", []),
+        }
+    })
+
     return {"message": "Profile saved successfully", "profile": result}
 
 

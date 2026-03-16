@@ -79,6 +79,70 @@ class NgoSettingsModel(BaseModel):
     organization_email: Optional[str] = None
     organization_phone: Optional[str] = None
 
+    # Extended org profile fields used by NGO settings page
+    admin_role: Optional[str] = None
+    registration_number: Optional[str] = None
+    registration_80g: Optional[str] = None
+    registration_12a: Optional[str] = None
+    fcra_number: Optional[str] = None
+    pan_number: Optional[str] = None
+    gst_number: Optional[str] = None
+    mission: Optional[str] = None
+    vision: Optional[str] = None
+    year_established: Optional[str] = None
+    team_size: Optional[str] = None
+    website: Optional[str] = None
+
+    # Address
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    pincode: Optional[str] = None
+    country: Optional[str] = None
+
+    # Impact and social
+    cause_areas: Optional[List[str]] = None
+    geographic_coverage: Optional[str] = None
+    beneficiaries_served: Optional[str] = None
+    facebook: Optional[str] = None
+    twitter: Optional[str] = None
+    instagram: Optional[str] = None
+    linkedin: Optional[str] = None
+    youtube: Optional[str] = None
+
+    # Payment / donation
+    bank_account_name: Optional[str] = None
+    bank_account_number: Optional[str] = None
+    bank_ifsc: Optional[str] = None
+    bank_name: Optional[str] = None
+    bank_branch: Optional[str] = None
+    upi_id: Optional[str] = None
+    payment_gateway: Optional[str] = None
+
+    # Preferences
+    notifications_email: Optional[bool] = True
+    notifications_sms: Optional[bool] = False
+    notifications_whatsapp: Optional[bool] = True
+    notifications_push: Optional[bool] = True
+    donation_alerts: Optional[bool] = True
+    volunteer_alerts: Optional[bool] = True
+    report_reminders: Optional[bool] = True
+    language: Optional[str] = "English"
+    theme: Optional[str] = None
+    currency: Optional[str] = None
+    timezone: Optional[str] = None
+    fiscal_year_start: Optional[str] = None
+
+    # Branding and profile completion
+    logo: Optional[str] = None
+    cover_image: Optional[str] = None
+    primary_color: Optional[str] = None
+    profile_complete: Optional[bool] = False
+    completed_at: Optional[str] = None
+
+    class Config:
+        extra = "allow"
+
 
 class FarmerProfileModel(BaseModel):
     farmer_id: str

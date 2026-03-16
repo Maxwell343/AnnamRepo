@@ -843,7 +843,7 @@ const Landing = () => {
         <div className="footer-bottom">
           <p>© 2024 Annam. All rights reserved.</p>
           <div className="footer-legal-links">
-            <a href="#">Privacy Policy</a>
+            <a href="#">Privacy Policy</a>  
             <a href="#">Terms of Service</a>
             <a href="#">Cookie Policy</a>
           </div>

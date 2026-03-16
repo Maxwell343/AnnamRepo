@@ -110,6 +110,9 @@ const FarmerProfileSetup: React.FC = () => {
   }, [data]);
 
   const completion = calcCompletion();
+  const hasCompletedCoreProfile = !!(
+    data.fullName && data.phone && data.farmAddress && data.district && data.state && data.pincode && data.farmSize && data.farmingType && data.primaryCrops.length > 0
+  );
 
   // ── Load existing profile ─────────────────────────────────────────────────
   useEffect(() => {
@@ -680,8 +683,8 @@ const FarmerProfileSetup: React.FC = () => {
             <span className="fps-logo-text">ANNAM</span>
           </div>
           <div className="fps-header-center">
-            <h1>Complete Your Farmer Profile</h1>
-            <p>Step {step} of 5 — {currentStepMeta.label}</p>
+            <h1>{hasCompletedCoreProfile ? 'Farmer Settings' : 'Complete Your Farmer Profile'}</h1>
+            <p>{hasCompletedCoreProfile ? 'Your farmer profile is complete' : `Step ${step} of 5 — ${currentStepMeta.label}`}</p>
           </div>
           <div className="fps-completion-pill">
             <svg viewBox="0 0 36 36" className="fps-donut">
@@ -699,22 +702,26 @@ const FarmerProfileSetup: React.FC = () => {
       </header>
 
       {/* ── Progress Bar ── */}
-      <div className="fps-progress-bar">
-        <div className="fps-progress-fill" style={{ width: `${(step / 5) * 100}%` }} />
-      </div>
-
-      {/* ── Step Indicators ── */}
-      <div className="fps-steps-row">
-        {STEPS.map(s => (
-          <div key={s.id} className={`fps-step-dot ${s.id < step ? 'done' : s.id === step ? 'active' : ''}`}>
-            <div className="fps-dot-circle">
-              {s.id < step ? <span className="fps-check">✓</span> : <span>{s.icon}</span>}
-            </div>
-            <span className="fps-dot-label">{s.label}</span>
-            {!s.required && <span className="fps-optional-badge">Optional</span>}
+      {!hasCompletedCoreProfile && (
+        <>
+          <div className="fps-progress-bar">
+            <div className="fps-progress-fill" style={{ width: `${(step / 5) * 100}%` }} />
           </div>
-        ))}
-      </div>
+
+          {/* ── Step Indicators ── */}
+          <div className="fps-steps-row">
+            {STEPS.map(s => (
+              <div key={s.id} className={`fps-step-dot ${s.id < step ? 'done' : s.id === step ? 'active' : ''}`}>
+                <div className="fps-dot-circle">
+                  {s.id < step ? <span className="fps-check">✓</span> : <span>{s.icon}</span>}
+                </div>
+                <span className="fps-dot-label">{s.label}</span>
+                {!s.required && <span className="fps-optional-badge">Optional</span>}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* ── Main Card ── */}
       <main className="fps-main">
