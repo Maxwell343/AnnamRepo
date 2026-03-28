@@ -6,4 +6,5 @@ export { default as MyListings } from './pages/Mylisting'
 export { default as ListingForm } from './pages/Listing'
 export { default as Analytics } from './pages/Analytics'
 export { default as FarmerDashboard } from './pages/FarmerDashboard'
+export { default as FarmerSettings } from './pages/FarmerSettings'
 

@@ -2,7 +2,8 @@
 // Set `VITE_API_BASE_URL` in your environment for non-default backends.
 // Example: VITE_API_BASE_URL=http://127.0.0.1:8000
 
-export const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:5000';
+// In local dev, keep this empty so requests go through Vite proxy (`/api` -> backend).
+export const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '';
 
 // API Endpoints
 export const API_ENDPOINTS = {

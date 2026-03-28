@@ -103,12 +103,28 @@ const causeAreaOptions = [
   { id: 'arts', label: 'Arts & Culture', icon: <Palette size={16} /> },
 ];
 
+const normalizeForComparison = (data: FormData): FormData => ({
+  ...data,
+  causeAreas: [...data.causeAreas].sort(),
+  adminPhone: data.adminPhone.trim(),
+  organizationPhone: data.organizationPhone.trim(),
+  bankAccountNumber: data.bankAccountNumber.trim(),
+  bankIFSC: data.bankIFSC.trim().toUpperCase(),
+  panNumber: data.panNumber.trim().toUpperCase(),
+  gstNumber: data.gstNumber.trim().toUpperCase(),
+  upiId: data.upiId.trim().toLowerCase(),
+});
+
+const cloneFormData = (data: FormData): FormData =>
+  JSON.parse(JSON.stringify(data)) as FormData;
+
+const hasFormDiff = (current: FormData, original: FormData): boolean =>
+  JSON.stringify(normalizeForComparison(current)) !== JSON.stringify(normalizeForComparison(original));
+
 const NGOSettings: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const incompleteProfile = location.state?.incompleteProfile || false;
   const returnTo = location.state?.returnTo || '';
-  const [user, setUser] = useState<User | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error' | 'warning'>('success');
@@ -307,7 +323,6 @@ const NGOSettings: React.FC = () => {
         navigate('/home');
         return;
       }
-      setUser(parsedUser);
       fetchSettings(parsedUser);
     } else {
       navigate('/');
@@ -316,7 +331,7 @@ const NGOSettings: React.FC = () => {
 
   useEffect(() => {
     if (originalData) {
-      const changed = JSON.stringify(formData) !== JSON.stringify(originalData);
+      const changed = hasFormDiff(formData, originalData);
       setHasChanges(changed);
     }
   }, [formData, originalData]);
@@ -500,7 +515,9 @@ const NGOSettings: React.FC = () => {
       localStorage.setItem('user', JSON.stringify(user));
     }
 
-    setOriginalData(formData);
+    const savedSnapshot = cloneFormData(formData);
+    setFormData(savedSnapshot);
+    setOriginalData(savedSnapshot);
     setHasChanges(false);
     setIsSaving(false);
     showNotification('Settings saved successfully!', 'success');
@@ -516,8 +533,9 @@ const NGOSettings: React.FC = () => {
 
   const handleReset = () => {
     if (originalData) {
-      setFormData(originalData);
+      setFormData(cloneFormData(originalData));
       setErrors({});
+      setHasChanges(false);
       showNotification('Changes discarded', 'warning');
     }
   };
@@ -638,7 +656,7 @@ const NGOSettings: React.FC = () => {
           </div>
 
           <div className="ngo-flow-steps-row">
-            {sections.map((section, index) => {
+            {sections.map((section) => {
               const isDone = isSectionComplete(section.id, formData);
               const isActive = section.id === activeSection;
               return (
@@ -660,9 +678,66 @@ const NGOSettings: React.FC = () => {
         </>
       )}
 
-      {/* Main Content */}
-      <main className="ngo-settings-main">
-        <div className="settings-content">
+      <div className="ngo-settings-layout">
+        <aside className="ngo-settings-sidebar">
+          <div className="sidebar-header">
+            <h1>NGO Settings</h1>
+          </div>
+
+          <div className="sidebar-profile">
+            <div className="org-logo" onClick={() => setShowLogoModal(true)}>
+              {formData.logo ? (
+                <img src={formData.logo} alt="Organization Logo" />
+              ) : (
+                <span className="logo-placeholder"><Building size={28} /></span>
+              )}
+              <div className="logo-edit-overlay">
+                <Camera size={16} />
+              </div>
+            </div>
+
+            <div className="profile-info">
+              <h3>{formData.organizationName || 'Your Organization'}</h3>
+              <p>{formData.organizationEmail || 'organization@email.com'}</p>
+
+              <div className="badges-row">
+                <span className="role-badge ngo">
+                  <Wheat size={12} /> NGO
+                </span>
+                <span className={`verification-badge ${verificationStatus}`}>
+                  {verificationStatus === 'verified' ? 'Verified' : verificationStatus === 'rejected' ? 'Rejected' : 'Pending'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <nav className="sidebar-nav">
+            {sections.map((section) => (
+              <button
+                key={section.id}
+                type="button"
+                className={`nav-item ${activeSection === section.id ? 'active' : ''}`}
+                onClick={() => setActiveSection(section.id)}
+              >
+                <span className="nav-icon">{section.icon}</span>
+                <span className="nav-label">{section.label}</span>
+              </button>
+            ))}
+          </nav>
+
+          <div className="sidebar-footer">
+            <div className="completion-indicator">
+              <div className="completion-bar">
+                <div className="completion-fill" style={{ width: `${profileCompletion}%` }} />
+              </div>
+              <div className="completion-text">Profile completion: {profileCompletion}%</div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="ngo-settings-main">
+          <div className="settings-content">
           
           {/* Organization Section */}
           {activeSection === 'organization' && (
@@ -2053,7 +2128,8 @@ const NGOSettings: React.FC = () => {
         </div>
 
         {/* Sticky Footer */}
-        <div className={`settings-footer ${hasChanges ? 'visible' : ''}`}>
+        {hasChanges && (
+        <div className="settings-footer visible">
           <div className="footer-content">
             <p className="unsaved-changes">
               <span className="pulse-dot"></span>
@@ -2082,8 +2158,10 @@ const NGOSettings: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
-      </main>
+          </div>
+        )}
+        </main>
+      </div>
 
       {/* Toast Notification */}
       <div className={`toast ${showToast ? 'visible' : ''} ${toastType}`}>

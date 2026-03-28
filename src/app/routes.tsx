@@ -24,6 +24,7 @@ import {
   ListingForm,
   Analytics,
   FarmerDashboard,
+  FarmerSettings,
 } from '../modules/farmer'
 
 // Customer module
@@ -52,6 +53,7 @@ import {
   ClaimedDonations,
   ImpactDashboard,
   ImpactPage,
+  NgoOrderTracking,
 } from '../modules/ngo'
 
 // Admin module
@@ -93,6 +95,9 @@ export default function AppRoutes() {
       <Route path="/impact-dashboard" element={<ProtectedRoute><RoleGuard allowedRoles={['ngo']}><ImpactDashboard /></RoleGuard></ProtectedRoute>} />
       <Route path="/checkout" element={<ProtectedRoute><RoleGuard allowedRoles={['customer']}><Checkout /></RoleGuard></ProtectedRoute>} />
       <Route path="/customer-home" element={<ProtectedRoute><RoleGuard allowedRoles={['customer']}><CustomerHomepage /></RoleGuard></ProtectedRoute>} />
+      <Route path="/farmer/complete-profile" element={<ProtectedRoute><RoleGuard allowedRoles={['farmer']}><FarmerProfileSetup /></RoleGuard></ProtectedRoute>} />
+      <Route path="/farmer-settings" element={<ProtectedRoute><RoleGuard allowedRoles={['farmer']}><FarmerSettings /></RoleGuard></ProtectedRoute>} />
+      <Route path="/ngo-settings" element={<ProtectedRoute><RoleGuard allowedRoles={['ngo']}><NgoSettings /></RoleGuard></ProtectedRoute>} />
 
       {/* ── Admin Panel ── */}
       <Route path="/admin/*" element={<AdminGuard><AdminRoutes /></AdminGuard>} />
@@ -106,7 +111,6 @@ export default function AppRoutes() {
         <Route path="/settings" element={<SettingsPage />} />
 
         {/* Farmer */}
-        <Route path="/farmer/complete-profile" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileSetup /></RoleGuard>} />
         <Route path="/listing" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileGuard><ListingForm /></FarmerProfileGuard></RoleGuard>} />
         <Route path="/my-listings" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileGuard><MyListings /></FarmerProfileGuard></RoleGuard>} />
         <Route path="/edit-listing/:id" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileGuard><EditListing /></FarmerProfileGuard></RoleGuard>} />
@@ -131,8 +135,8 @@ export default function AppRoutes() {
 
         {/* NGO */}
         <Route path="/leaderboards" element={<RoleGuard allowedRoles={['ngo']}><ImpactPage /></RoleGuard>} />
-        <Route path="/ngo-settings" element={<RoleGuard allowedRoles={['ngo']}><NgoSettings /></RoleGuard>} />
         <Route path="/claimed-donations" element={<RoleGuard allowedRoles={['ngo']}><ClaimedDonations /></RoleGuard>} />
+        <Route path="/ngo-order-tracking" element={<RoleGuard allowedRoles={['ngo']}><NgoOrderTracking /></RoleGuard>} />
       </Route>
     </Routes>
   )

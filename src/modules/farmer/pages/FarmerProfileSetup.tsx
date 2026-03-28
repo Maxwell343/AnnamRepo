@@ -116,6 +116,18 @@ const FarmerProfileSetup: React.FC = () => {
 
   // ── Load existing profile ─────────────────────────────────────────────────
   useEffect(() => {
+    // Keep legacy route usable for incomplete profiles, but move completed users
+    // to the dedicated settings page.
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user?.profileComplete && !returnTo) {
+        navigate('/farmer-settings', { replace: true });
+        return;
+      }
+    } catch {
+      // ignore and continue normal flow
+    }
+
     const loadProfile = async () => {
       try {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -161,6 +173,9 @@ const FarmerProfileSetup: React.FC = () => {
                 navigate(returnTo, { replace: true });
                 return;
               }
+              // Otherwise use the dedicated farmer settings screen.
+              navigate('/farmer-settings', { replace: true });
+              return;
             }
           }
         }

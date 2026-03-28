@@ -84,7 +84,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       ],
       ngo: [
         { id: 'claimed', icon: <Handshake size={20} />, label: 'Claimed Donations', action: () => navigate('/claimed-donations') },
-        { id: 'tracking', icon: <Truck size={20} />, label: 'Order Tracking', action: () => navigate('/order-tracking') },
+        { id: 'tracking', icon: <Truck size={20} />, label: 'Order Tracking', action: () => navigate('/ngo-order-tracking') },
       ],
       driver: [
         { id: 'my-deliveries', icon: <MapPin size={20} />, label: 'My Deliveries', action: () => navigate('/my-deliveries') },
