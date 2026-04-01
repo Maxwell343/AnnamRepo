@@ -540,6 +540,33 @@ const FarmerSettings: React.FC = () => {
     return { bg: '#fef3c7', text: '#92400e' };
   }, [form.verificationStatus]);
 
+  const isProfileComplete = useMemo(() => {
+    return !!(
+      form.name.trim() &&
+      form.phone.trim() &&
+      form.farmLocation.trim()
+    );
+  }, [form.name, form.phone, form.farmLocation]);
+
+  const profileStatusBadge = useMemo(() => {
+    return isProfileComplete
+      ? { label: 'Completed', bg: '#dcfce7', text: '#166534' }
+      : { label: 'Pending', bg: '#fef3c7', text: '#92400e' };
+  }, [isProfileComplete]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('user');
+      if (!raw) return;
+      const user = JSON.parse(raw);
+      if (user?.profileComplete !== isProfileComplete) {
+        localStorage.setItem('user', JSON.stringify({ ...user, profileComplete: isProfileComplete }));
+      }
+    } catch {
+      // Ignore malformed localStorage user payloads
+    }
+  }, [isProfileComplete]);
+
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
@@ -576,26 +603,91 @@ const FarmerSettings: React.FC = () => {
     }
   };
 
-  // Simulated save functions with loading states
-  const simulateSave = async (section: string, successMessage: string) => {
+  const buildSettingsPayload = (userId: string) => ({
+    farmer_id: userId,
+    name: form.name,
+    email: form.email,
+    phone: form.phone,
+    farm_name: form.farmName,
+    farm_location: form.farmLocation,
+    produce_type: form.produceType,
+    harvest_frequency: form.harvestFrequency,
+    available_days: form.availableDays,
+    pickup_time: form.pickupTime,
+    available_for_pickup: form.availableForPickup,
+    verification_status: form.verificationStatus,
+    document_file_name: form.documentFileName,
+    preferred_ngo: form.preferredNgo,
+    minimum_donation_quantity: form.minimumDonationQuantity,
+    auto_accept_requests: form.autoAcceptRequests,
+    payment_method: form.paymentMethod,
+    total_earnings: form.totalEarnings,
+    pending_payments: form.pendingPayments,
+    notify_new_pickup_requests: form.notifyNewPickupRequests,
+    notify_delivery_updates: form.notifyDeliveryUpdates,
+    notify_payment_notifications: form.notifyPaymentNotifications,
+    notify_admin_alerts: form.notifyAdminAlerts,
+    notify_weekly_report: form.notifyWeeklyReport,
+    notify_sms_alerts: form.notifySmsAlerts,
+    profile_image: form.profileImage,
+    bio: form.bio,
+    profile_complete: isProfileComplete,
+  });
+
+  const persistSettings = async (section: string, successMessage: string) => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user?.id) {
+      addToast('Unable to save: user not found. Please log in again.', 'error');
+      return;
+    }
+
     setSavingSection(section);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setSavingSection(null);
-    addToast(successMessage, 'success');
+    try {
+      const payload = buildSettingsPayload(user.id.toString());
+      const response = await fetch(API_ENDPOINTS.farmerSettings(user.id.toString()), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Save failed with status ${response.status}`);
+      }
+
+      localStorage.setItem('farmName', form.farmName);
+      localStorage.setItem('farmLocation', form.farmLocation);
+      localStorage.setItem('farmerSettings', JSON.stringify(payload));
+
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+        parsed.name = form.name;
+        parsed.email = form.email;
+        parsed.profileComplete = isProfileComplete;
+        localStorage.setItem('user', JSON.stringify(parsed));
+      }
+
+      addToast(successMessage, 'success');
+    } catch (err) {
+      console.error('Error saving farmer settings:', err);
+      addToast('Failed to save settings. Please try again.', 'error');
+    } finally {
+      setSavingSection(null);
+    }
   };
 
-  const onProfileSave = () => simulateSave('profile', 'Profile information saved successfully!');
-  const onFarmDetailsSave = () => simulateSave('farm', 'Farm details updated successfully!');
-  const onAvailabilitySave = () => simulateSave('availability', 'Availability settings saved!');
+  const onProfileSave = () => persistSettings('profile', 'Profile information saved successfully!');
+  const onFarmDetailsSave = () => persistSettings('farm', 'Farm details updated successfully!');
+  const onAvailabilitySave = () => persistSettings('availability', 'Availability settings saved!');
   const onDocumentUpload = () => {
     if (form.documentFileName) {
-      simulateSave('verification', `Document "${form.documentFileName}" uploaded successfully!`);
+      persistSettings('verification', `Document "${form.documentFileName}" uploaded successfully!`);
     } else {
       addToast('Please select a document first', 'warning');
     }
   };
-  const onPreferencesSave = () => simulateSave('donation', 'Donation preferences saved!');
-  const onPaymentDetailsSave = () => simulateSave('payments', 'Payment details updated!');
+  const onPreferencesSave = () => persistSettings('donation', 'Donation preferences saved!');
+  const onPaymentDetailsSave = () => persistSettings('payments', 'Payment details updated!');
   const onWithdraw = () => {
     setModal({
       isOpen: true,
@@ -610,7 +702,7 @@ const FarmerSettings: React.FC = () => {
       variant: 'info',
     });
   };
-  const onNotificationsSave = () => simulateSave('notifications', 'Notification preferences saved!');
+  const onNotificationsSave = () => persistSettings('notifications', 'Notification preferences saved!');
   
   const onPasswordChange = () => {
     if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
@@ -625,7 +717,7 @@ const FarmerSettings: React.FC = () => {
       addToast('Password must be at least 8 characters', 'error');
       return;
     }
-    simulateSave('security', 'Password changed successfully!');
+    persistSettings('security', 'Password changed successfully!');
     setForm((prev) => ({
       ...prev,
       currentPassword: '',
@@ -719,9 +811,9 @@ const FarmerSettings: React.FC = () => {
               <h3>{form.name || 'Farmer'}</h3>
               <span
                 className="fs-status-badge"
-                style={{ backgroundColor: statusColors.bg, color: statusColors.text }}
+                style={{ backgroundColor: profileStatusBadge.bg, color: profileStatusBadge.text }}
               >
-                {form.verificationStatus}
+                {profileStatusBadge.label}
               </span>
             </div>
           </div>

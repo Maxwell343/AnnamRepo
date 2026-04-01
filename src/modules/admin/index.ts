@@ -5,6 +5,7 @@ export { default as AdminTopbar } from './layout/AdminTopbar';
 
 // Dashboard
 export { default as AdminDashboard } from './dashboard/AdminDashboard';
+export { default as AdminSettings } from './settings/AdminSettings';
 
 // Users
 export { default as UserManagement } from './users/UserManagement';

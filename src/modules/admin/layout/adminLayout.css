@@ -193,6 +193,28 @@
   color: #8b8fa3;
 }
 
+.admin-sidebar__logout {
+  width: 100%;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-sidebar__logout:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fee2e2;
+}
+
 /* ── Topbar ── */
 
 .admin-topbar {

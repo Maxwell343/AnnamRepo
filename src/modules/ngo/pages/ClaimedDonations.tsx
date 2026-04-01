@@ -51,7 +51,7 @@ const ClaimedDonations: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await fetch(`${API_ENDPOINTS.marketplace.listings}?user_id=${user.id}`);
+      const response = await fetch(API_ENDPOINTS.claimedListings(String(user.id)));
       const data = await response.json();
       
       console.log('Claimed donations response:', data);

@@ -7,7 +7,7 @@ import { Truck, ArrowLeft, ArrowRight, Package, User, CheckCircle, Car, XCircle,
 interface User {
   id: string;
   name: string;
-  role: 'farmer' | 'ngo' | 'driver';
+  role: 'farmer' | 'ngo' | 'driver' | 'customer';
   phone?: string;
 }
 
@@ -32,7 +32,51 @@ interface OrderDetails {
   picked_up_at?: string;
   delivered_at?: string;
   otp?: string;
+  distance?: string;
 }
+
+const mapTaskStatusToOrderStatus = (taskStatus?: string, listingStatus?: string): OrderDetails['status'] => {
+  const value = (taskStatus || listingStatus || '').toLowerCase();
+  if (value === 'delivered') return 'delivered';
+  if (value === 'in_transit' || value === 'picked_up') return 'in_transit';
+  if (value === 'assigned' || value === 'pending') return 'assigned';
+  return 'claimed';
+};
+
+const buildDistance = (task: any, listing: any): string => {
+  if (task?.distance_km !== undefined && task?.distance_km !== null) {
+    const km = Number(task.distance_km);
+    if (!Number.isNaN(km)) return `${km.toFixed(2)} km`;
+  }
+  const raw = listing?.delivery_distance || listing?.distance || listing?.assigned_driver?.distance || '';
+  const clean = `${raw}`.trim();
+  if (!clean) return '';
+  return /km$/i.test(clean) ? clean : `${clean} km`;
+};
+
+const toOrderDetails = (listing: any, task: any): OrderDetails => ({
+  id: listing.id,
+  title: listing.title,
+  quantity: listing.claimed_by?.claim_quantity || listing.quantity,
+  type: listing.type,
+  status: mapTaskStatusToOrderStatus(task?.status, listing.status),
+  farmer_name: listing.farmer_name,
+  farmer_phone: listing.farmer_phone,
+  pickup_location: task?.pickup_address || listing.pickup_location || listing.pickup_address,
+  pickup_address: task?.pickup_address || listing.pickup_address || listing.pickup_location,
+  ngo_name: listing.claimed_by?.ngo_name,
+  ngo_phone: listing.claimed_by?.ngo_phone,
+  ngo_address: task?.delivery_address || listing.claimed_by?.ngo_address,
+  driver_name: task?.driver_name || listing.assigned_driver?.driver_name,
+  driver_phone: task?.driver_phone || listing.assigned_driver?.driver_phone,
+  vehicle_number: task?.vehicle_number || listing.assigned_driver?.vehicle_number,
+  claimed_at: listing.claimed_at,
+  assigned_at: listing.assigned_at,
+  picked_up_at: listing.picked_up_at,
+  delivered_at: listing.delivered_at,
+  otp: String(task?.delivery_otp || task?.pickup_otp || ''),
+  distance: buildDistance(task, listing),
+});
 
 const OrderTracking: React.FC = () => {
   const navigate = useNavigate();
@@ -59,26 +103,42 @@ const OrderTracking: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await fetch(`${API_ENDPOINTS.marketplace.listings}?user_id=${user.id}`);
+      const endpoint = user.role === 'ngo'
+        ? API_ENDPOINTS.claimedListings(String(user.id))
+        : API_ENDPOINTS.listings;
+      const response = await fetch(endpoint);
       const data = await response.json();
       
       if (response.ok) {
-        const trackableOrders = (data.listings || [])
-          .filter((listing: any) => ['assigned', 'in_transit'].includes(listing.status))
-          .map((listing: any) => ({
-            id: listing.id,
-            title: listing.title,
-            quantity: listing.claimed_by?.claim_quantity || listing.quantity,
-            type: listing.type,
-            status: listing.status,
-            farmer_name: listing.farmer_name,
-            pickup_location: listing.pickup_location || listing.pickup_address,
-            driver_name: listing.assigned_driver?.driver_name,
-            driver_phone: listing.assigned_driver?.driver_phone,
-            claimed_at: listing.claimed_at,
-            assigned_at: listing.assigned_at
-          }));
-        setOrders(trackableOrders);
+        const filteredListings = (data.listings || [])
+          .filter((listing: any) => {
+            if (user.role === 'ngo') return true;
+            const claimedBy = listing.claimed_by;
+            if (!claimedBy) return false;
+            if (typeof claimedBy === 'object') {
+              return String(claimedBy.customer_id || claimedBy.ngo_id || claimedBy.id || '') === String(user.id);
+            }
+            return String(claimedBy) === String(user.id);
+          });
+
+        const trackingResponses = await Promise.all(
+          filteredListings.map(async (listing: any) => {
+            try {
+              const trackingRes = await fetch(API_ENDPOINTS.listingTracking(String(listing.id)));
+              if (!trackingRes.ok) return null;
+              const tracking = await trackingRes.json();
+              return toOrderDetails(tracking.listing || listing, tracking.task || null);
+            } catch {
+              return null;
+            }
+          })
+        );
+
+        const liveOrders = trackingResponses
+          .filter((item): item is OrderDetails => Boolean(item))
+          .filter((ord) => ['assigned', 'in_transit', 'delivered'].includes(ord.status));
+
+        setOrders(liveOrders);
       }
     } catch (err) {
       console.error('Error fetching trackable orders:', err);
@@ -92,33 +152,17 @@ const OrderTracking: React.FC = () => {
     if (!orderId) return;
     
     try {
-      const response = await fetch(API_ENDPOINTS.marketplace.listingById(orderId));
+      const response = await fetch(API_ENDPOINTS.listingTracking(orderId));
       const data = await response.json();
       
       if (response.ok) {
-        const listing = data;
-        setOrder({
-          id: listing.id,
-          title: listing.title,
-          quantity: listing.claimed_by?.claim_quantity || listing.quantity,
-          type: listing.type,
-          status: listing.status || 'claimed',
-          farmer_name: listing.farmer_name,
-          farmer_phone: listing.farmer_phone,
-          pickup_location: listing.pickup_location || listing.pickup_address,
-          pickup_address: listing.pickup_address || listing.pickup_location,
-          ngo_name: listing.claimed_by?.ngo_name,
-          ngo_phone: listing.claimed_by?.ngo_phone,
-          ngo_address: listing.claimed_by?.ngo_address,
-          driver_name: listing.assigned_driver?.driver_name,
-          driver_phone: listing.assigned_driver?.driver_phone,
-          vehicle_number: listing.assigned_driver?.vehicle_number,
-          claimed_at: listing.claimed_at,
-          assigned_at: listing.assigned_at,
-          picked_up_at: listing.picked_up_at,
-          delivered_at: listing.delivered_at,
-          otp: generateOTP(listing.id)
-        });
+        const listing = data.listing || {};
+        const task = data.task || null;
+        const mapped = toOrderDetails(listing, task);
+        if (!mapped.otp) {
+          mapped.otp = generateOTP(mapped.id);
+        }
+        setOrder(mapped);
       } else {
         setError('Order not found');
       }

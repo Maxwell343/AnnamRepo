@@ -34,6 +34,11 @@ export const API_ENDPOINTS = {
   driverEarnings: (id: string) => `${API_BASE_URL}/api/drivers/${id}/earnings`,
   driverStats: (id: string) => `${API_BASE_URL}/api/stats/driver/${id}`,
   deliveryTaskStatus: (taskId: string) => `${API_BASE_URL}/api/delivery-tasks/${taskId}/status`,
+  deliveryTaskLocation: (taskId: string) => `${API_BASE_URL}/api/delivery-tasks/${taskId}/location`,
+  availablePickups: `${API_BASE_URL}/api/available-pickups`,
+  acceptPickup: (listingId: string) => `${API_BASE_URL}/api/pickups/${listingId}/accept`,
+  claimedListings: (ngoId: string) => `${API_BASE_URL}/api/listings/claimed/${ngoId}`,
+  listingTracking: (listingId: string) => `${API_BASE_URL}/api/listings/${listingId}/tracking`,
 
   // Analytics
   farmerAnalytics: (id: string) => `${API_BASE_URL}/api/analytics/farmer/${id}`,

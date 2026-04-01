@@ -283,10 +283,32 @@ def assign_driver_to_listing(listing_id: str, driver_data: dict) -> Optional[dic
     return updated_listing
 
 
+def accept_pickup(listing_id: str, driver_data: dict) -> Optional[dict]:
+    """Driver accepts a claimed pickup and gets assigned to the listing."""
+    listing = get_listing_by_id(listing_id)
+    if not listing:
+        return None
+
+    if listing.get("status") != "claimed":
+        return None
+
+    payload = {
+        "driver_id": str(driver_data.get("driver_id", "")),
+        "driver_name": driver_data.get("driver_name") or "Driver",
+        "driver_phone": driver_data.get("driver_phone"),
+        "vehicle_number": driver_data.get("vehicle_number"),
+    }
+    return assign_driver_to_listing(listing_id, payload)
+
+
 # ============== DELIVERY TASKS ==============
 
 def create_delivery_task(listing: dict, driver_data: dict) -> dict:
     """Create a delivery task for a driver"""
+    listing_location = listing.get("location") or {}
+    claimed_by = listing.get("claimed_by") or {}
+    claimed_location = claimed_by.get("location") if isinstance(claimed_by, dict) else {}
+
     task = {
         "listing_id": listing["id"],
         "driver_id": driver_data["driver_id"],
@@ -302,12 +324,18 @@ def create_delivery_task(listing: dict, driver_data: dict) -> dict:
         "farmer_name": listing.get("farmer_name"),
         "farmer_phone": listing.get("farmer_phone"),
         "pickup_address": listing.get("pickup_address"),
+        "pickup_location": listing.get("pickup_location") or listing.get("pickup_address"),
+        "pickup_lat": listing.get("pickup_lat") or listing_location.get("lat"),
+        "pickup_lng": listing.get("pickup_lng") or listing_location.get("lng"),
         "pickup_time": listing.get("pickup_time"),
         
         "ngo_id": listing.get("claimed_by", {}).get("ngo_id"),
         "ngo_name": listing.get("claimed_by", {}).get("ngo_name"),
         "ngo_phone": listing.get("claimed_by", {}).get("ngo_phone"),
         "delivery_address": listing.get("claimed_by", {}).get("ngo_address"),
+        "delivery_location": listing.get("claimed_by", {}).get("ngo_address"),
+        "delivery_lat": listing.get("delivery_lat") or (claimed_location or {}).get("lat"),
+        "delivery_lng": listing.get("delivery_lng") or (claimed_location or {}).get("lng"),
         
         "status": "pending",
         "created_at": datetime.utcnow().isoformat(),
@@ -379,6 +407,35 @@ def update_task_status(task_id: str, status: str, notes: str = None) -> Optional
         
         return result
     except:
+        return None
+
+
+def update_driver_location(task_id: str, location: dict) -> Optional[dict]:
+    """Persist latest driver location for a delivery task."""
+    update_data = {
+        "current_location": {
+            "lat": float(location.get("lat")),
+            "lng": float(location.get("lng")),
+            "heading": location.get("heading"),
+            "speed": location.get("speed"),
+            "updated_at": datetime.utcnow().isoformat(),
+        },
+        "updated_at": datetime.utcnow().isoformat(),
+    }
+
+    try:
+        result = delivery_tasks_collection.find_one_and_update(
+            {"_id": ObjectId(task_id)},
+            {"$set": update_data},
+            return_document=True,
+        )
+        if not result:
+            return None
+
+        result["id"] = str(result["_id"])
+        del result["_id"]
+        return result
+    except Exception:
         return None
 
 

@@ -56,7 +56,25 @@ async def get_farmer_settings_route(farmer_id: str):
 async def save_farmer_settings_route(settings: FarmerSettingsModel):
     """Save farmer settings"""
     settings_dict = settings.dict(exclude_unset=True)
+    is_profile_complete = bool(
+        (settings_dict.get("name") or "").strip()
+        and (settings_dict.get("phone") or "").strip()
+        and (settings_dict.get("farm_location") or "").strip()
+    )
+    settings_dict["profile_complete"] = is_profile_complete
     result = await save_farmer_settings(settings_dict)
+
+    if settings_dict.get("farmer_id"):
+        await update_user_profile(settings_dict["farmer_id"], {
+            "name": settings_dict.get("name"),
+            "email": settings_dict.get("email"),
+            "phone": settings_dict.get("phone"),
+            "address": settings_dict.get("farm_location"),
+            "profile_complete": is_profile_complete,
+            "profileComplete": is_profile_complete,
+            "profileCompleted": is_profile_complete,
+        })
+
     return {"message": "Settings saved successfully", "settings": result}
 
 
@@ -65,7 +83,24 @@ async def update_farmer_settings_route(farmer_id: str, settings: FarmerSettingsM
     """Update farmer settings"""
     settings_dict = settings.dict(exclude_unset=True)
     settings_dict["farmer_id"] = farmer_id
+    is_profile_complete = bool(
+        (settings_dict.get("name") or "").strip()
+        and (settings_dict.get("phone") or "").strip()
+        and (settings_dict.get("farm_location") or "").strip()
+    )
+    settings_dict["profile_complete"] = is_profile_complete
     result = await save_farmer_settings(settings_dict)
+
+    await update_user_profile(farmer_id, {
+        "name": settings_dict.get("name"),
+        "email": settings_dict.get("email"),
+        "phone": settings_dict.get("phone"),
+        "address": settings_dict.get("farm_location"),
+        "profile_complete": is_profile_complete,
+        "profileComplete": is_profile_complete,
+        "profileCompleted": is_profile_complete,
+    })
+
     return {"message": "Settings updated successfully", "settings": result}
 
 

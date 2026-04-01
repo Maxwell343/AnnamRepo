@@ -5,8 +5,8 @@ import { API_ENDPOINTS } from '../config/api';
 
 // --- Types ---
 interface FoodListing {
-  id: number;
-  farmer_id: number;
+  id: string;
+  farmer_id: string;
   farmer_name?: string;
   title: string;
   quantity: string;
@@ -20,14 +20,14 @@ interface FoodListing {
   pickup_location?: string;
   pickup_address?: string;
   delivery_location?: string;
-  claimed_by?: number | {
+  claimed_by?: string | {
     ngo_id: string;
     ngo_name: string;
     ngo_phone?: string;
     ngo_address?: string;
     claim_quantity?: string;
   };
-  assigned_driver?: number | {
+  assigned_driver?: string | {
     driver_id: string;
     driver_name: string;
     driver_phone?: string;
@@ -38,7 +38,7 @@ interface FoodListing {
 interface User {
   id: number;
   name: string;
-  role: 'farmer' | 'ngo' | 'driver';
+  role: 'farmer' | 'ngo' | 'driver' | 'customer';
   email?: string;
   phone?: string;
   address?: string;
@@ -47,8 +47,8 @@ interface User {
 }
 
 interface DeliveryTask {
-  id: number;
-  listing_id: number;
+  id: string;
+  listing_id: string;
   listing_title: string;
   pickup_location: string;
   delivery_location: string;
@@ -155,9 +155,19 @@ const HomePage: React.FC = () => {
   const [deliveryTasks, setDeliveryTasks] = useState<DeliveryTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [claimingId, setClaimingId] = useState<number | null>(null);
-  const [claimQuantity, setClaimQuantity] = useState<{ [key: number]: string }>({});
-  const cardRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
+  const [claimingId, setClaimingId] = useState<string | null>(null);
+  const [claimQuantity, setClaimQuantity] = useState<{ [key: string]: string }>({});
+    const isClaimedByUser = useCallback((listing: FoodListing): boolean => {
+      const claimedBy = listing.claimed_by;
+      if (!claimedBy) return false;
+      if (typeof claimedBy === 'object') {
+        const claimedId = claimedBy.ngo_id || '';
+        return String(claimedId) === String(user?.id);
+      }
+      return String(claimedBy) === String(user?.id);
+    }, [user?.id]);
+
+  const cardRefsMap = useRef<Map<string, HTMLDivElement>>(new Map());
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Fetch listings from backend
@@ -187,8 +197,8 @@ const HomePage: React.FC = () => {
       if (response.ok) {
         // Map listings to delivery tasks format
         const mappedTasks = (data.tasks || []).map((listing: any) => ({
-          id: listing.id,
-          listing_id: listing.id,
+          id: String(listing.id),
+          listing_id: String(listing.id),
           listing_title: listing.title,
           pickup_location: listing.location || 'Pickup location TBD',
           delivery_location: 'Delivery location TBD',
@@ -296,7 +306,7 @@ const HomePage: React.FC = () => {
   }, [navigate]);
 
 
-  const handleClaimDonation = async (listingId: number) => {
+  const handleClaimDonation = async (listingId: string) => {
     if (user?.role !== 'ngo') {
       alert('Only NGOs can claim donations');
       return;
@@ -335,7 +345,7 @@ const HomePage: React.FC = () => {
       setListings(prevListings =>
         prevListings.map(listing =>
           listing.id === listingId
-            ? { ...listing, quantity: data.listing.quantity, status: 'claimed', claimed_by: user.id }
+            ? { ...listing, quantity: data.listing.quantity, status: 'claimed', claimed_by: String(user.id) }
             : listing
         )
       );
@@ -355,7 +365,7 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const handleDeleteListing = async (listingId: number) => {
+  const handleDeleteListing = async (listingId: string) => {
     if (user?.role !== 'farmer') {
       alert('Only farmers can delete their listings');
       return;
@@ -396,7 +406,7 @@ const HomePage: React.FC = () => {
   };
 
   // Driver: Accept delivery task
-  const handleAcceptDelivery = async (listingId: number) => {
+  const handleAcceptDelivery = async (listingId: string) => {
     if (user?.role !== 'driver') return;
 
     try {
@@ -421,7 +431,7 @@ const HomePage: React.FC = () => {
       setListings(prevListings =>
         prevListings.map(listing =>
           listing.id === listingId
-            ? { ...listing, status: 'in_transit', assigned_driver: user.id }
+            ? { ...listing, status: 'in_transit', assigned_driver: String(user.id) }
             : listing
         )
       );
@@ -435,7 +445,7 @@ const HomePage: React.FC = () => {
   };
 
   // Driver: Update delivery status
-  const handleUpdateDeliveryStatus = async (taskId: number, newStatus: string) => {
+  const handleUpdateDeliveryStatus = async (taskId: string, newStatus: string) => {
     if (user?.role !== 'driver') return;
 
     try {
@@ -483,7 +493,7 @@ const HomePage: React.FC = () => {
 
   const displayListings = getDisplayListings();
 
-  const registerCardRef = useCallback((id: number, ref: HTMLDivElement | null) => {
+  const registerCardRef = useCallback((id: string, ref: HTMLDivElement | null) => {
     if (ref) {
       cardRefsMap.current.set(id, ref);
     }
@@ -550,7 +560,7 @@ const HomePage: React.FC = () => {
             <div className="stat-card primary">
               <div className="stat-icon">📦</div>
               <div className="stat-content">
-                <span className="stat-value">{listings.filter(l => l.farmer_id === user.id).length}</span>
+                <span className="stat-value">{listings.filter(l => String(l.farmer_id) === String(user.id)).length}</span>
                 <span className="stat-label">Active Listings</span>
                 <span className="stat-change positive">Your donations</span>
               </div>
@@ -558,7 +568,7 @@ const HomePage: React.FC = () => {
             <div className="stat-card secondary">
               <div className="stat-icon">🤝</div>
               <div className="stat-content">
-                <span className="stat-value">{listings.filter(l => l.farmer_id === user.id && l.status === 'claimed').length}</span>
+                <span className="stat-value">{listings.filter(l => String(l.farmer_id) === String(user.id) && l.status === 'claimed').length}</span>
                 <span className="stat-label">Claimed Donations</span>
                 <span className="stat-change positive">Awaiting pickup</span>
               </div>
@@ -580,7 +590,7 @@ const HomePage: React.FC = () => {
             <div className="stat-card primary" onClick={() => navigate('/claimed-donations')} style={{cursor: 'pointer'}}>
               <div className="stat-icon">🤝</div>
               <div className="stat-content">
-                <span className="stat-value">{listings.filter(l => l.claimed_by === user?.id || String(l.claimed_by) === String(user?.id)).length}</span>
+                <span className="stat-value">{listings.filter(isClaimedByUser).length}</span>
                 <span className="stat-label">Claimed Donations</span>
                 <span className="stat-change positive">Click to view</span>
               </div>
@@ -588,7 +598,7 @@ const HomePage: React.FC = () => {
             <div className="stat-card secondary">
               <div className="stat-icon">📦</div>
               <div className="stat-content">
-                <span className="stat-value">{listings.filter(l => l.status === 'in_transit' && (l.claimed_by === user?.id || String(l.claimed_by) === String(user?.id))).length}</span>
+                <span className="stat-value">{listings.filter(l => l.status === 'in_transit' && isClaimedByUser(l)).length}</span>
                 <span className="stat-label">In Transit</span>
                 <span className="stat-change positive">On the way</span>
               </div>
@@ -604,7 +614,7 @@ const HomePage: React.FC = () => {
             <div className="stat-card success">
               <div className="stat-icon">✅</div>
               <div className="stat-content">
-                <span className="stat-value">{listings.filter(l => l.status === 'delivered' && (l.claimed_by === user?.id || String(l.claimed_by) === String(user?.id))).length}</span>
+                <span className="stat-value">{listings.filter(l => l.status === 'delivered' && isClaimedByUser(l)).length}</span>
                 <span className="stat-label">Delivered</span>
                 <span className="stat-change">Completed</span>
               </div>
@@ -723,7 +733,7 @@ const HomePage: React.FC = () => {
       case 'driver':
         // Check if this driver is assigned (handle both object and primitive formats)
         const isAssignedToMe = listing.assigned_driver && (
-          listing.assigned_driver === user?.id || 
+          String(listing.assigned_driver) === String(user?.id) || 
           (typeof listing.assigned_driver === 'object' && (listing.assigned_driver as any).driver_id === String(user?.id))
         );
         const hasOtherDriver = listing.assigned_driver && !isAssignedToMe;
@@ -734,7 +744,7 @@ const HomePage: React.FC = () => {
               <span className="status-badge in-transit">🚚 Assigned to you</span>
               <button
                 className="btn-primary-action"
-                onClick={() => navigate(`/delivery/${listing.id}`)}
+                onClick={() => navigate('/route-map', { state: { listingId: listing.id } })}
               >
                 📍 View Route
               </button>
@@ -854,7 +864,7 @@ const HomePage: React.FC = () => {
                 )}
                 <button
                   className="btn-secondary"
-                  onClick={() => navigate(`/delivery/${task.listing_id}`)}
+                  onClick={() => navigate('/route-map', { state: { listingId: task.listing_id, taskId: task.id } })}
                 >
                   🗺️ View Route
                 </button>

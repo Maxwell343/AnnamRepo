@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AvailablePickups.css';
-import { API_ENDPOINTS, API_BASE_URL } from '../../../config/api';
+import { API_ENDPOINTS } from '../../../config/api';
 import { Salad, Apple, Wheat, Package, Flame, Zap, Truck, Circle, AlertTriangle, MapPin, Wallet, Search, X, RefreshCw, MailOpen, Ruler, Flag, Clock, Eye, CheckCircle, Timer, MapPinned, Phone, Map, FileText, MessageSquare, Check, Info, XCircle } from 'lucide-react';
 
 // --- Types ---
@@ -9,11 +9,12 @@ interface User {
   id: number;
   name: string;
   role: 'farmer' | 'ngo' | 'driver';
+  phone?: string;
 }
 
 interface PickupTask {
-  id: number;
-  listing_id: number;
+  id: string;
+  listing_id: string;
   title: string;
   quantity: string;
   type: 'Vegetable' | 'Fruit' | 'Grain' | 'Other';
@@ -54,22 +55,73 @@ interface PickupTask {
   special_instructions?: string;
 }
 
+interface LngLat {
+  lng: number;
+  lat: number;
+}
+
 type FilterType = 'all' | 'Vegetable' | 'Fruit' | 'Grain' | 'Other';
 type SortOption = 'nearest' | 'highest_pay' | 'urgent' | 'newest';
-type DistanceFilter = 'all' | '5' | '10' | '15' | '25';
+type DistanceFilter = '5';
+
+const MAX_SERVICE_DISTANCE_KM = 5;
+
+const readRuntimeMapboxToken = (): string => {
+  if (typeof window === 'undefined') return '';
+  const localToken = window.localStorage.getItem('MAPBOX_TOKEN') || '';
+  const windowToken = (window as any).MAPBOX_TOKEN || '';
+  return localToken || windowToken;
+};
+
+const MAPBOX_TOKEN = (
+  (import.meta as { env?: Record<string, string | undefined> })?.env?.VITE_MAPBOX_TOKEN ||
+  (globalThis as any)?.process?.env?.REACT_APP_MAPBOX_TOKEN ||
+  readRuntimeMapboxToken() ||
+  ''
+).trim();
+
+const toRad = (deg: number): number => (deg * Math.PI) / 180;
+
+const getDistanceKm = (from: LngLat, to: LngLat): number => {
+  const earthRadiusKm = 6371;
+  const dLat = toRad(to.lat - from.lat);
+  const dLng = toRad(to.lng - from.lng);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(from.lat)) * Math.cos(toRad(to.lat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return earthRadiusKm * c;
+};
+
+const geocodeAddress = async (address: string): Promise<LngLat | null> => {
+  if (!address.trim() || !MAPBOX_TOKEN) return null;
+  try {
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?limit=1&access_token=${MAPBOX_TOKEN}`;
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const data = await response.json();
+    const center = data?.features?.[0]?.center;
+    if (!Array.isArray(center) || center.length < 2) return null;
+    return { lng: Number(center[0]), lat: Number(center[1]) };
+  } catch {
+    return null;
+  }
+};
 
 const AvailablePickups: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [driverLocation, setDriverLocation] = useState<LngLat | null>(null);
   const [pickups, setPickups] = useState<PickupTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalFetchedCount, setTotalFetchedCount] = useState(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [profileChecking, setProfileChecking] = useState(true);
   
   // Filters
   const [filterType, setFilterType] = useState<FilterType>('all');
-  const [filterDistance, setFilterDistance] = useState<DistanceFilter>('all');
+  const [filterDistance, setFilterDistance] = useState<DistanceFilter>('5');
   const [sortBy, setSortBy] = useState<SortOption>('nearest');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -77,7 +129,7 @@ const AvailablePickups: React.FC = () => {
   const [selectedPickup, setSelectedPickup] = useState<PickupTask | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showAcceptModal, setShowAcceptModal] = useState(false);
-  const [acceptingId, setAcceptingId] = useState<number | null>(null);
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
   
   // Toast
   const [showToast, setShowToast] = useState(false);
@@ -89,20 +141,100 @@ const AvailablePickups: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/available-pickups?driver_id=${user.id}`);
+      const response = await fetch(API_ENDPOINTS.availablePickups);
       if (response.ok) {
         const data = await response.json();
-        setPickups(Array.isArray(data) ? data : data.pickups || []);
+        const rawPickups = Array.isArray(data) ? data : data.pickups || [];
+        const fetchedPickups: PickupTask[] = rawPickups.map((pickup: any) => {
+          const parsedDistance = Number.parseFloat(String(pickup.delivery_distance || pickup.distance || '0'));
+          const distance = Number.isFinite(parsedDistance) && parsedDistance > 0 ? parsedDistance : 2.5;
+          return {
+            id: String(pickup.id),
+            listing_id: String(pickup.id),
+            title: pickup.title || 'Untitled Listing',
+            quantity: pickup.claimed_by?.claim_quantity || pickup.quantity || 'N/A',
+            type: pickup.type || 'Other',
+            image: pickup.image,
+            priority: pickup.priority || 'normal',
+            farmer: {
+              id: Number(pickup.farmer_id || 0),
+              name: pickup.farmer_name || 'Farmer',
+              phone: pickup.farmer_phone || '+91 00000 00000',
+              address: pickup.pickup_address || pickup.location || 'Pickup address not available',
+              landmark: pickup.pickup_landmark,
+            },
+            ngo: {
+              id: Number(pickup.claimed_by?.ngo_id || 0),
+              name: pickup.claimed_by?.ngo_name || 'NGO',
+              organization: pickup.claimed_by?.ngo_name || 'NGO',
+              phone: pickup.claimed_by?.ngo_phone || '+91 00000 00000',
+              address: pickup.claimed_by?.ngo_address || 'Delivery address not available',
+            },
+            created_at: pickup.created_at || new Date().toISOString(),
+            expiry_time: pickup.expiry_date || pickup.expiry || new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+            pickup_window_start: pickup.pickup_time || '09:00',
+            pickup_window_end: pickup.pickup_time || '18:00',
+            distance,
+            estimated_time: pickup.estimated_time || `${Math.max(10, Math.round(distance * 15))} mins`,
+            earnings: Number(pickup.earnings || Math.round(80 + distance * 20)),
+            notes: pickup.notes,
+            special_instructions: pickup.special_instructions,
+          };
+        });
+        let enrichedPickups = fetchedPickups;
+
+        // Recalculate distance from driver's current location when available.
+        if (driverLocation) {
+          enrichedPickups = await Promise.all(
+            fetchedPickups.map(async (pickup) => {
+              const pickupCoords = await geocodeAddress(pickup.farmer.address || '');
+              if (!pickupCoords) return pickup;
+              const calculatedDistance = Number(getDistanceKm(driverLocation, pickupCoords).toFixed(2));
+              return {
+                ...pickup,
+                distance: calculatedDistance,
+                estimated_time: `${Math.max(10, Math.round(calculatedDistance * 15))} mins`,
+              };
+            })
+          );
+        }
+
+        const eligiblePickups = enrichedPickups.filter((pickup) => pickup.distance <= MAX_SERVICE_DISTANCE_KM);
+        setTotalFetchedCount(fetchedPickups.length);
+        setPickups(eligiblePickups);
       } else {
+        setTotalFetchedCount(0);
         setPickups([]);
       }
     } catch (err) {
       console.error('Error fetching pickups:', err);
+      setTotalFetchedCount(0);
       setPickups([]);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, driverLocation]);
+
+  useEffect(() => {
+    if (!('geolocation' in navigator)) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setDriverLocation({
+          lng: position.coords.longitude,
+          lat: position.coords.latitude,
+        });
+      },
+      () => {
+        // Location failure: fallback to API-provided distance.
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      }
+    );
+  }, []);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -180,19 +312,39 @@ const AvailablePickups: React.FC = () => {
     setTimeout(() => setShowToast(false), 3000);
   };
 
-  const handleAcceptPickup = async (pickupId: number) => {
+  const handleAcceptPickup = async (pickupId: string) => {
     if (!isOnline) {
       showToastMessage('You must be online to accept pickups', 'warning');
+      return;
+    }
+
+    if (!driverLocation) {
+      showToastMessage('Enable location to accept pickups within 5 km', 'warning');
+      return;
+    }
+
+    const pickupToAccept = pickups.find((pickup) => pickup.id === pickupId);
+    if (!pickupToAccept) {
+      showToastMessage('Pickup not found', 'error');
+      return;
+    }
+
+    if (pickupToAccept.distance > MAX_SERVICE_DISTANCE_KM) {
+      showToastMessage(`You can only accept orders within ${MAX_SERVICE_DISTANCE_KM} km of your location`, 'warning');
       return;
     }
 
     setAcceptingId(pickupId);
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/pickups/${pickupId}/accept`, {
+      const response = await fetch(API_ENDPOINTS.acceptPickup(pickupId), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ driver_id: user?.id })
+        body: JSON.stringify({
+          driver_id: String(user?.id || ''),
+          driver_name: user?.name || 'Driver',
+          driver_phone: user?.phone || '',
+        })
       });
 
       if (!response.ok) {
@@ -243,8 +395,8 @@ const AvailablePickups: React.FC = () => {
         return false;
       }
       
-      // Distance filter
-      if (filterDistance !== 'all' && pickup.distance > parseInt(filterDistance)) {
+      // Hard service radius (driver can only get/accept within 5km)
+      if (pickup.distance > MAX_SERVICE_DISTANCE_KM) {
         return false;
       }
       
@@ -270,7 +422,7 @@ const AvailablePickups: React.FC = () => {
   const stats = {
     total: pickups.length,
     urgent: pickups.filter(p => p.priority === 'urgent').length,
-    nearby: pickups.filter(p => p.distance <= 5).length,
+    nearby: pickups.filter(p => p.distance <= MAX_SERVICE_DISTANCE_KM).length,
     totalEarnings: pickups.reduce((sum, p) => sum + p.earnings, 0)
   };
 
@@ -477,11 +629,7 @@ const AvailablePickups: React.FC = () => {
                 value={filterDistance} 
                 onChange={(e) => setFilterDistance(e.target.value as DistanceFilter)}
               >
-                <option value="all">Any Distance</option>
                 <option value="5">Within 5 km</option>
-                <option value="10">Within 10 km</option>
-                <option value="15">Within 15 km</option>
-                <option value="25">Within 25 km</option>
               </select>
             </div>
 
@@ -511,14 +659,14 @@ const AvailablePickups: React.FC = () => {
         {/* Results Info */}
         <div className="results-info">
           <span>
-            Showing <strong>{filteredPickups.length}</strong> of <strong>{pickups.length}</strong> available pickups
+            Showing <strong>{filteredPickups.length}</strong> of <strong>{pickups.length}</strong> eligible pickups (within {MAX_SERVICE_DISTANCE_KM} km)
           </span>
-          {(filterType !== 'all' || filterDistance !== 'all' || searchQuery) && (
+          {(filterType !== 'all' || searchQuery) && (
             <button 
               className="clear-filters-btn"
               onClick={() => {
                 setFilterType('all');
-                setFilterDistance('all');
+                setFilterDistance('5');
                 setSearchQuery('');
               }}
             >
@@ -533,7 +681,9 @@ const AvailablePickups: React.FC = () => {
             <div className="empty-icon"><MailOpen size={40} /></div>
             <h3>
               {pickups.length === 0 
-                ? "No pickups available right now" 
+                ? (totalFetchedCount > 0
+                  ? `No pickups available within ${MAX_SERVICE_DISTANCE_KM} km`
+                  : "No pickups available right now")
                 : "No pickups match your filters"}
             </h3>
             <p>

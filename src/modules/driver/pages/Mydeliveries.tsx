@@ -14,9 +14,9 @@ interface User {
 }
 
 interface DeliveryTask {
-  id: number;
-  listing_id: number;
-  driver_id: number;
+  id: string;
+  listing_id: string;
+  driver_id: string;
   title: string;
   quantity: string;
   type: 'Vegetable' | 'Fruit' | 'Grain' | 'Other';
@@ -73,7 +73,7 @@ const MyDeliveries: React.FC = () => {
   const [selectedDelivery, setSelectedDelivery] = useState<DeliveryTask | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   // Fetch deliveries from API
   const fetchDeliveries = useCallback(async () => {
@@ -86,30 +86,32 @@ const MyDeliveries: React.FC = () => {
       if (response.ok) {
         // Map API data to DeliveryTask format
         const formattedTasks = data.tasks.map((task: any) => ({
-          id: task.id,
-          listing_id: task.id,
-          driver_id: user.id,
+          id: String(task.id),
+          listing_id: String(task.listing_id || ''),
+          driver_id: String(task.driver_id || user.id),
           title: task.title,
           quantity: task.delivery_quantity || task.claimed_quantity || task.quantity,
           type: task.type,
           status: task.status,
           priority: 'normal',
           farmer: {
-            id: task.farmer_id,
+            id: Number(task.farmer_id || 0),
             name: task.farmer_name || 'Unknown Farmer',
-            phone: '+91 00000 00000',
-            address: task.location || 'Location not specified'
+            phone: task.farmer_phone || '+91 00000 00000',
+            address: task.pickup_address || 'Location not specified'
           },
           ngo: {
-            id: 1,
-            name: 'NGO Contact',
-            organization: 'NGO Organization',
-            phone: '+91 00000 00000',
-            address: 'Delivery location'
+            id: Number(task.ngo_id || 0),
+            name: task.ngo_name || 'NGO Contact',
+            organization: task.ngo_name || 'NGO Organization',
+            phone: task.ngo_phone || '+91 00000 00000',
+            address: task.delivery_address || 'Delivery location'
           },
           created_at: task.created_at,
+          pickup_time: task.picked_up_at,
+          delivered_at: task.delivered_at,
           distance: '',
-          earnings: 0,
+          earnings: Number(task.earnings || 0),
           notes: task.description
         }));
         setDeliveries(formattedTasks);
@@ -201,7 +203,7 @@ const MyDeliveries: React.FC = () => {
   };
 
   // Update delivery status
-  const handleUpdateStatus = async (deliveryId: number, newStatus: string) => {
+  const handleUpdateStatus = async (deliveryId: string, newStatus: string) => {
     setUpdatingId(deliveryId);
     
     try {

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './NgoOrderTracking.css';
+import { API_ENDPOINTS } from '../../../config/api';
 
 // ============================================
 // Icons
@@ -402,6 +403,115 @@ const getTimeRemaining = (eta: Date): string => {
   return `${hours}h ${remainingMins}m`;
 };
 
+const toDate = (value?: string, fallback?: Date): Date => {
+  if (!value) return fallback || new Date();
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? (fallback || new Date()) : parsed;
+};
+
+const toNgoStatus = (taskStatus?: string, listingStatus?: string): OrderStatus => {
+  const value = (taskStatus || listingStatus || '').toLowerCase();
+  if (value === 'delivered') return 'delivered';
+  if (value === 'in_transit') return 'inTransit';
+  if (value === 'picked_up') return 'pickedUp';
+  if (value === 'assigned' || value === 'pending') return 'assigned';
+  if (value === 'cancelled') return 'cancelled';
+  return 'requested';
+};
+
+const toDistance = (task: any, listing: any): string => {
+  if (task?.distance_km !== undefined && task?.distance_km !== null) {
+    const km = Number(task.distance_km);
+    if (!Number.isNaN(km)) return `${km.toFixed(1)} km`;
+  }
+  const raw = listing?.delivery_distance || listing?.distance || listing?.assigned_driver?.distance;
+  if (raw === undefined || raw === null) return 'N/A';
+  const clean = `${raw}`.trim();
+  if (!clean) return 'N/A';
+  return /km$/i.test(clean) ? clean : `${clean} km`;
+};
+
+const buildTimeline = (status: OrderStatus, listing: any, task: any): TimelineEvent[] => {
+  const events: TimelineEvent[] = [];
+
+  events.push({
+    status: 'requested',
+    timestamp: toDate(listing?.claimed_at || listing?.created_at),
+    note: 'Order placed by NGO',
+  });
+
+  if (['assigned', 'pickedUp', 'inTransit', 'delivered'].includes(status)) {
+    events.push({
+      status: 'assigned',
+      timestamp: toDate(listing?.assigned_at || task?.created_at, toDate(listing?.claimed_at || listing?.created_at)),
+      note: task?.driver_name ? `Driver ${task.driver_name} assigned` : 'Driver assigned',
+    });
+  }
+
+  if (['pickedUp', 'inTransit', 'delivered'].includes(status)) {
+    events.push({
+      status: 'pickedUp',
+      timestamp: toDate(listing?.picked_up_at || task?.picked_up_at, toDate(listing?.assigned_at || task?.created_at)),
+      note: 'Items picked up from farm',
+    });
+  }
+
+  if (['inTransit', 'delivered'].includes(status)) {
+    events.push({
+      status: 'inTransit',
+      timestamp: toDate(task?.updated_at || listing?.picked_up_at, toDate(listing?.picked_up_at || listing?.assigned_at)),
+      note: 'On the way to destination',
+    });
+  }
+
+  if (status === 'delivered') {
+    events.push({
+      status: 'delivered',
+      timestamp: toDate(listing?.delivered_at || task?.delivered_at, toDate(task?.updated_at || listing?.updated_at)),
+      note: 'Successfully delivered',
+    });
+  }
+
+  return events;
+};
+
+const toNgoOrder = (listing: any, task: any): NgoOrder => {
+  const status = toNgoStatus(task?.status, listing?.status);
+  const quantity = listing?.claimed_by?.claim_quantity || listing?.quantity || 'N/A';
+  const quantityText = `${quantity}`;
+
+  return {
+    id: String(listing?.id || ''),
+    farmerName: listing?.farmer_name || 'Farmer',
+    farmerPhone: listing?.farmer_phone || '+91 00000 00000',
+    farmerAddress:
+      task?.pickup_address ||
+      listing?.pickup_address ||
+      listing?.pickup_location ||
+      listing?.location_address ||
+      'Pickup location not available',
+    driverName: task?.driver_name || listing?.assigned_driver?.driver_name || 'Not assigned',
+    driverPhone: task?.driver_phone || listing?.assigned_driver?.driver_phone || '',
+    driverPhoto: '',
+    vehicleType: task?.vehicle_type || listing?.assigned_driver?.vehicle_type || 'Delivery Vehicle',
+    vehicleNumber: task?.vehicle_number || listing?.assigned_driver?.vehicle_number || 'N/A',
+    status,
+    items: [
+      {
+        name: listing?.title || 'Food Donation',
+        quantity: quantityText,
+        weight: quantityText,
+      },
+    ],
+    estimatedDelivery: toDate(task?.estimated_delivery || listing?.estimated_delivery, new Date(Date.now() + 60 * 60000)),
+    createdAt: toDate(listing?.created_at),
+    timeline: buildTimeline(status, listing, task),
+    rating: listing?.rating,
+    notes: listing?.notes || task?.notes || '',
+    distance: toDistance(task, listing),
+  };
+};
+
 // ============================================
 // Sub Components
 // ============================================
@@ -745,7 +855,8 @@ const OrderDetailModal: React.FC<{
 // Main Component
 // ============================================
 const NgoOrderTracking: React.FC = () => {
-  const [orders, setOrders] = useState<NgoOrder[]>(INITIAL_ORDERS);
+  const [orders, setOrders] = useState<NgoOrder[]>([]);
+  const [ngoId, setNgoId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -774,39 +885,67 @@ const NgoOrderTracking: React.FC = () => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // Simulate real-time updates
-  useEffect(() => {
-    refreshIntervalRef.current = setInterval(() => {
-      setOrders((prev) =>
-        prev.map((order) => {
-          if (order.status === 'delivered' || order.status === 'cancelled') return order;
+  const fetchLiveOrders = useCallback(async (showSuccessToast = false) => {
+    if (!ngoId) return;
 
-          const random = Math.random();
-          if (random > 0.95) {
-            const currentIndex = getStepIndex(order.status);
-            if (currentIndex < STATUS_STEPS.length - 1) {
-              const newStatus = STATUS_STEPS[currentIndex + 1].key;
-              addToast(
-                `Order ${order.id} status updated to ${statusLabelMap[newStatus]}`,
-                'info'
-              );
-              return {
-                ...order,
-                status: newStatus,
-                timeline: [
-                  ...order.timeline,
-                  {
-                    status: newStatus,
-                    timestamp: new Date(),
-                    note: `Status automatically updated to ${statusLabelMap[newStatus]}`,
-                  },
-                ],
-              };
+    try {
+      const response = await fetch(API_ENDPOINTS.claimedListings(ngoId));
+      if (!response.ok) {
+        throw new Error(`Failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      const listings = Array.isArray(data?.listings) ? data.listings : [];
+
+      const tracked = await Promise.all(
+        listings.map(async (listing: any) => {
+          try {
+            const trackingResponse = await fetch(API_ENDPOINTS.listingTracking(String(listing.id)));
+            if (!trackingResponse.ok) {
+              return { listing, task: null };
             }
+            const trackingData = await trackingResponse.json();
+            return {
+              listing: trackingData?.listing || listing,
+              task: trackingData?.task || null,
+            };
+          } catch {
+            return { listing, task: null };
           }
-          return order;
         })
       );
+
+      setOrders(tracked.map((entry) => toNgoOrder(entry.listing, entry.task)));
+
+      if (showSuccessToast) {
+        addToast('Orders refreshed successfully', 'success');
+      }
+    } catch (error) {
+      console.error('Error fetching NGO live orders:', error);
+      addToast('Failed to load live tracking orders', 'error');
+    }
+  }, [addToast, ngoId]);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (!savedUser) return;
+
+    try {
+      const parsed = JSON.parse(savedUser);
+      if (parsed?.id) {
+        setNgoId(String(parsed.id));
+      }
+    } catch {
+      // Ignore malformed storage payload.
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!ngoId) return;
+
+    fetchLiveOrders();
+    refreshIntervalRef.current = setInterval(() => {
+      fetchLiveOrders();
     }, 10000);
 
     return () => {
@@ -814,7 +953,15 @@ const NgoOrderTracking: React.FC = () => {
         clearInterval(refreshIntervalRef.current);
       }
     };
-  }, [addToast]);
+  }, [fetchLiveOrders, ngoId]);
+
+  useEffect(() => {
+    if (!selectedOrder) return;
+    const refreshed = orders.find((order) => order.id === selectedOrder.id);
+    if (refreshed) {
+      setSelectedOrder(refreshed);
+    }
+  }, [orders, selectedOrder]);
 
   // Dark mode
   useEffect(() => {
@@ -873,9 +1020,8 @@ const NgoOrderTracking: React.FC = () => {
   // Handlers
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await fetchLiveOrders(true);
     setIsRefreshing(false);
-    addToast('Orders refreshed successfully', 'success');
   };
 
   const handleContactDriver = (phone: string, method: 'call' | 'message') => {

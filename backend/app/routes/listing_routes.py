@@ -5,7 +5,9 @@ from app.models.listing_model import (
     ListingUpdate, 
     ClaimRequest, 
     AssignDriverRequest,
-    DeliveryStatusUpdate
+    DeliveryStatusUpdate,
+    PickupAcceptRequest,
+    DriverLocationUpdate,
 )
 from app.services.listing_service import (
     create_listing,
@@ -19,6 +21,8 @@ from app.services.listing_service import (
     assign_driver_to_listing,
     get_driver_tasks,
     update_task_status,
+    update_driver_location,
+    accept_pickup,
     get_available_pickups,
     get_driver_earnings,
     get_farmer_stats,
@@ -106,7 +110,10 @@ def get_farmer_expired_listings(farmer_id: str):
     return {
         "listings": listings,
         "count": len(listings)
-    }@router.get("/listings/claimed/{ngo_id}")
+    }
+
+
+@router.get("/listings/claimed/{ngo_id}")
 def get_claimed_by_ngo(ngo_id: str):
     """Get all listings claimed by a specific NGO"""
     listings = get_all_listings()
@@ -254,6 +261,60 @@ def get_pickups_for_drivers():
     return {
         "pickups": pickups,
         "count": len(pickups)
+    }
+
+
+@router.post("/pickups/{listing_id}/accept")
+def accept_pickup_for_driver(listing_id: str, payload: PickupAcceptRequest):
+    """Driver accepts a claimed listing for pickup and gets assigned."""
+    listing = get_listing_by_id(listing_id)
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    if listing.get("status") != "claimed":
+        raise HTTPException(status_code=400, detail="Only claimed listings can be accepted")
+
+    accepted = accept_pickup(listing_id, payload.dict())
+    if not accepted:
+        raise HTTPException(status_code=400, detail="Unable to accept pickup")
+
+    return {
+        "message": "Pickup accepted successfully",
+        "listing": accepted,
+    }
+
+
+@router.get("/listings/{listing_id}/tracking")
+def get_listing_tracking(listing_id: str):
+    """Get merged listing + delivery-task tracking state for NGO/customer views."""
+    listing = get_listing_by_id(listing_id)
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    task = None
+    for item in get_driver_tasks(str(listing.get("assigned_driver", {}).get("driver_id", ""))):
+        if str(item.get("listing_id")) == str(listing_id):
+            task = item
+            break
+
+    return {
+        "listing": listing,
+        "task": task,
+        "driver_location": task.get("current_location") if task else None,
+    }
+
+
+@router.put("/delivery-tasks/{task_id}/location")
+def update_task_driver_location(task_id: str, payload: DriverLocationUpdate):
+    """Update driver's live location for a task."""
+    updated = update_driver_location(task_id, payload.dict())
+    if not updated:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    return {
+        "message": "Driver location updated",
+        "task": updated,
+        "driver_location": updated.get("current_location"),
     }
 
 

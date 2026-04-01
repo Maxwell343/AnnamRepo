@@ -18,6 +18,7 @@ import EvidenceViewer from './disputes/EvidenceViewer';
 import GlobalAnalytics from './analytics/GlobalAnalytics';
 import ImpactMetrics from './analytics/ImpactMetrics';
 import RegionHeatmap from './analytics/RegionHeatmap';
+import AdminSettings from './settings/AdminSettings';
 
 const AdminRoutes: React.FC = () => (
   <Routes>
@@ -52,6 +53,9 @@ const AdminRoutes: React.FC = () => (
       <Route path="analytics" element={<GlobalAnalytics />} />
       <Route path="impact" element={<ImpactMetrics />} />
       <Route path="heatmap" element={<RegionHeatmap />} />
+
+      {/* Settings */}
+      <Route path="settings" element={<AdminSettings />} />
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/admin" replace />} />

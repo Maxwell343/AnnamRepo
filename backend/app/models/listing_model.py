@@ -65,3 +65,17 @@ class DeliveryStatusUpdate(BaseModel):
     status: str
     notes: Optional[str] = None
     location: Optional[str] = None
+
+
+class PickupAcceptRequest(BaseModel):
+    driver_id: str
+    driver_name: Optional[str] = None
+    driver_phone: Optional[str] = None
+    vehicle_number: Optional[str] = None
+
+
+class DriverLocationUpdate(BaseModel):
+    lat: float
+    lng: float
+    heading: Optional[float] = None
+    speed: Optional[float] = None

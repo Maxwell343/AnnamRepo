@@ -65,6 +65,30 @@ class FarmerSettingsModel(BaseModel):
     notifications_sms: Optional[bool] = False
     notifications_whatsapp: Optional[bool] = True
 
+    # Extended fields from FarmerSettings page
+    produce_type: Optional[str] = None
+    harvest_frequency: Optional[str] = None
+    available_days: Optional[List[str]] = None
+    pickup_time: Optional[str] = None
+    available_for_pickup: Optional[bool] = None
+    verification_status: Optional[str] = None
+    document_file_name: Optional[str] = None
+    preferred_ngo: Optional[str] = None
+    minimum_donation_quantity: Optional[str] = None
+    auto_accept_requests: Optional[bool] = None
+    payment_method: Optional[str] = None
+    total_earnings: Optional[str] = None
+    pending_payments: Optional[str] = None
+    notify_new_pickup_requests: Optional[bool] = None
+    notify_delivery_updates: Optional[bool] = None
+    notify_payment_notifications: Optional[bool] = None
+    notify_admin_alerts: Optional[bool] = None
+    notify_weekly_report: Optional[bool] = None
+    notify_sms_alerts: Optional[bool] = None
+    profile_image: Optional[str] = None
+    bio: Optional[str] = None
+    profile_complete: Optional[bool] = None
+
 
 class NgoSettingsModel(BaseModel):
     ngo_id: str

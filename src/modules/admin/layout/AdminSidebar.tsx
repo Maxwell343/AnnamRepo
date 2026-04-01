@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   BarChart3, Users, Package, Tag, Radio, ClipboardList,
   Wallet, CreditCard, FileText, Scale, TrendingUp, Globe,
-  Map, Wheat
+  Map, Wheat, Settings, LogOut
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -67,6 +67,12 @@ const navSections: NavSection[] = [
       { label: 'Region Heatmap', icon: <Map size={20} />, path: '/admin/heatmap' },
     ],
   },
+  {
+    title: 'System',
+    items: [
+      { label: 'Settings', icon: <Settings size={20} />, path: '/admin/settings' },
+    ],
+  },
 ];
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onClose }) => {
@@ -75,6 +81,22 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onClose }) => {
 
   const handleNavigate = (path: string) => {
     navigate(path);
+    onClose();
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('farmerSettings');
+    localStorage.removeItem('ngoSettings');
+    localStorage.removeItem('userSettings');
+    localStorage.removeItem('driverSettings');
+    localStorage.removeItem('userPhone');
+    localStorage.removeItem('farmName');
+    localStorage.removeItem('farmLocation');
+    localStorage.removeItem('userLanguage');
+    localStorage.removeItem('ngoName');
+    localStorage.removeItem('driverOnline');
+    navigate('/');
     onClose();
   };
 
@@ -125,6 +147,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onClose }) => {
               <span className="admin-sidebar__user-role">Super Admin</span>
             </div>
           </div>
+          <button className="admin-sidebar__logout" onClick={handleLogout}>
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
         </div>
       )}
     </aside>
