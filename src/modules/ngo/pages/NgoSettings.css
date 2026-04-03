@@ -2,6 +2,7 @@
 
 /* ==================== Variables ==================== */
 :root {
+  --ngo-sidebar-width: 300px;
   --ngo-primary: #064e3b;
   --ngo-primary-light: #059669;
   --ngo-primary-dark: #022c22;
@@ -50,6 +51,28 @@
   min-height: 100vh;
   background: var(--ngo-bg-primary);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  position: relative;
+  isolation: isolate;
+}
+
+.ngo-settings-container::before {
+  content: '';
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--ngo-sidebar-width);
+  background: linear-gradient(180deg, #064e3b 0%, #022c22 100%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ngo-flow-header,
+.ngo-flow-progress-bar,
+.ngo-flow-steps-row,
+.ngo-settings-layout {
+  position: relative;
+  z-index: 1;
 }
 
 .ngo-settings-layout {
@@ -157,14 +180,24 @@
 }
 
 .ngo-flow-steps-row {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 22px 12px 10px;
+  max-width: none;
+  margin: 0;
+  padding: 18px 12px 0 calc(var(--ngo-sidebar-width) + 20px);
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 6px;
   flex-wrap: wrap;
+}
+
+/* Keep main content below steps; lift only the sidebar column on desktop */
+.ngo-flow-steps-row + .ngo-settings-layout {
+  margin-top: 0;
+}
+
+.ngo-flow-steps-row + .ngo-settings-layout .ngo-settings-sidebar {
+  margin-top: -96px;
+  min-height: calc(100vh + 96px);
 }
 
 .ngo-flow-step {
@@ -306,7 +339,7 @@
 
 /* ==================== Sidebar ==================== */
 .ngo-settings-sidebar {
-  width: 300px;
+  width: var(--ngo-sidebar-width);
   min-height: 100vh;
   background: linear-gradient(180deg, #064e3b 0%, #022c22 100%);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
@@ -2362,6 +2395,10 @@ textarea {
 
 /* ==================== Responsive Design ==================== */
 @media (max-width: 1200px) {
+  :root {
+    --ngo-sidebar-width: 260px;
+  }
+
   .ngo-settings-sidebar {
     width: 260px;
   }
@@ -2372,6 +2409,19 @@ textarea {
 }
 
 @media (max-width: 1024px) {
+  .ngo-flow-steps-row + .ngo-settings-layout {
+    margin-top: 0;
+  }
+
+  .ngo-flow-steps-row + .ngo-settings-layout .ngo-settings-sidebar {
+    margin-top: 0;
+    min-height: auto;
+  }
+
+  .ngo-settings-container::before {
+    display: none;
+  }
+
   .ngo-settings-layout {
     flex-direction: column;
     min-height: auto;
@@ -2395,8 +2445,11 @@ textarea {
   }
 
   .ngo-flow-steps-row {
+    max-width: 1100px;
+    margin: 0 auto;
     justify-content: center;
     gap: 10px;
+    padding-left: 10px;
     padding: 18px 10px 8px;
   }
 

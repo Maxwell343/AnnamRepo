@@ -12,7 +12,7 @@ interface RoleGuardProps {
 /** Maps each role to its default home page */
 const roleHomeMap: Record<UserRole, string> = {
   admin: '/admin',
-  customer: '/customer-home',
+  customer: '/home',
   farmer: '/home',
   ngo: '/home',
   driver: '/home',

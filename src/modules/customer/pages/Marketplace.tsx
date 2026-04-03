@@ -254,6 +254,14 @@ const ProductCard: React.FC<{
             <span className="mp-product-emoji">{getProductIcon(listing.productType)}</span>
           </div>
         )}
+        <div className="mp-card-image-stats">
+          <span className="mp-image-stat">
+            <Clock size={12} /> {listing.spoilageIndicator.hoursRemaining}h
+          </span>
+          <span className="mp-image-stat">
+            <MapPin size={12} /> {formatDistance(listing.distanceFromUser || 0)}
+          </span>
+        </div>
         <div className="mp-card-overlay">
           <span>View Details</span>
         </div>
@@ -559,17 +567,19 @@ const ProductDetailModal: React.FC<{
   const bulkDiscount = listing.pricing.bulkDiscount;
   const hasBulkDiscount = bulkDiscount && quantity >= bulkDiscount.minQuantity;
   const finalPrice = hasBulkDiscount ? totalPrice * (1 - bulkDiscount.discountPercent / 100) : totalPrice;
+  const isRescuePriority = listing.rescuePriority === 'critical' || listing.rescuePriority === 'high';
+  const freshnessTone = `tone-${listing.spoilageIndicator.riskLevel}`;
 
   return (
     <div className="mp-modal-overlay" onClick={onClose}>
-      <div className="mp-product-modal" onClick={(e) => e.stopPropagation()}>
+      <div className={`mp-product-modal mp-modal-shell mp-modal-${listing.spoilageIndicator.riskLevel} ${freshnessTone}`} onClick={(e) => e.stopPropagation()}>
         <button className="mp-modal-close" onClick={onClose}>
           <X size={18} />
         </button>
 
         <div className="mp-modal-content">
-          <div className="mp-modal-left">
-            <div className="mp-modal-image">
+          <div className="mp-modal-left mp-modal-media-panel">
+            <div className="mp-modal-image mp-modal-image-frame">
               {primaryImage && !imageError ? (
                 <img src={primaryImage} alt={listing.title} onError={() => setImageError(true)} />
               ) : (
@@ -586,18 +596,51 @@ const ProductDetailModal: React.FC<{
                 <span className="mp-badge mp-badge-flash"><Zap size={12} /> Flash Sale</span>
               )}
             </div>
-          </div>
 
-          <div className="mp-modal-right">
-            <div className="mp-modal-header">
-              <h2>{listing.title}</h2>
-              <div className="mp-product-meta">
-                <span>{listing.productType}</span>
-                {listing.variety && <span>• {listing.variety}</span>}
+            <div className="mp-modal-media-insights">
+              <div className="mp-media-insight-card">
+                <span className="label"><Clock size={12} /> Freshness Window</span>
+                <strong>{listing.spoilageIndicator.hoursRemaining}h</strong>
+              </div>
+              <div className="mp-media-insight-card">
+                <span className="label"><Package size={12} /> Available</span>
+                <strong>{listing.availableQuantity} {listing.unit}</strong>
+              </div>
+              <div className="mp-media-insight-card">
+                <span className="label"><MapPin size={12} /> Distance</span>
+                <strong>{formatDistance(listing.distanceFromUser || 0)}</strong>
+              </div>
+              <div className="mp-media-insight-card">
+                <span className="label"><UtensilsCrossed size={12} /> Meals Impact</span>
+                <strong>~{listing.estimatedMeals?.toLocaleString() || 'N/A'}</strong>
               </div>
             </div>
+          </div>
 
-            <FreshnessIndicator indicator={listing.spoilageIndicator} />
+          <div className="mp-modal-right mp-modal-main-panel">
+            <div className="mp-modal-header">
+              <div className="mp-modal-title-row">
+                <h2>{listing.title}</h2>
+                <div className="mp-modal-title-tags">
+                  <span className="mp-modal-type-chip">{listing.productType}</span>
+                  {listing.variety && <span className="mp-modal-type-chip muted">{listing.variety}</span>}
+                  {isRescuePriority && <span className="mp-modal-type-chip alert"><Siren size={12} /> Priority</span>}
+                </div>
+              </div>
+
+              <p className="mp-modal-subtitle">{listing.description}</p>
+            </div>
+
+            <div className="mp-modal-quick-strip">
+              <span><Clock size={12} /> {listing.spoilageIndicator.urgencyMessage}</span>
+              <span><MapPin size={12} /> {listing.location.district}, {listing.location.state}</span>
+              <span><Star size={12} /> {listing.farmer.trustIndicator.qualityRating.toFixed(1)} farmer rating</span>
+              {listing.estimatedMeals && <span><UtensilsCrossed size={12} /> ~{listing.estimatedMeals.toLocaleString()} meals</span>}
+            </div>
+
+            <div className="mp-modal-freshness-wrap">
+              <FreshnessIndicator indicator={listing.spoilageIndicator} />
+            </div>
 
             <div className="mp-modal-tabs">
               <button
@@ -754,7 +797,7 @@ const ProductDetailModal: React.FC<{
             </div>
 
             {/* Pricing & Actions */}
-            <div className="mp-modal-pricing">
+            <div className="mp-modal-pricing mp-modal-buy-panel">
               <div className="mp-price-display">
                 <div className="mp-main-price">
                   <span className="mp-current">{formatPrice(listing.pricing.currentPrice)}</span>
@@ -844,11 +887,19 @@ const CartSidebar: React.FC<{
   const subtotal = cart.reduce((sum, item) => sum + item.priceAtAdd * item.quantity, 0);
   const deliveryFee = subtotal > 500 ? 0 : 40;
   const total = subtotal + deliveryFee;
+  const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const freeDeliveryTarget = 500;
+  const deliveryProgress = Math.min(100, (subtotal / freeDeliveryTarget) * 100);
+  const mealsEstimate = Math.max(1, Math.round(subtotal / 50));
+  const co2Estimate = Math.max(1, Math.round(subtotal * 0.1));
 
   return (
     <aside className={`mp-cart-sidebar ${isOpen ? 'open' : ''}`}>
       <div className="mp-cart-header">
-        <h3><ShoppingCart size={16} /> Your Cart</h3>
+        <div className="mp-cart-header-main">
+          <h3><ShoppingCart size={16} /> Your Cart</h3>
+          <p>{itemCount} item{itemCount !== 1 ? 's' : ''} selected</p>
+        </div>
         <button className="mp-close-cart" onClick={onClose}>
           <X size={18} />
         </button>
@@ -874,12 +925,14 @@ const CartSidebar: React.FC<{
                   <FreshnessIndicator indicator={item.listing.spoilageIndicator} compact />
                 </div>
                 <div className="mp-item-controls">
-                  <div className="mp-item-quantity">
-                    <button onClick={() => onUpdateQuantity(item.listing.id, item.quantity - 1)}>−</button>
-                    <span>{item.quantity}</span>
-                    <button onClick={() => onUpdateQuantity(item.listing.id, item.quantity + 1)}>+</button>
+                  <div className="mp-item-quantity-row">
+                    <div className="mp-item-quantity">
+                      <button onClick={() => onUpdateQuantity(item.listing.id, item.quantity - 1)}>−</button>
+                      <span>{item.quantity}</span>
+                      <button onClick={() => onUpdateQuantity(item.listing.id, item.quantity + 1)}>+</button>
+                    </div>
+                    <span className="mp-item-price">{formatPrice(item.priceAtAdd * item.quantity)}</span>
                   </div>
-                  <span className="mp-item-price">{formatPrice(item.priceAtAdd * item.quantity)}</span>
                   <button className="mp-remove-item" onClick={() => onRemoveItem(item.listing.id)}>
                     <Trash2 size={14} />
                   </button>
@@ -889,6 +942,9 @@ const CartSidebar: React.FC<{
           </div>
 
           <div className="mp-cart-summary">
+            <div className="mp-delivery-progress-track" aria-hidden="true">
+              <div className="mp-delivery-progress-fill" style={{ width: `${deliveryProgress}%` }} />
+            </div>
             <div className="mp-summary-row">
               <span>Subtotal</span>
               <span>{formatPrice(subtotal)}</span>
@@ -915,8 +971,8 @@ const CartSidebar: React.FC<{
           <div className="mp-cart-impact">
             <span className="mp-impact-label"><Globe size={14} /> Your Impact</span>
             <div className="mp-impact-mini-stats">
-              <span>~{Math.round(subtotal / 50)} meals supported</span>
-              <span>~{Math.round(subtotal * 0.1)} kg CO₂ saved</span>
+              <span>~{mealsEstimate} meals supported</span>
+              <span>~{co2Estimate} kg CO₂ saved</span>
             </div>
           </div>
         </>
@@ -1314,6 +1370,54 @@ const Marketplace: React.FC = () => {
     return counts;
   }, [listings]);
 
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.productTypes.length > 0) count += 1;
+    if (filters.freshnessLevels.length > 0) count += 1;
+    if (filters.isOrganic) count += 1;
+    if (filters.isCertified) count += 1;
+    if (filters.priceRange.min > 0 || filters.priceRange.max < 10000) count += 1;
+    if (filters.distanceRange < 100) count += 1;
+    if (filters.sortBy !== 'urgency') count += 1;
+    return count;
+  }, [filters]);
+
+  const marketplacePulse = useMemo(() => {
+    const urgent = filteredListings.filter(
+      (l) => l.spoilageIndicator.riskLevel === 'urgent' || l.spoilageIndicator.riskLevel === 'critical'
+    ).length;
+    const avgPrice =
+      filteredListings.length > 0
+        ? Math.round(filteredListings.reduce((sum, l) => sum + l.pricing.currentPrice, 0) / filteredListings.length)
+        : 0;
+    const mealsPotential = filteredListings.reduce((sum, l) => sum + (l.estimatedMeals || 0), 0);
+
+    return {
+      urgent,
+      avgPrice,
+      mealsPotential,
+    };
+  }, [filteredListings]);
+
+  const applyQuickFilter = useCallback(
+    (mode: 'urgent' | 'organic' | 'budget' | 'nearby') => {
+      if (mode === 'urgent') {
+        setFilters((prev) => ({ ...prev, freshnessLevels: ['urgent', 'critical'], sortBy: 'urgency' }));
+        return;
+      }
+      if (mode === 'organic') {
+        setFilters((prev) => ({ ...prev, isOrganic: true, sortBy: 'rating' }));
+        return;
+      }
+      if (mode === 'budget') {
+        setFilters((prev) => ({ ...prev, priceRange: { ...prev.priceRange, max: 120 }, sortBy: 'price_low' }));
+        return;
+      }
+      setFilters((prev) => ({ ...prev, distanceRange: 20, sortBy: 'distance' }));
+    },
+    []
+  );
+
   // Cart functions
   const addToCart = useCallback(
     (listing: MarketplaceListing, quantity: number) => {
@@ -1456,12 +1560,67 @@ const Marketplace: React.FC = () => {
         categoryCounts={categoryCounts}
       />
 
+      <section className="mp-hero-panel">
+        <div className="mp-hero-copy">
+          <p className="mp-hero-kicker">LIVE MARKET PULSE</p>
+          <h1>Rescue-worthy produce, premium sourcing flow.</h1>
+          <p>
+            Discover high-freshness lots, priority rescues, and transparent farmer trust signals in one interactive marketplace.
+          </p>
+
+          <div className="mp-quick-filters">
+            <button className="mp-quick-chip urgent" onClick={() => applyQuickFilter('urgent')}>
+              <AlertTriangle size={14} /> Urgent Rescue
+            </button>
+            <button className="mp-quick-chip" onClick={() => applyQuickFilter('organic')}>
+              <Sprout size={14} /> Organic Picks
+            </button>
+            <button className="mp-quick-chip" onClick={() => applyQuickFilter('budget')}>
+              <Wallet size={14} /> Under Rs.120/kg
+            </button>
+            <button className="mp-quick-chip" onClick={() => applyQuickFilter('nearby')}>
+              <MapPin size={14} /> Nearby Lots
+            </button>
+          </div>
+        </div>
+
+        <div className="mp-pulse-grid">
+          <article className="mp-pulse-card">
+            <span className="mp-pulse-label"><Package size={14} /> Listings Visible</span>
+            <strong>{filteredListings.length.toLocaleString()}</strong>
+            <small>Actively matched to current filters</small>
+          </article>
+          <article className="mp-pulse-card alert">
+            <span className="mp-pulse-label"><Clock size={14} /> Time-Sensitive</span>
+            <strong>{marketplacePulse.urgent.toLocaleString()}</strong>
+            <small>Need immediate rescue actions</small>
+          </article>
+          <article className="mp-pulse-card">
+            <span className="mp-pulse-label"><Wallet size={14} /> Avg Market Price</span>
+            <strong>{marketplacePulse.avgPrice > 0 ? formatPrice(marketplacePulse.avgPrice) : 'N/A'}</strong>
+            <small>Per kg across visible listings</small>
+          </article>
+          <article className="mp-pulse-card impact">
+            <span className="mp-pulse-label"><UtensilsCrossed size={14} /> Meal Potential</span>
+            <strong>{marketplacePulse.mealsPotential.toLocaleString()}</strong>
+            <small>Projected support from current inventory</small>
+          </article>
+        </div>
+      </section>
+
       {/* Main Content */}
       <main className="mp-main">
         <div className="mp-container">
           {/* View Controls */}
           <div className="mp-view-controls">
             <span className="mp-results-count">{filteredListings.length} products found</span>
+            <div className="mp-view-meta">
+              {activeFilterCount > 0 ? (
+                <span className="mp-filter-pill">{activeFilterCount} active filter{activeFilterCount > 1 ? 's' : ''}</span>
+              ) : (
+                <span className="mp-filter-pill neutral">No active filters</span>
+              )}
+            </div>
             <div className="mp-view-buttons">
               <button
                 className={`mp-view-btn ${viewMode === 'grid' ? 'active' : ''}`}

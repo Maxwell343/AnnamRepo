@@ -20,7 +20,6 @@ const HistoryPage: React.FC = () => {
   const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set());
   const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
   const [pendingData, setPendingData] = useState<HistoryItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const itemRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
 
   // Get user from localStorage
@@ -70,8 +69,8 @@ const HistoryPage: React.FC = () => {
             setPendingData(pending);
           }
         } else {
-          // Fetch farmer's listings
-          const response = await fetch(API_ENDPOINTS.marketplace.listingsByFarmer(user.id.toString()));
+          // Fetch farmer listings from listing lifecycle API (driver status updates write here)
+          const response = await fetch(`${API_ENDPOINTS.listings}?farmer_id=${encodeURIComponent(user.id.toString())}&include_expired=true`);
           const data = await response.json();
           
           if (response.ok) {
@@ -90,7 +89,7 @@ const HistoryPage: React.FC = () => {
               }));
             
             const pending = listings
-              .filter((l: any) => l.status !== 'delivered')
+              .filter((l: any) => l.status !== 'delivered' && l.status !== 'expired')
               .map((l: any, index: number) => ({
                 id: index + 200,
                 item: `${l.title} (${l.quantity})`,
@@ -106,8 +105,6 @@ const HistoryPage: React.FC = () => {
         }
       } catch (err) {
         console.error('Error fetching history:', err);
-      } finally {
-        setLoading(false);
       }
     };
     

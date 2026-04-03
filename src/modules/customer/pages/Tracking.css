@@ -110,6 +110,10 @@
   animation: fadeInUp 0.8s ease-out;
 }
 
+.tracking-list-card {
+  max-width: 860px;
+}
+
 /* Map Placeholder Area */
 .map-placeholder {
   height: 250px;
@@ -149,6 +153,137 @@
   margin-bottom: 2.5rem;
   gap: 1rem;
   animation: slideInLeft 0.7s ease-out 0.2s both;
+}
+
+.tracking-list-header {
+  margin-bottom: 1.5rem;
+}
+
+.tracking-list-title {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tracking-list-subtitle {
+  color: #64748b;
+  margin-top: 0.5rem;
+}
+
+.tracking-empty-state {
+  text-align: center;
+  padding: 3rem;
+}
+
+.tracking-empty-icon {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.tracking-list-orders {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tracking-list-order-card {
+  background: #f7faf7;
+  border-radius: 14px;
+  padding: 1.2rem;
+  cursor: pointer;
+  border: 1px solid rgba(6, 78, 59, 0.14);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tracking-list-order-card:hover {
+  border-color: rgba(6, 78, 59, 0.45);
+  background: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 22px rgba(6, 78, 59, 0.12);
+}
+
+.tracking-list-order-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+}
+
+.tracking-list-order-icon.in-transit {
+  background: #e8f2ff;
+  color: #1d4ed8;
+  border-color: rgba(29, 78, 216, 0.22);
+}
+
+.tracking-list-order-icon.assigned {
+  background: #e9f7ef;
+  color: #166534;
+  border-color: rgba(22, 101, 52, 0.25);
+}
+
+.tracking-list-order-content {
+  flex: 1;
+}
+
+.tracking-list-order-title {
+  margin: 0 0 0.25rem;
+  color: #1f2937;
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.tracking-list-order-meta {
+  margin: 0 0 0.55rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.tracking-list-order-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.84rem;
+}
+
+.tracking-list-status-chip {
+  color: #ffffff;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+}
+
+.tracking-list-status-chip.in-transit {
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+}
+
+.tracking-list-status-chip.assigned {
+  background: linear-gradient(135deg, #15803d, #22c55e);
+}
+
+.tracking-list-driver-name {
+  color: #4b5563;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.tracking-list-cta {
+  color: #166534;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .order-header > div:first-child {

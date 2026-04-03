@@ -794,7 +794,7 @@ const CustomerSettings: React.FC = () => {
       {/* Header */}
       <header className="cs-header">
         <div className="cs-header-content">
-          <button className="cs-back-btn" onClick={() => navigate('/customer-home')}><ArrowLeft size={14} /> <span className="cs-back-text">Back</span></button>
+          <button className="cs-back-btn" onClick={() => navigate('/home')}><ArrowLeft size={14} /> <span className="cs-back-text">Back</span></button>
           <div className="cs-header-title"><h1><span><SettingsIcon size={20} /></span> Settings</h1></div>
           <button className="cs-logout-btn" onClick={handleLogout}><LogOut size={14} /> Logout</button>
         </div>

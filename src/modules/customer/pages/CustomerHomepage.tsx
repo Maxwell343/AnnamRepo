@@ -421,7 +421,28 @@ const CustomerHomePage: React.FC = () => {
       showToast('Your cart is empty!', 'error');
       return;
     }
-    navigate('/checkout');
+
+    // Normalize legacy customer cart shape to Checkout's expected marketplace cart shape.
+    const checkoutCartItems = cart.map((item) => ({
+      listing: {
+        id: String(item.product.id),
+        title: item.product.title,
+        unit: item.product.unit || 'kg',
+        images: item.product.image ? [item.product.image] : [],
+        farmerId: String(item.product.farmer_id || ''),
+        farmer: {
+          name: item.product.farmer_name || 'Farmer',
+        },
+        pricing: {
+          currentPrice: Number(item.product.price) || 0,
+          originalPrice: Number(item.product.original_price || item.product.price) || 0,
+        },
+      },
+      quantity: item.quantity,
+      priceAtAdd: Number(item.product.price) || 0,
+    }));
+
+    navigate('/checkout', { state: { cartItems: checkoutCartItems } });
   };
 
   // Render star rating
@@ -653,7 +674,7 @@ const CustomerHomePage: React.FC = () => {
                 className="search-result-item"
                 onClick={() => {
                   setShowSearch(false);
-                  navigate(`/product/${product.id}`);
+                  setActiveTab('browse');
                 }}
               >
                 <img src={product.image} alt={product.title} className="result-image" />
@@ -873,7 +894,7 @@ const CustomerHomePage: React.FC = () => {
                     </div>
                   )}
                 </div>
-                <button className="track-btn" onClick={() => navigate(`/track-order/${order.id}`)}>
+                <button className="track-btn" onClick={() => navigate(`/order-tracking/${order.id}`)}>
                   Track Order <ArrowRight size={14} />
                 </button>
               </div>
@@ -1112,7 +1133,7 @@ const CustomerHomePage: React.FC = () => {
                 key={product.id}
                 className="product-card"
                 style={{ animationDelay: `${index * 50}ms` }}
-                onClick={() => navigate(`/product/${product.id}`)}
+                onClick={() => addToCart(product)}
               >
                 <div className="product-image-wrapper">
                   <img src={product.image} alt={product.title} loading="lazy" />
@@ -1230,7 +1251,7 @@ const CustomerHomePage: React.FC = () => {
                   {order.status === 'out_for_delivery' && (
                     <button
                       className="btn-primary"
-                      onClick={() => navigate(`/track-order/${order.id}`)}
+                      onClick={() => navigate(`/order-tracking/${order.id}`)}
                     >
                       Track Order
                     </button>

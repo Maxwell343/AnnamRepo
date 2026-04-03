@@ -68,7 +68,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   const renderSidebarNav = () => {
     const getDashboardRoute = () => {
-      return user.role === 'customer' ? '/customer-home' : '/home';
+      return '/home';
     };
 
     const commonItems = [

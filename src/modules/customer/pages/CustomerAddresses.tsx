@@ -1013,7 +1013,7 @@ const CustomerAddresses: React.FC = () => {
       {/* Header */}
       <header className="addresses-header">
         <div className="header-content">
-          <button className="back-btn" onClick={() => navigate('/customer-home')}>
+          <button className="back-btn" onClick={() => navigate('/home')}>
             <span><ArrowLeft size={16} /></span>
             <span>Back</span>
           </button>

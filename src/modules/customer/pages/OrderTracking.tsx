@@ -276,107 +276,65 @@ const OrderTracking: React.FC = () => {
   if (!orderId) {
     return (
       <div className="tracking-container">
-        <div className="tracking-card" style={{ maxWidth: '800px' }}>
+        <div className="tracking-card tracking-list-card">
           <div className="order-body">
-            <div className="order-header" style={{ marginBottom: '1.5rem' }}>
+            <div className="order-header tracking-list-header">
               <div>
-                <h2 className="order-title" style={{ margin: 0 }}><Truck size={20} /> Order Tracking</h2>
-                <p style={{ color: '#666', marginTop: '0.5rem' }}>Track your active deliveries in real-time</p>
+                <h2 className="order-title tracking-list-title"><Truck size={20} /> Order Tracking</h2>
+                <p className="tracking-list-subtitle">Track your active deliveries in real-time</p>
               </div>
               <button 
                 className="btn-back" 
                 onClick={() => navigate('/home')}
-                style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
               >
                 <ArrowLeft size={14} /> Back
               </button>
             </div>
 
             {orders.length === 0 ? (
-              <div className="empty-state" style={{ textAlign: 'center', padding: '3rem' }}>
-                <span style={{ fontSize: '4rem', display: 'block', marginBottom: '1rem' }}><Package size={48} /></span>
-                <h3 style={{ color: '#333', marginBottom: '0.5rem' }}>No Active Deliveries</h3>
-                <p style={{ color: '#666' }}>Orders with assigned drivers will appear here for tracking.</p>
+              <div className="empty-state tracking-empty-state">
+                <span className="tracking-empty-icon"><Package size={48} /></span>
+                <h3>No Active Deliveries</h3>
+                <p>Orders with assigned drivers will appear here for tracking.</p>
                 <button 
                   className="btn-back" 
-                  onClick={() => navigate('/claimed-donations')}
-                  style={{ marginTop: '1rem' }}
+                  onClick={() => navigate('/marketplace')}
                 >
-                  View All Claims
+                  Browse Marketplace
                 </button>
               </div>
             ) : (
-              <div className="orders-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="orders-list tracking-list-orders">
                 {orders.map((ord) => (
                   <div 
                     key={ord.id}
-                    className="order-card"
+                    className="order-card tracking-list-order-card"
                     onClick={() => navigate(`/order-tracking/${ord.id}`)}
-                    style={{
-                      background: '#f9f9f9',
-                      borderRadius: '12px',
-                      padding: '1.25rem',
-                      cursor: 'pointer',
-                      border: '2px solid transparent',
-                      transition: 'all 0.3s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '1rem'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = '#4caf50';
-                      e.currentTarget.style.background = '#fff';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'transparent';
-                      e.currentTarget.style.background = '#f9f9f9';
-                    }}
                   >
-                    <div style={{ 
-                      fontSize: '2.5rem',
-                      width: '60px',
-                      height: '60px',
-                      background: ord.status === 'in_transit' ? '#e3f2fd' : '#e8f5e9',
-                      borderRadius: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
+                    <div className={`tracking-list-order-icon ${ord.status === 'in_transit' ? 'in-transit' : 'assigned'}`}>
                       {ord.status === 'in_transit' ? <Truck size={16} /> : <User size={16} />}
                     </div>
                     
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{ margin: '0 0 0.25rem 0', color: '#333', fontSize: '1.1rem' }}>
+                    <div className="tracking-list-order-content">
+                      <h3 className="tracking-list-order-title">
                         {ord.title}
                       </h3>
-                      <p style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: '0.9rem' }}>
+                      <p className="tracking-list-order-meta">
                         {ord.quantity} kg • From {ord.farmer_name || 'Farmer'}
                       </p>
-                      <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem' }}>
-                        <span style={{ 
-                          background: ord.status === 'in_transit' ? '#03a9f4' : '#4caf50',
-                          color: 'white',
-                          padding: '0.25rem 0.75rem',
-                          borderRadius: '20px',
-                          fontWeight: '600'
-                        }}>
+                      <div className="tracking-list-order-badges">
+                        <span className={`tracking-list-status-chip ${ord.status === 'in_transit' ? 'in-transit' : 'assigned'}`}>
                           {ord.status === 'in_transit' ? <><Truck size={12} /> In Transit</> : <><CheckCircle size={12} /> Driver Assigned</>}
                         </span>
                         {ord.driver_name && (
-                          <span style={{ color: '#666' }}>
+                          <span className="tracking-list-driver-name">
                             <Car size={14} /> {ord.driver_name}
                           </span>
                         )}
                       </div>
                     </div>
                     
-                    <div style={{ 
-                      color: '#4caf50',
-                      fontWeight: '600',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.25rem'
-                    }}>
+                    <div className="tracking-list-cta">
                       Track <ArrowRight size={14} />
                     </div>
                   </div>
@@ -402,7 +360,7 @@ const OrderTracking: React.FC = () => {
           <div className="error-state">
             <span className="error-icon"><XCircle size={32} /></span>
             <h3>{error || 'Order not found'}</h3>
-            <button className="btn-back" onClick={() => navigate('/home')}>
+            <button className="btn-back" onClick={() => navigate('/order-tracking')}>
               Back to Home
             </button>
           </div>
@@ -601,7 +559,7 @@ const OrderTracking: React.FC = () => {
             <span>Auto-updating every 5 seconds</span>
           </div>
 
-          <button className="btn-back" onClick={() => navigate(isNGO ? '/claimed-donations' : '/home')}>
+          <button className="btn-back" onClick={() => navigate(isNGO ? '/claimed-donations' : '/order-tracking')}>
             <ArrowLeft size={14} /> Back
           </button>
         </div>

@@ -464,7 +464,13 @@ def update_task_status(task_id: str, status: str, notes: str = None) -> Optional
             
             # Also update the listing status
             if result.get("listing_id"):
-                update_listing(result["listing_id"], {"status": status})
+                listing_update = {"status": status}
+                if status == "delivered":
+                    listing_update["delivered_at"] = update_data.get("delivered_at")
+                elif status == "picked_up":
+                    listing_update["picked_up_at"] = update_data.get("picked_up_at")
+
+                update_listing(result["listing_id"], listing_update)
         
         return result
     except:

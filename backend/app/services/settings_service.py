@@ -163,18 +163,50 @@ async def update_user_profile(user_id: str, profile_data: Dict) -> Optional[Dict
 
 async def get_farmer_analytics(farmer_id: str) -> Dict:
     """Get analytics data for a farmer"""
-    from bson import ObjectId
-    
-    # Get all listings by this farmer
-    listings = list(db.listings.find({"farmer_id": farmer_id}))
-    
-    total_donations = len(listings)
-    total_quantity = sum(float(l.get("quantity", "0").split()[0]) for l in listings if l.get("quantity"))
+    import re
+
+    def _parse_quantity_kg(value: object) -> float:
+        if value is None:
+            return 0.0
+
+        text = str(value).strip()
+        if not text:
+            return 0.0
+
+        match = re.search(r"\d+(?:\.\d+)?", text)
+        if not match:
+            return 0.0
+
+        try:
+            return float(match.group(0))
+        except ValueError:
+            return 0.0
+
+    # Get all listings by this farmer (handle historical numeric farmer_id values too)
+    farmer_query = {
+        "$or": [
+            {"farmer_id": farmer_id},
+            {"farmer_id": int(farmer_id) if farmer_id.isdigit() else farmer_id},
+        ]
+    }
+    listings = list(db.listings.find(farmer_query).sort("created_at", -1))
+
+    # Make listing docs JSON-safe for API response consumers
+    normalized_listings = []
+    for listing in listings:
+        listing_copy = dict(listing)
+        if "_id" in listing_copy:
+            listing_copy["id"] = str(listing_copy["_id"])
+            del listing_copy["_id"]
+        normalized_listings.append(listing_copy)
+
+    total_donations = len(normalized_listings)
+    total_quantity = sum(_parse_quantity_kg(l.get("quantity")) for l in normalized_listings)
     
     # Count by status
-    active = sum(1 for l in listings if l.get("status") == "available")
-    claimed = sum(1 for l in listings if l.get("status") == "claimed")
-    delivered = sum(1 for l in listings if l.get("status") == "delivered")
+    active = sum(1 for l in normalized_listings if l.get("status") == "available")
+    claimed = sum(1 for l in normalized_listings if l.get("status") == "claimed")
+    delivered = sum(1 for l in normalized_listings if l.get("status") == "delivered")
     
     # Impact estimation (simplified)
     meals_provided = int(total_quantity * 5)  # Assume 5 meals per kg
@@ -188,7 +220,7 @@ async def get_farmer_analytics(farmer_id: str) -> Dict:
         "delivered_listings": delivered,
         "meals_provided_estimate": meals_provided,
         "carbon_saved_kg": round(total_quantity * 2.5, 2),  # Estimate
-        "listings": listings
+        "listings": normalized_listings
     }
 
 

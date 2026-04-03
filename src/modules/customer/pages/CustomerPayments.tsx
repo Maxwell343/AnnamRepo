@@ -1352,7 +1352,7 @@ const CustomerPayments: React.FC = () => {
       {/* Header */}
       <header className="payments-header">
         <div className="header-content">
-          <button className="back-btn" onClick={() => navigate('/customer-home')}>
+          <button className="back-btn" onClick={() => navigate('/home')}>
             <span><ArrowLeft size={16} /></span>
             <span className="back-text">Back</span>
           </button>

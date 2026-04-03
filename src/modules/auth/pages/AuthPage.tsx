@@ -332,7 +332,7 @@ const AuthPage: React.FC = () => {
       case 'admin':
         return '/admin';
       case 'customer':
-        return '/customer-home';
+        return '/home';
       case 'farmer':
         return '/home';
       case 'ngo':
