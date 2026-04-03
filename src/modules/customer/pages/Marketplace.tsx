@@ -273,6 +273,15 @@ const ProductCard: React.FC<{
 
         <FreshnessIndicator indicator={listing.spoilageIndicator} />
 
+        {/* ML Shelf Life Badge */}
+        {listing.mlPrediction && (
+          <div className={`mp-shelf-life-badge mp-sl-${listing.mlPrediction.status.toLowerCase()}`}>
+            <Clock size={12} />
+            <span>{listing.mlPrediction.remainingHours}h left</span>
+            <span className="mp-sl-status">{listing.mlPrediction.status}</span>
+          </div>
+        )}
+
         {/* Farmer Info */}
         <div className="mp-farmer-info">
           <div className="mp-farmer-avatar">{listing.farmer.name.charAt(0)}</div>
@@ -1013,7 +1022,7 @@ const Marketplace: React.FC = () => {
     freshnessLevels: [],
     priceRange: { min: 0, max: 10000 },
     distanceRange: 100,
-    sortBy: 'freshness',
+    sortBy: 'urgency',
   });
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
@@ -1033,8 +1042,44 @@ const Marketplace: React.FC = () => {
       }
     }
 
-    // Calculate expiry date (default 7 days from now)
-    const shelfLife = 7;
+    // Use ML prediction data if available, otherwise fall back to generic calculation
+    const mlHours = apiListing.remaining_shelf_life_hours;
+    const mlStatus = apiListing.freshness_status;
+    let shelfLife = 7; // default days
+    let spoilageIndicator: SpoilageIndicator;
+
+    if (mlHours != null) {
+      // ML prediction available — build spoilage indicator from it
+      const hoursRemaining = Math.max(0, Math.round(mlHours));
+      const baseHours = apiListing.base_shelf_life_hours || 168;
+      const percentageRemaining = Math.max(0, Math.min(100, (hoursRemaining / baseHours) * 100));
+      const daysRemaining = Math.floor(hoursRemaining / 24);
+
+      let riskLevel: FreshnessLevel;
+      let colorCode: string;
+      let urgencyMessage: string;
+
+      if (mlStatus === 'CRITICAL') {
+        riskLevel = 'critical';
+        colorCode = '#FF1744';
+        urgencyMessage = `⚠️ Only ${hoursRemaining}h left — Buy fast!`;
+      } else if (mlStatus === 'URGENT') {
+        riskLevel = 'urgent';
+        colorCode = '#FF9100';
+        urgencyMessage = `${hoursRemaining}h left — Act Soon`;
+      } else {
+        riskLevel = hoursRemaining > baseHours * 0.6 ? 'fresh' : 'good';
+        colorCode = hoursRemaining > baseHours * 0.6 ? '#64DD17' : '#AEEA00';
+        urgencyMessage = `${daysRemaining}d ${hoursRemaining % 24}h remaining`;
+      }
+
+      spoilageIndicator = { riskLevel, hoursRemaining, daysRemaining, percentageRemaining, colorCode, urgencyMessage };
+      shelfLife = Math.ceil(baseHours / 24);
+    } else {
+      // Fallback: generic calculation
+      spoilageIndicator = calculateSpoilageIndicator(harvestDate.toISOString(), shelfLife);
+    }
+
     const expiryDate = new Date(harvestDate.getTime() + shelfLife * 24 * 60 * 60 * 1000);
 
     return {
@@ -1082,7 +1127,7 @@ const Marketplace: React.FC = () => {
       harvestDate: harvestDate.toISOString(),
       shelfLife: shelfLife,
       expiryDate: expiryDate.toISOString(),
-      spoilageIndicator: calculateSpoilageIndicator(harvestDate.toISOString(), shelfLife),
+      spoilageIndicator: spoilageIndicator,
       pricing: {
         originalPrice: typeof apiListing.price === 'string' ? parseFloat(apiListing.price) : apiListing.price || 100,
         currentPrice: typeof apiListing.price === 'string' ? parseFloat(apiListing.price) : apiListing.price || 100,
@@ -1101,7 +1146,10 @@ const Marketplace: React.FC = () => {
       deliveryAvailable: false,
       pickupAvailable: true,
       deliveryRadius: 0,
-      categories: ['fresh_produce'],
+      categories: [
+        'fresh_produce',
+        ...(apiListing.freshness_status === 'CRITICAL' ? ['near_expiry' as ListingCategory] : []),
+      ],
       tags: ['farmer-listed', 'fresh'],
       isOrganic: false,
       isCertified: false,
@@ -1112,8 +1160,13 @@ const Marketplace: React.FC = () => {
       aiQualityScore: 80,
       suggestedRouting: 'direct_sale',
       distanceFromUser: 15,
-      rescuePriority: 'low',
+      rescuePriority: apiListing.freshness_status === 'CRITICAL' ? 'critical' : apiListing.freshness_status === 'URGENT' ? 'high' : 'low',
       estimatedMeals: Math.round(((typeof apiListing.quantity === 'string' ? parseFloat(apiListing.quantity) : apiListing.quantity) || 0) * 5),
+      // ML prediction metadata
+      mlPrediction: apiListing.remaining_shelf_life_hours != null ? {
+        remainingHours: apiListing.remaining_shelf_life_hours,
+        status: apiListing.freshness_status || 'SAFE',
+      } : undefined,
     };
   };
 

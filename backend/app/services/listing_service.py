@@ -8,6 +8,7 @@ from bson import ObjectId
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 from app.services.notification_service import send_whatsapp
+import asyncio
 
 
 def is_listing_expired(listing: dict) -> bool:
@@ -144,8 +145,64 @@ A farmer has listed fresh produce for donation. Open the ANNAM app to claim this
 
 # ============== LISTINGS ==============
 
+def _run_shelf_life_prediction(listing_data: dict) -> dict:
+    """Run ML shelf-life prediction if the listing has the required fields."""
+    storage_type = listing_data.get("storage_type")
+    harvest_dt = listing_data.get("harvest_datetime")
+    lat = listing_data.get("latitude")
+    lng = listing_data.get("longitude")
+
+    if not all([storage_type, harvest_dt, lat, lng]):
+        return listing_data
+
+    item_name = listing_data.get("title", "")
+    try:
+        from app.services.shelf_life_service import predict_shelf_life
+        result = asyncio.get_event_loop().run_until_complete(
+            predict_shelf_life(item_name, storage_type, float(lat), float(lng), harvest_dt)
+        )
+        listing_data["remaining_shelf_life_hours"] = result["remaining_shelf_life_hours"]
+        listing_data["freshness_status"] = result["freshness_status"]
+        listing_data["base_shelf_life_hours"] = result["base_shelf_life_hours"]
+        listing_data["prediction_weather"] = result["weather"]
+        listing_data["hours_since_harvest"] = result["hours_since_harvest"]
+        print(f"[ML] Predicted shelf life for '{item_name}': {result['remaining_shelf_life_hours']}h ({result['freshness_status']})")
+    except Exception as exc:
+        print(f"[ML] Prediction failed for '{item_name}': {exc}")
+
+    return listing_data
+
+
+async def run_shelf_life_prediction_async(listing_data: dict) -> dict:
+    """Async version of shelf-life prediction for use in async routes."""
+    storage_type = listing_data.get("storage_type")
+    harvest_dt = listing_data.get("harvest_datetime")
+    lat = listing_data.get("latitude")
+    lng = listing_data.get("longitude")
+
+    if not all([storage_type, harvest_dt, lat, lng]):
+        return listing_data
+
+    item_name = listing_data.get("title", "")
+    try:
+        from app.services.shelf_life_service import predict_shelf_life
+        result = await predict_shelf_life(
+            item_name, storage_type, float(lat), float(lng), harvest_dt
+        )
+        listing_data["remaining_shelf_life_hours"] = result["remaining_shelf_life_hours"]
+        listing_data["freshness_status"] = result["freshness_status"]
+        listing_data["base_shelf_life_hours"] = result["base_shelf_life_hours"]
+        listing_data["prediction_weather"] = result["weather"]
+        listing_data["hours_since_harvest"] = result["hours_since_harvest"]
+        print(f"[ML] Predicted shelf life for '{item_name}': {result['remaining_shelf_life_hours']}h ({result['freshness_status']})")
+    except Exception as exc:
+        print(f"[ML] Prediction failed for '{item_name}': {exc}")
+
+    return listing_data
+
+
 def create_listing(listing_data: dict) -> dict:
-    """Create a new food listing"""
+    """Create a new food listing with ML shelf-life prediction."""
     # Ensure farmer_id is stored as string for consistent querying
     if "farmer_id" in listing_data:
         listing_data["farmer_id"] = str(listing_data["farmer_id"])
@@ -155,6 +212,10 @@ def create_listing(listing_data: dict) -> dict:
     listing_data["updated_at"] = datetime.utcnow().isoformat()
     listing_data["claimed_by"] = None
     listing_data["assigned_driver"] = None
+
+    # Run ML shelf-life prediction only if not already done (async route does it first)
+    if "remaining_shelf_life_hours" not in listing_data:
+        listing_data = _run_shelf_life_prediction(listing_data)
     
     result = listings_collection.insert_one(listing_data)
     listing_data["_id"] = result.inserted_id

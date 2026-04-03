@@ -5,7 +5,7 @@ import { API_ENDPOINTS } from '../../../config/api';
 import { MapContainer, TileLayer, CircleMarker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { LeafletMouseEvent } from 'leaflet';
-import { ArrowLeft, ChevronRight, MapPin, Package, Camera, Upload } from 'lucide-react';
+import { ArrowLeft, ChevronRight, MapPin, Package, Camera, Upload, Clock } from 'lucide-react';
 
 type LatLng = { lat: number; lng: number };
 
@@ -36,13 +36,18 @@ const ListingForm: React.FC = () => {
     quantity: '',
     price: '',
     type: 'Vegetable',
-    expiry: '',
+    storageType: 'Open Storage',
+    harvestDateTime: '',
     description: '',
     image: '',
     pickupAddress: '',
   });
   const [imagePreview, setImagePreview] = useState<string>('');
   const [pickupCoords, setPickupCoords] = useState<LatLng | null>(null);
+  const [predictionResult, setPredictionResult] = useState<{
+    remaining_shelf_life_hours: number;
+    freshness_status: string;
+  } | null>(null);
 
   const defaultCenter = useMemo<LatLng>(() => ({ lat: 20.5937, lng: 78.9629 }), []);
   const [mapCenter, setMapCenter] = useState<LatLng>(defaultCenter);
@@ -217,7 +222,10 @@ const ListingForm: React.FC = () => {
           quantity: formData.quantity,
           price: formData.price === '' ? null : Number(formData.price),
           type: formData.type,
-          expiry_date: formData.expiry,
+          storage_type: formData.storageType,
+          harvest_datetime: formData.harvestDateTime || undefined,
+          latitude: pickupCoords?.lat ?? null,
+          longitude: pickupCoords?.lng ?? null,
           description: formData.description,
           pickup_address,
           image: formData.image,
@@ -228,8 +236,19 @@ const ListingForm: React.FC = () => {
 
       if (!response.ok) throw new Error(data.message || 'Failed to create listing');
 
-      alert('Listing created successfully!');
-      setTimeout(() => navigate('/dashboard'), 500);
+      // Show prediction result if available
+      const listing = data.listing;
+      if (listing?.remaining_shelf_life_hours != null) {
+        setPredictionResult({
+          remaining_shelf_life_hours: listing.remaining_shelf_life_hours,
+          freshness_status: listing.freshness_status || 'SAFE',
+        });
+        const statusEmoji = listing.freshness_status === 'CRITICAL' ? '🔴' : listing.freshness_status === 'URGENT' ? '🟡' : '🟢';
+        alert(`Listing created successfully!\n\n${statusEmoji} Predicted Shelf Life: ${listing.remaining_shelf_life_hours} hours (${listing.freshness_status})`);
+      } else {
+        alert('Listing created successfully!');
+      }
+      setTimeout(() => navigate('/dashboard'), 1500);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to create listing';
       if (message.toLowerCase().includes('failed to fetch')) {
@@ -353,17 +372,25 @@ const ListingForm: React.FC = () => {
                   </div>
                 </div>
                 <div className="lf-field">
-                  <label>Expiry</label>
-                  <input
-                    type="text"
-                    name="expiry"
-                    className="lf-input"
-                    placeholder='e.g. "3 days" or "24 hours"'
-                    value={formData.expiry}
-                    onChange={handleChange}
-                    required
-                  />
+                  <label>Storage Type</label>
+                  <select name="storageType" className="lf-input" value={formData.storageType} onChange={handleChange}>
+                    <option value="Open Storage">Open Storage</option>
+                    <option value="Cold Storage">Cold Storage</option>
+                    <option value="Crate Storage">Crate Storage</option>
+                  </select>
                 </div>
+              </div>
+
+              <div className="lf-field">
+                <label><Clock size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: '-2px' }} />Harvest Date & Time</label>
+                <input
+                  type="datetime-local"
+                  name="harvestDateTime"
+                  className="lf-input"
+                  value={formData.harvestDateTime}
+                  onChange={handleChange}
+                  required
+                />
               </div>
 
               <div className="lf-field">
@@ -470,7 +497,23 @@ const ListingForm: React.FC = () => {
                   {formData.quantity && <div className="lf-summary-row"><span>Quantity</span><strong>{formData.quantity} kg</strong></div>}
                   {formData.price    && <div className="lf-summary-row"><span>Price</span><strong>₹{formData.price}/kg</strong></div>}
                   {formData.type     && <div className="lf-summary-row"><span>Category</span><strong>{formData.type}</strong></div>}
-                  {formData.expiry   && <div className="lf-summary-row"><span>Expires in</span><strong>{formData.expiry}</strong></div>}
+                  {formData.storageType && <div className="lf-summary-row"><span>Storage</span><strong>{formData.storageType}</strong></div>}
+                  {formData.harvestDateTime && <div className="lf-summary-row"><span>Harvested</span><strong>{new Date(formData.harvestDateTime).toLocaleString()}</strong></div>}
+                </div>
+              )}
+
+              {/* ML Prediction Result */}
+              {predictionResult && (
+                <div className={`lf-prediction lf-prediction--${predictionResult.freshness_status.toLowerCase()}`}>
+                  <p className="lf-prediction-title">🤖 AI Shelf Life Prediction</p>
+                  <div className="lf-prediction-hours">
+                    <span className="lf-prediction-value">{predictionResult.remaining_shelf_life_hours}</span>
+                    <span className="lf-prediction-unit">hours remaining</span>
+                  </div>
+                  <span className={`lf-prediction-badge lf-badge--${predictionResult.freshness_status.toLowerCase()}`}>
+                    {predictionResult.freshness_status === 'CRITICAL' ? '🔴' : predictionResult.freshness_status === 'URGENT' ? '🟡' : '🟢'}
+                    {' '}{predictionResult.freshness_status}
+                  </span>
                 </div>
               )}
             </div>

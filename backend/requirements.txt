@@ -5,3 +5,8 @@ python-dotenv
 passlib[bcrypt]
 email-validator
 twilio
+catboost
+joblib
+pandas
+httpx
+scikit-learn

@@ -34,6 +34,11 @@ class ListingCreate(BaseModel):
     farmer_phone: Optional[str] = None
     image: Optional[str] = None
     notes: Optional[str] = None
+    # ML prediction fields
+    storage_type: Optional[str] = None
+    harvest_datetime: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 class ListingUpdate(BaseModel):
     title: Optional[str] = None

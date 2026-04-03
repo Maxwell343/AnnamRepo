@@ -27,7 +27,8 @@ from app.services.listing_service import (
     get_driver_earnings,
     get_farmer_stats,
     get_driver_stats,
-    get_ngo_stats
+    get_ngo_stats,
+    run_shelf_life_prediction_async,
 )
 
 router = APIRouter(prefix="/api", tags=["Listings"])
@@ -36,9 +37,14 @@ router = APIRouter(prefix="/api", tags=["Listings"])
 # ============== LISTINGS CRUD ==============
 
 @router.post("/listings")
-def create_new_listing(listing: ListingCreate):
-    """Create a new food listing (Farmer)"""
-    new_listing = create_listing(listing.dict())
+async def create_new_listing(listing: ListingCreate):
+    """Create a new food listing (Farmer) — includes ML shelf-life prediction"""
+    listing_data = listing.dict()
+
+    # Run async ML prediction before inserting
+    listing_data = await run_shelf_life_prediction_async(listing_data)
+
+    new_listing = create_listing(listing_data)
     return {
         "message": "Listing created successfully",
         "listing": {

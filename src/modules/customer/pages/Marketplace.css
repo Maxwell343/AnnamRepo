@@ -2632,3 +2632,49 @@
     border: 2px solid currentColor;
   }
 }
+
+/* ============================================
+   ML SHELF-LIFE BADGE
+   ============================================ */
+.mp-shelf-life-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.mp-sl-safe {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.mp-sl-urgent {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.mp-sl-critical {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  animation: mp-sl-pulse 2s ease-in-out infinite;
+}
+
+@keyframes mp-sl-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  50%      { box-shadow: 0 0 8px 2px rgba(239, 68, 68, 0.15); }
+}
+
+.mp-sl-status {
+  margin-left: auto;
+  font-weight: 800;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

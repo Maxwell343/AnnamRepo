@@ -18,7 +18,7 @@
     "jspdf": "^4.1.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.563.0",
-    "mapbox-gl": "^3.20.0",
+    "mapbox-gl": "^3.21.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-leaflet": "^5.0.0",

@@ -175,6 +175,12 @@ export interface MarketplaceListing {
   // Rescue Priority (for NGO view)
   rescuePriority?: 'critical' | 'high' | 'medium' | 'low';
   estimatedMeals?: number;
+
+  // ML Shelf-Life Prediction
+  mlPrediction?: {
+    remainingHours: number;
+    status: string; // CRITICAL | URGENT | SAFE
+  };
 }
 
 export interface CartItem {
