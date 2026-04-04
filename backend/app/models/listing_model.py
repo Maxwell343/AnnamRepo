@@ -19,6 +19,8 @@ class ListingStatus(str, Enum):
     DELIVERED = "delivered"
     EXPIRED = "expired"
     CANCELLED = "cancelled"
+    RESCUE = "rescue"
+    DONATION = "donation"
 
 class ListingCreate(BaseModel):
     title: str
@@ -84,3 +86,8 @@ class DriverLocationUpdate(BaseModel):
     lng: float
     heading: Optional[float] = None
     speed: Optional[float] = None
+
+
+class RescueActionRequest(BaseModel):
+    action: str  # "donate" or "sell_discounted"
+    farmer_id: Optional[str] = None

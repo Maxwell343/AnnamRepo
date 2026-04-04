@@ -18,6 +18,8 @@ users_collection = db["users"]
 listings_collection = db["listings"]
 delivery_tasks_collection = db["delivery_tasks"]
 notifications_collection = db["notifications"]
+farmer_rewards_collection = db["farmer_rewards"]
+marketplace_listings_collection = db["marketplace_listings"]
 
 def get_database():
     """Get the MongoDB database instance"""
@@ -37,6 +39,16 @@ def init_collections():
         listings_collection.create_index([("type", ASCENDING)])
         listings_collection.create_index([("created_at", DESCENDING)])
         listings_collection.create_index([("expiry_date", ASCENDING)])
+        listings_collection.create_index([("expires_at", ASCENDING)])
+        listings_collection.create_index([("donation_mode", ASCENDING)])
+        listings_collection.create_index([("rescue_action", ASCENDING)])
+        listings_collection.create_index([("geo_cluster_tag", ASCENDING)])
+        
+        # Create indexes for marketplace listings (expiry/rescue)
+        marketplace_listings_collection.create_index([("expires_at", ASCENDING)])
+        marketplace_listings_collection.create_index([("donation_mode", ASCENDING)])
+        marketplace_listings_collection.create_index([("rescue_action", ASCENDING)])
+        marketplace_listings_collection.create_index([("geo_cluster_tag", ASCENDING)])
         
         # Create indexes for delivery tasks
         delivery_tasks_collection.create_index([("driver_id", ASCENDING)])
@@ -47,6 +59,10 @@ def init_collections():
         notifications_collection.create_index([("user_id", ASCENDING)])
         notifications_collection.create_index([("created_at", DESCENDING)])
         notifications_collection.create_index([("read", ASCENDING)])
+        
+        # Create indexes for farmer rewards (leaderboard)
+        farmer_rewards_collection.create_index([("farmer_id", ASCENDING)], unique=True)
+        farmer_rewards_collection.create_index([("total_points", DESCENDING)])
         
         print("✅ Database collections and indexes initialized successfully!")
         return True
@@ -63,7 +79,9 @@ def get_collection_stats():
         "users": users_collection.count_documents({}),
         "listings": listings_collection.count_documents({}),
         "delivery_tasks": delivery_tasks_collection.count_documents({}),
-        "notifications": notifications_collection.count_documents({})
+        "notifications": notifications_collection.count_documents({}),
+        "farmer_rewards": farmer_rewards_collection.count_documents({}),
+        "marketplace_listings": marketplace_listings_collection.count_documents({})
     }
     return stats
 

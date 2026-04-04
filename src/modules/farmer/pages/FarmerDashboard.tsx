@@ -5,7 +5,7 @@ import { API_ENDPOINTS } from '../../../config/api';
 import {
   Package, PlusCircle, BarChart3, Settings, Clock, Wheat,
   TrendingUp, Users, Truck, AlertTriangle, Edit3, Trash2,
-  ChevronRight, RefreshCw, Leaf, Droplets, Sun, ArrowUpRight
+  ChevronRight, RefreshCw, Leaf, Droplets, Sun, ArrowUpRight, Award, Bell
 } from 'lucide-react';
 
 // --- Types ---
@@ -262,6 +262,10 @@ const FarmerDashboard: React.FC = () => {
           <div className="fd-action-icon"><BarChart3 size={24} /></div>
           <span>Analytics</span>
         </button>
+        <button className="fd-action-card" style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0' }} onClick={() => navigate('/farmer-rewards')}>
+          <div className="fd-action-icon" style={{ color: '#16a34a' }}><Award size={24} /></div>
+          <span>Impact & Rewards</span>
+        </button>
         <button className="fd-action-card neutral" onClick={() => navigate('/farmer/complete-profile')}>
           <div className="fd-action-icon"><Settings size={24} /></div>
           <span>Settings</span>
@@ -340,7 +344,7 @@ const FarmerDashboard: React.FC = () => {
                 const expiry = parseExpiry(listing.expiry || listing.expiry_date, listing.created_at);
                 const statusCfg = getStatusConfig(listing.status);
                 return (
-                  <div key={listing.id} className="fd-listing-row">
+                  <div key={listing.id} className={`fd-listing-row ${(listing as any).rescue_info?.urgencyStatus === 'urgent' && !(listing as any).rescue_info.donationMode ? 'rescue-alert' : ''}`}>
                     <div className="fd-listing-icon-wrap">
                       <span className="fd-listing-emoji">{getTypeEmoji(listing.type)}</span>
                     </div>
@@ -349,6 +353,9 @@ const FarmerDashboard: React.FC = () => {
                       <div className="fd-listing-meta">
                         <span className="fd-listing-qty">📦 {listing.quantity}</span>
                         <span className={`fd-listing-expiry ${expiry.urgency}`}>⏳ {expiry.text}</span>
+                        {(listing as any).rescue_info?.urgencyStatus === 'urgent' && !(listing as any).rescue_info.donationMode && (
+                          <span className="fd-listing-urgent-badge"><AlertTriangle size={12} color="#dc2626"/> Action Needed</span>
+                        )}
                       </div>
                     </div>
                     <span className={`fd-status-pill ${statusCfg.className}`}>{statusCfg.label}</span>

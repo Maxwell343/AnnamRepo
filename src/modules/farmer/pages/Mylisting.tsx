@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import RescueModal from './RescueModal';
 import { useNavigate } from 'react-router-dom';
 import './Mylistings.css';
 import { API_ENDPOINTS } from '../../../config/api';
@@ -38,6 +39,7 @@ interface Listing {
   claimed_at?: string;
   pickup_location?: string;
   pickup_address?: string;
+  rescueInfo?: any;
 }
 
 type FilterStatus = 'all' | 'available' | 'claimed' | 'in_transit' | 'delivered' | 'expired';
@@ -142,6 +144,7 @@ const MyListings: React.FC = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | number | null>(null);
+  const [rescueModalListing, setRescueModalListing] = useState<Listing | null>(null);
 
   // ── Fetch from the LISTINGS collection (same one the Add Listing form writes to)
   const fetchListings = useCallback(async () => {
@@ -159,6 +162,7 @@ const MyListings: React.FC = () => {
             ...listing,
             expiry: expiryValue,
             status: isExpired ? 'expired' : (listing.status || 'available'),
+            rescueInfo: listing.rescue_info
           };
         });
         setListings(processedListings);
@@ -423,7 +427,13 @@ const MyListings: React.FC = () => {
                   </span>
 
                   {/* Urgency badge */}
-                  {listing.status === 'available' && urgency !== 'safe' && (
+                  {listing.status === 'available' && listing.rescueInfo?.urgencyStatus === 'rescue' && (
+                    <span className="ml-urgency-badge critical">
+                      <AlertTriangle size={12} />
+                      Rescue Mode
+                    </span>
+                  )}
+                  {listing.status === 'available' && listing.rescueInfo?.urgencyStatus !== 'rescue' && urgency !== 'safe' && (
                     <span className={`ml-urgency-badge ${urgency}`}>
                       <AlertTriangle size={12} />
                       {urgency === 'critical' ? 'Urgent' : 'Expiring'}
@@ -477,6 +487,11 @@ const MyListings: React.FC = () => {
 
                 {/* Card Actions */}
                 <div className="ml-card-actions">
+                  {(listing.rescueInfo?.urgencyStatus === 'urgent' || listing.rescueInfo?.urgencyStatus === 'rescue') && !listing.rescueInfo.donationMode && (
+                    <button className="ml-action-btn error" onClick={() => setRescueModalListing(listing)} style={{ color: 'red', fontWeight: 'bold' }}>
+                      <AlertTriangle size={15} /> Action Needed
+                    </button>
+                  )}
                   <button className="ml-action-btn view" onClick={() => { setSelectedListing(listing); setShowDetailsModal(true); }}>
                     <Eye size={15} /> View
                   </button>
@@ -640,6 +655,18 @@ const MyListings: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+      
+      {rescueModalListing && (
+        <RescueModal
+          listing={rescueModalListing as any}
+          isOpen={true}
+          onClose={() => setRescueModalListing(null)}
+          onActionComplete={(_updated) => {
+            fetchListings();
+            setRescueModalListing(null);
+          }}
+        />
       )}
     </div>
   );

@@ -10,3 +10,4 @@ joblib
 pandas
 httpx
 scikit-learn
+apscheduler>=3.10

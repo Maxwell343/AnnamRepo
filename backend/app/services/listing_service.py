@@ -5,99 +5,71 @@ from app.core.database import (
     delivery_tasks_collection
 )
 from bson import ObjectId
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, List, Dict, Any
 from app.services.notification_service import send_whatsapp
+from app.services.expiry_engine import (
+    compute_expires_at,
+    compute_geo_cluster_tag,
+    enrich_listing,
+    mark_expired_listings_batch as engine_mark_expired,
+    _parse_quantity_kg,
+)
 import asyncio
+import re
 
 
 def is_listing_expired(listing: dict) -> bool:
-    """Check if a listing has expired based on expiry_date or expiry"""
+    """Check if a listing has expired — delegates to expiry engine."""
+    expires_at = listing.get("expires_at")
+    if expires_at:
+        from app.services.expiry_engine import compute_hours_remaining
+        return compute_hours_remaining(expires_at) <= 0
+
+    # Fallback: old-style expiry_date parsing
     expiry_date_str = listing.get("expiry_date") or listing.get("expiry")
     created_at_str = listing.get("created_at")
-    
     if not expiry_date_str:
-        return False  # No expiry date means never expires
-    
+        return False
     try:
         expiry_dt = None
-        
-        # Format 1: ISO format with datetime
         if isinstance(expiry_date_str, str) and "T" in expiry_date_str:
             expiry_dt = datetime.fromisoformat(expiry_date_str.replace("Z", "+00:00"))
-        # Format 2: ISO date only (YYYY-MM-DD)
         elif isinstance(expiry_date_str, str) and len(expiry_date_str) == 10 and expiry_date_str.count("-") == 2:
             try:
                 expiry_dt = datetime.fromisoformat(expiry_date_str)
-                # Set to end of day (23:59:59)
                 expiry_dt = expiry_dt.replace(hour=23, minute=59, second=59)
             except:
                 pass
-        # Format 3: Relative time like "3 days", "2 hours", "30 minutes"
         elif isinstance(expiry_date_str, str):
-            import re
             match = re.match(r'(\d+)\s*(day|hour|minute)s?', expiry_date_str.lower().strip())
             if match:
                 value = int(match.group(1))
                 unit = match.group(2).lower()
-                
-                # Determine base time (created_at or now)
                 base_time = datetime.utcnow()
                 if created_at_str:
                     try:
                         base_time = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
                     except:
                         base_time = datetime.utcnow()
-                
-                # Calculate expiry time
-                if unit == "day" or unit == "days":
+                if unit in ("day", "days"):
                     expiry_dt = base_time + timedelta(days=value)
-                elif unit == "hour" or unit == "hours":
+                elif unit in ("hour", "hours"):
                     expiry_dt = base_time + timedelta(hours=value)
-                elif unit == "minute" or unit == "minutes":
+                elif unit in ("minute", "minutes"):
                     expiry_dt = base_time + timedelta(minutes=value)
-        
-        # If we couldn't parse to a datetime, assume not expired
         if not expiry_dt:
             return False
-        
-        # Check if expiry time has passed
         now = datetime.utcnow() if expiry_dt.tzinfo is None else datetime.now(expiry_dt.tzinfo)
-        is_expired = now > expiry_dt
-        
-        return is_expired
+        return now > expiry_dt
     except Exception as e:
         print(f"[WARNING] Failed to parse expiry date '{expiry_date_str}': {e}")
         return False
 
 
 def mark_expired_listings() -> int:
-    """Mark all expired listings with status 'expired' in the database"""
-    expired_count = 0
-    
-    try:
-        # Find all active listings
-        active_listings = list(listings_collection.find({
-            "status": {"$in": ["available", "claimed", "assigned", "picked_up"]}
-        }))
-        
-        for listing in active_listings:
-            if is_listing_expired(listing):
-                # Mark as expired
-                listings_collection.update_one(
-                    {"_id": listing["_id"]},
-                    {"$set": {
-                        "status": "expired",
-                        "expired_at": datetime.utcnow().isoformat(),
-                        "updated_at": datetime.utcnow().isoformat()
-                    }}
-                )
-                expired_count += 1
-                print(f"[EXPIRY] Marked listing {listing.get('id', listing.get('_id'))} as expired")
-    except Exception as e:
-        print(f"[ERROR] Failed to mark expired listings: {e}")
-    
-    return expired_count
+    """Mark all expired listings — delegates to expiry engine."""
+    return engine_mark_expired()
 
 
 def notify_ngos_new_listing(listing_data: dict):
@@ -202,7 +174,7 @@ async def run_shelf_life_prediction_async(listing_data: dict) -> dict:
 
 
 def create_listing(listing_data: dict) -> dict:
-    """Create a new food listing with ML shelf-life prediction."""
+    """Create a new food listing with ML shelf-life prediction, expiry engine, and geo tagging."""
     # Ensure farmer_id is stored as string for consistent querying
     if "farmer_id" in listing_data:
         listing_data["farmer_id"] = str(listing_data["farmer_id"])
@@ -216,9 +188,103 @@ def create_listing(listing_data: dict) -> dict:
     # Run ML shelf-life prediction only if not already done (async route does it first)
     if "remaining_shelf_life_hours" not in listing_data:
         listing_data = _run_shelf_life_prediction(listing_data)
+
+    # ── Expiry Engine: compute expires_at ──
+    shelf_hours = listing_data.get("remaining_shelf_life_hours")
+    if shelf_hours:
+        listing_data["expires_at"] = compute_expires_at(
+            listing_data["created_at"], float(shelf_hours)
+        )
+    
+    # ── Store original_price ──
+    price = listing_data.get("price")
+    if price is not None and "original_price" not in listing_data:
+        listing_data["original_price"] = price
+
+    # ── Parse and store quantity_kg ──
+    quantity = listing_data.get("quantity", 0)
+    listing_data["quantity_kg"] = _parse_quantity_kg(quantity)
+
+    # ── Geo cluster tag ──
+    lat = listing_data.get("latitude")
+    lng = listing_data.get("longitude")
+    pincode = listing_data.get("pincode")
+    listing_data["geo_cluster_tag"] = compute_geo_cluster_tag(lat, lng, pincode)
+
+    # ── Initialize rescue fields ──
+    listing_data["donation_mode"] = False
+    listing_data["rescue_action"] = None
+    listing_data["coordinates"] = {"lat": lat, "lng": lng} if lat and lng else None
     
     result = listings_collection.insert_one(listing_data)
     listing_data["_id"] = result.inserted_id
+    
+    # ── Sync to Marketplace Collection ──
+    try:
+        from app.core.database import marketplace_listings_collection
+        from bson import ObjectId
+        
+        # Enforce marketplace schema
+        marketplace_doc = {
+            # Core references
+            "_id": ObjectId(),
+            "farmer_id": str(listing_data.get("farmer_id", "unknown")),
+            "title": str(listing_data.get("title", "")),
+            "description": str(listing_data.get("description", str(listing_data.get("notes", "")))),
+            "type": str(listing_data.get("type", "other")),
+            "quantity": float(listing_data.get("quantity", 0)),
+            "unit": str(listing_data.get("unit", "kg")),
+            "image": str(listing_data.get("image", "")),
+            
+            # Nested schemas
+            "pricing": {
+                "original_price": float(listing_data.get("price", 0)),
+                "current_price": float(listing_data.get("price", 0)),
+                "unit": str(listing_data.get("unit", "kg")),
+                "min_order_quantity": 1
+            },
+            "location": {
+                "address": str(listing_data.get("pickup_address", listing_data.get("location", ""))),
+                "coordinates": listing_data.get("coordinates", {"lat": listing_data.get("latitude"), "lng": listing_data.get("longitude")}) if listing_data.get("latitude") else None,
+                "district": str(listing_data.get("pickup_district", "N/A")),
+                "state": str(listing_data.get("pickup_state", "N/A")),
+                "pincode": str(listing_data.get("pincode", "110001"))
+            },
+            "spoilage_indicator": {
+                "level": listing_data.get("freshness_status", "fresh").lower() if listing_data.get("freshness_status") != "SAFE" else "good",
+                "hours_remaining": listing_data.get("remaining_shelf_life_hours", 168),
+                "message": f"{listing_data.get('remaining_shelf_life_hours', 168)}h remaining",
+                "color": "#64DD17",
+                "percentage": 100.0
+            },
+            "farmer_profile": {
+                "id": str(listing_data.get("farmer_id", "unknown")),
+                "name": str(listing_data.get("farmer_name", "Farmer")),
+                "verified": True,
+                "rating": 4.5
+            },
+            
+            # Simple fields
+            "status": "active",
+            "categories": ["fresh_produce", "ngo_rescue"] if listing_data.get("freshness_status") in ["URGENT", "CRITICAL"] else ["fresh_produce"],
+            "rescue_priority": "critical" if listing_data.get("freshness_status") == "CRITICAL" else "high" if listing_data.get("freshness_status") == "URGENT" else "low",
+            "created_at": listing_data.get("created_at"),
+            "updated_at": listing_data.get("updated_at"),
+            "expires_at": listing_data.get("expires_at"),
+            
+            "rescue_info": {
+                "urgencyStatus": listing_data.get("freshness_status", "safe").lower(),
+                "hoursRemaining": listing_data.get("remaining_shelf_life_hours", 168),
+                "donationMode": False,
+                "isRescue": listing_data.get("freshness_status") in ["URGENT", "CRITICAL"]
+            }
+        }
+        
+        # Override with pure string mapping just in case mapping above broke types
+        marketplace_listings_collection.insert_one(marketplace_doc)
+        print(f"[MARKETPLACE SYNC] Successfully synced listing {result.inserted_id} to marketplace")
+    except Exception as e:
+        print(f"[MARKETPLACE SYNC] Failed to sync to marketplace: {e}")
     
     # Notify all NGOs about the new listing
     notify_ngos_new_listing(listing_data)
@@ -248,10 +314,11 @@ def get_all_listings(filters: dict = None, include_expired: bool = False) -> Lis
     
     listings = list(listings_collection.find(query).sort("created_at", -1))
     
-    # Convert ObjectId to string
+    # Enrich every listing with dynamic urgency/discount fields
     for listing in listings:
         listing["id"] = str(listing["_id"])
         del listing["_id"]
+        enrich_listing(listing)
     
     return listings
 
@@ -592,3 +659,75 @@ def get_ngo_stats(ngo_id: str) -> dict:
         "pending": pending,
         "received": received
     }
+
+
+# ============== RESCUE ACTIONS ==============
+
+def set_rescue_action(listing_id: str, action: str, farmer_id: str = None) -> Optional[dict]:
+    """
+    Farmer chooses a rescue action for an urgent/rescue listing.
+    action: 'donate' or 'sell_discounted'
+    """
+    listing = get_listing_by_id(listing_id)
+    if not listing:
+        return None
+
+    now_iso = datetime.utcnow().isoformat()
+
+    if action == "donate":
+        return donate_listing(listing_id, farmer_id, listing)
+    elif action == "sell_discounted":
+        update_data = {
+            "rescue_action": "sell_discounted",
+            "donation_mode": False,
+            "updated_at": now_iso,
+        }
+        return update_listing(listing_id, update_data)
+    
+    return None
+
+
+def donate_listing(listing_id: str, farmer_id: str = None, listing: dict = None) -> Optional[dict]:
+    """
+    Mark a listing for NGO donation and award impact points.
+    """
+    if not listing:
+        listing = get_listing_by_id(listing_id)
+    if not listing:
+        return None
+
+    now_iso = datetime.utcnow().isoformat()
+    farmer_id = farmer_id or listing.get("farmer_id")
+
+    update_data = {
+        "donation_mode": True,
+        "rescue_action": "donate",
+        "donated_at": now_iso,
+        "updated_at": now_iso,
+    }
+    updated = update_listing(listing_id, update_data)
+
+    # Award reward points
+    if farmer_id:
+        try:
+            from app.services.reward_service import award_donation_points
+            quantity_kg = listing.get("quantity_kg", 0) or _parse_quantity_kg(listing.get("quantity", 0))
+            urgency = listing.get("urgency_status", "normal")
+            award_donation_points(
+                str(farmer_id),
+                quantity_kg,
+                urgency,
+                listing_id=listing_id,
+                listing_title=listing.get("title", ""),
+            )
+        except Exception as e:
+            print(f"[RESCUE] Failed to award points: {e}")
+
+    # Update impact metrics
+    try:
+        from app.services.impact_service import update_impact_on_rescue
+        update_impact_on_rescue(listing)
+    except Exception as e:
+        print(f"[RESCUE] Failed to update impact: {e}")
+
+    return updated

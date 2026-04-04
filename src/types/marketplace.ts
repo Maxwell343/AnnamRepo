@@ -51,6 +51,39 @@ export type SellingMode = 'sell' | 'donate' | 'auto_donate' | 'flexible';
 // Rescue Priority
 export type RescuePriority = 'critical' | 'high' | 'medium' | 'low';
 
+export type UrgencyStatus = 'normal' | 'urgent' | 'rescue' | 'expired';
+export type PickupPriority = 'low' | 'medium' | 'high' | 'critical';
+
+export interface RescueInfo {
+  urgencyStatus: UrgencyStatus;
+  hoursRemaining: number;
+  discountedPrice: number;
+  donationMode: boolean;
+  pickupPriority: PickupPriority;
+  geoClusterTag?: string;
+  isRescue: boolean;
+  isDonation: boolean;
+}
+
+export interface FarmerRewards {
+  farmerId?: string;
+  totalPoints: number;
+  badges: any[];
+  allBadges?: any[];
+  donationCount: number;
+  donationHistory: any[];
+  leaderboardRank: number;
+}
+
+export interface ImpactStats {
+  foodSavedKg: number;
+  mealsProvided: number;
+  co2SavedKg: number;
+  waterSavedLiters?: number;
+  totalRescues: number;
+  activeRescues?: number;
+}
+
 // ============================================
 // CORE INTERFACES
 // ============================================
@@ -181,6 +214,11 @@ export interface MarketplaceListing {
     remainingHours: number;
     status: string; // CRITICAL | URGENT | SAFE
   };
+  
+  // Real-time Expiry Engine
+  rescueInfo?: RescueInfo;
+  expires_at?: string;
+  price?: number;
 }
 
 export interface CartItem {

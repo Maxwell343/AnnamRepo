@@ -217,7 +217,7 @@ const ProductCard: React.FC<{
   onViewDetails: (listing: MarketplaceListing) => void;
   onAddToCart: (listing: MarketplaceListing, quantity: number) => void;
   onQuickRescue?: (listing: MarketplaceListing) => void;
-  userRole?: UserRole;
+  userRole?: UserRole | string;
 }> = ({ listing, onViewDetails, onAddToCart, onQuickRescue, userRole }) => {
   const [quantity, setQuantity] = useState(listing.pricing.minOrderQuantity);
   const [imageError, setImageError] = useState(false);
@@ -551,7 +551,7 @@ const ProductDetailModal: React.FC<{
   onClose: () => void;
   onAddToCart: (listing: MarketplaceListing, quantity: number) => void;
   onRescue?: (listing: MarketplaceListing) => void;
-  userRole?: UserRole;
+  userRole?: UserRole | string;
 }> = ({ listing, onClose, onAddToCart, onRescue, userRole }) => {
   const [quantity, setQuantity] = useState(listing.pricing.minOrderQuantity);
   const [activeTab, setActiveTab] = useState<'details' | 'farmer' | 'impact'>('details');
@@ -1223,6 +1223,9 @@ const Marketplace: React.FC = () => {
         remainingHours: apiListing.remaining_shelf_life_hours,
         status: apiListing.freshness_status || 'SAFE',
       } : undefined,
+      rescueInfo: apiListing.rescue_info,
+      expires_at: apiListing.expires_at,
+      price: typeof apiListing.price === 'string' ? parseFloat(apiListing.price) : apiListing.price,
     };
   };
 
@@ -1245,7 +1248,12 @@ const Marketplace: React.FC = () => {
       setIsLoading(true);
       try {
         console.log('[MARKETPLACE] Fetching listings from API...');
-        const response = await fetch(API_ENDPOINTS.listings);
+        let fetchUrl = API_ENDPOINTS.listings;
+        if (user?.role === 'ngo') {
+          fetchUrl = API_ENDPOINTS.rescue.ngoPriority;
+        }
+        
+        const response = await fetch(fetchUrl);
         console.log('[MARKETPLACE] API Response Status:', response.status);
         
         if (response.ok) {
@@ -1400,13 +1408,17 @@ const Marketplace: React.FC = () => {
   }, [filteredListings]);
 
   const applyQuickFilter = useCallback(
-    (mode: 'urgent' | 'organic' | 'budget' | 'nearby') => {
+    (mode: 'urgent' | 'organic' | 'budget' | 'nearby' | 'rescue') => {
       if (mode === 'urgent') {
         setFilters((prev) => ({ ...prev, freshnessLevels: ['urgent', 'critical'], sortBy: 'urgency' }));
         return;
       }
       if (mode === 'organic') {
         setFilters((prev) => ({ ...prev, isOrganic: true, sortBy: 'rating' }));
+        return;
+      }
+      if (mode === 'rescue') {
+        setFilters((prev) => ({ ...prev, sortBy: 'urgency' }));
         return;
       }
       if (mode === 'budget') {

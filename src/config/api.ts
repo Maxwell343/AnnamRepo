@@ -99,4 +99,20 @@ export const API_ENDPOINTS = {
   admin: {
     users: `${API_BASE_URL}/api/admin/users`,
   },
+
+  // Rescue & Rewards
+  rescue: {
+    action: (id: string) => `${API_BASE_URL}/api/rescue/${id}/action`,
+    listings: `${API_BASE_URL}/api/rescue/listings`,
+    ngoPriority: `${API_BASE_URL}/api/rescue/ngo-priority`,
+    ngoCritical: `${API_BASE_URL}/api/rescue/ngo-critical`,
+    claimDonation: (id: string) => `${API_BASE_URL}/api/rescue/${id}/claim-donation`,
+  },
+  rewards: {
+    farmer: (id: string) => `${API_BASE_URL}/api/rewards/farmer/${id}`,
+    leaderboard: `${API_BASE_URL}/api/rewards/leaderboard`,
+  },
+  impact: {
+    stats: `${API_BASE_URL}/api/impact/stats`,
+  },
 };

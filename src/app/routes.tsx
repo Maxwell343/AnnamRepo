@@ -25,6 +25,7 @@ import {
   Analytics,
   FarmerDashboard,
   FarmerSettings,
+  FarmerRewards,
 } from '../modules/farmer'
 
 // Customer module
@@ -117,6 +118,7 @@ export default function AppRoutes() {
         <Route path="/farmer/new-listing" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileGuard><FarmerListingForm /></FarmerProfileGuard></RoleGuard>} />
         <Route path="/farmer/edit-listing/:listingId" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileGuard><FarmerListingForm /></FarmerProfileGuard></RoleGuard>} />
         <Route path="/analytics" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileGuard><Analytics /></FarmerProfileGuard></RoleGuard>} />
+        <Route path="/farmer-rewards" element={<RoleGuard allowedRoles={['farmer']}><FarmerProfileGuard><FarmerRewards /></FarmerProfileGuard></RoleGuard>} />
 
         {/* Customer */}
         <Route path="/order-tracking" element={<RoleGuard allowedRoles={['customer']}><OrderTracking /></RoleGuard>} />
