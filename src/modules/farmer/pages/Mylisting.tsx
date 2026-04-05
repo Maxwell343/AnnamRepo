@@ -40,72 +40,19 @@ interface Listing {
   pickup_location?: string;
   pickup_address?: string;
   rescueInfo?: any;
+  urgency_status?: 'normal' | 'urgent' | 'rescue' | 'expired' | 'safe' | 'warning' | 'critical';
+  hours_remaining?: number;
+  donation_mode?: boolean;
 }
 
 type FilterStatus = 'all' | 'available' | 'claimed' | 'in_transit' | 'delivered' | 'expired';
 type SortOption = 'newest' | 'oldest' | 'expiring_soon' | 'quantity_high' | 'quantity_low';
 
-// --- Expiry helpers ---
-function parseExpiryAndGetCountdown(expiryStr: string | undefined | null, createdAtStr?: string) {
-  if (!expiryStr) return { days: 0, hours: 0, minutes: 0, isExpired: true, totalMinutes: 0 };
 
-  const now = new Date();
-  let expiryDate: Date | null = null;
 
-  if (!isNaN(Date.parse(expiryStr))) {
-    expiryDate = new Date(expiryStr);
-  } else {
-    let match = expiryStr.match(/(\d+)\s*(day|hour|minute)s?/i);
-    if (!match) {
-      match = expiryStr.match(/^(\d+)$/);
-      if (match) {
-        expiryStr = `${match[1]} days`;
-        match = expiryStr.match(/(\d+)\s*(day|hour|minute)s?/i);
-      }
-    }
-    if (match) {
-      const value = parseInt(match[1]);
-      const unit = match[2].toLowerCase();
-      let baseDate = new Date(now);
-      if (createdAtStr?.trim()) {
-        try {
-          const parsed = new Date(createdAtStr.trim().replace(' ', 'T'));
-          if (!isNaN(parsed.getTime())) baseDate = parsed;
-        } catch { /* use now */ }
-      }
-      expiryDate = new Date(baseDate);
-      if (unit === 'day') expiryDate.setDate(expiryDate.getDate() + value);
-      else if (unit === 'hour') expiryDate.setHours(expiryDate.getHours() + value);
-      else if (unit === 'minute') expiryDate.setMinutes(expiryDate.getMinutes() + value);
-    }
-  }
-
-  if (!expiryDate || isNaN(expiryDate.getTime())) return { days: 0, hours: 0, minutes: 0, isExpired: true, totalMinutes: 0 };
-  const timeDiff = expiryDate.getTime() - now.getTime();
-  if (timeDiff <= 0) return { days: 0, hours: 0, minutes: 0, isExpired: true, totalMinutes: 0 };
-
-  const totalMinutes = Math.floor(timeDiff / (1000 * 60));
-  const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-  return { days, hours, minutes, isExpired: false, totalMinutes };
-}
-
-function getCountdownDisplay(expiryStr: string | undefined | null, createdAtStr?: string): string {
-  if (!expiryStr) return 'No expiry';
-  const { days, hours, minutes, isExpired } = parseExpiryAndGetCountdown(expiryStr, createdAtStr);
-  if (isExpired) return 'Expired';
-  if (days > 0) return `${days}d ${hours}h left`;
-  if (hours > 0) return `${hours}h ${minutes}m left`;
-  return `${minutes}m left`;
-}
-
-function getUrgencyLevel(expiryStr: string | undefined | null, createdAtStr?: string): 'critical' | 'warning' | 'safe' {
-  if (!expiryStr) return 'critical';
-  const { days, hours, isExpired } = parseExpiryAndGetCountdown(expiryStr, createdAtStr);
-  if (isExpired) return 'critical';
-  if (days === 0 && hours < 6) return 'critical';
-  if (days === 0 || (days === 1 && hours < 12)) return 'warning';
+function getUrgencyLevel(status: string | undefined): 'critical' | 'warning' | 'safe' {
+  if (status === 'rescue' || status === 'expired') return 'critical';
+  if (status === 'urgent') return 'warning';
   return 'safe';
 }
 
@@ -156,12 +103,9 @@ const MyListings: React.FC = () => {
 
       if (response.ok) {
         const processedListings = (data.listings || []).map((listing: any) => {
-          const expiryValue = listing.expiry || listing.expiry_date;
-          const { isExpired } = expiryValue ? parseExpiryAndGetCountdown(expiryValue, listing.created_at) : { isExpired: false };
           return {
             ...listing,
-            expiry: expiryValue,
-            status: isExpired ? 'expired' : (listing.status || 'available'),
+            status: (listing.urgency_status === 'expired' || (listing.hours_remaining ?? 1) <= 0) ? 'expired' : (listing.status || 'available'),
             rescueInfo: listing.rescue_info
           };
         });
@@ -239,9 +183,7 @@ const MyListings: React.FC = () => {
         case 'newest': return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
         case 'oldest': return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
         case 'expiring_soon': {
-          const ae = parseExpiryAndGetCountdown(a.expiry || a.expiry_date, a.created_at);
-          const be = parseExpiryAndGetCountdown(b.expiry || b.expiry_date, b.created_at);
-          return ae.totalMinutes - be.totalMinutes;
+          return (a.hours_remaining ?? 999) - (b.hours_remaining ?? 999);
         }
         case 'quantity_high': return parseFloat(b.quantity) - parseFloat(a.quantity);
         case 'quantity_low': return parseFloat(a.quantity) - parseFloat(b.quantity);
@@ -405,7 +347,6 @@ const MyListings: React.FC = () => {
         /* ── Listing Cards ── */
         <div className={`ml-grid ${viewMode}`}>
           {filteredListings.map(listing => {
-            const urgency = getUrgencyLevel(listing.expiry || listing.expiry_date, listing.created_at);
             const typeConf = TYPE_CONFIG[listing.type] || TYPE_CONFIG.Other;
             const statusConf = STATUS_CONFIG[listing.status] || STATUS_CONFIG.available;
             const pickupAddr = listing.pickup_location || listing.pickup_address || '';
@@ -427,16 +368,16 @@ const MyListings: React.FC = () => {
                   </span>
 
                   {/* Urgency badge */}
-                  {listing.status === 'available' && listing.rescueInfo?.urgencyStatus === 'rescue' && (
+                  {listing.status === 'available' && listing.urgency_status === 'rescue' && (
                     <span className="ml-urgency-badge critical">
                       <AlertTriangle size={12} />
                       Rescue Mode
                     </span>
                   )}
-                  {listing.status === 'available' && listing.rescueInfo?.urgencyStatus !== 'rescue' && urgency !== 'safe' && (
-                    <span className={`ml-urgency-badge ${urgency}`}>
+                  {listing.status === 'available' && listing.urgency_status !== 'rescue' && listing.urgency_status !== 'normal' && (
+                    <span className={`ml-urgency-badge ${listing.urgency_status === 'urgent' ? 'warning' : 'safe'}`}>
                       <AlertTriangle size={12} />
-                      {urgency === 'critical' ? 'Urgent' : 'Expiring'}
+                      {listing.urgency_status === 'urgent' ? 'Urgent' : 'Expiring'}
                     </span>
                   )}
 
@@ -460,8 +401,8 @@ const MyListings: React.FC = () => {
                   {/* Meta */}
                   <div className="ml-card-meta">
                     <span><Package size={14} /> {listing.quantity}</span>
-                    <span className={`ml-countdown ${urgency}`}>
-                      <Clock size={14} /> {getCountdownDisplay(listing.expiry || listing.expiry_date, listing.created_at)}
+                    <span className={`ml-countdown ${getUrgencyLevel(listing.urgency_status)}`}>
+                      <Clock size={14} /> {(listing.hours_remaining ?? 0) > 0 ? `${listing.hours_remaining}h left` : 'Expired'}
                     </span>
                   </div>
 
@@ -487,7 +428,7 @@ const MyListings: React.FC = () => {
 
                 {/* Card Actions */}
                 <div className="ml-card-actions">
-                  {(listing.rescueInfo?.urgencyStatus === 'urgent' || listing.rescueInfo?.urgencyStatus === 'rescue') && !listing.rescueInfo.donationMode && (
+                  {listing.status === 'available' && listing.urgency_status === 'rescue' && !listing.donation_mode && (
                     <button className="ml-action-btn error" onClick={() => setRescueModalListing(listing)} style={{ color: 'red', fontWeight: 'bold' }}>
                       <AlertTriangle size={15} /> Action Needed
                     </button>
@@ -590,8 +531,8 @@ const MyListings: React.FC = () => {
                 </div>
                 <div className="ml-detail-item">
                   <span className="ml-detail-label">Expires</span>
-                  <span className={`ml-detail-value ${getUrgencyLevel(selectedListing.expiry || selectedListing.expiry_date, selectedListing.created_at)}`}>
-                    {getCountdownDisplay(selectedListing.expiry || selectedListing.expiry_date, selectedListing.created_at)}
+                  <span className={`ml-detail-value ${getUrgencyLevel(selectedListing.urgency_status)}`}>
+                    {(selectedListing.hours_remaining ?? 0) > 0 ? `${selectedListing.hours_remaining}h left` : 'Expired'}
                   </span>
                 </div>
                 <div className="ml-detail-item">

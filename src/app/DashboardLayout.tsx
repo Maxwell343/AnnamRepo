@@ -82,6 +82,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         { id: 'add-listing', icon: <PlusCircle size={20} />, label: 'Add Listing', action: () => navigate('/listing') },
         { id: 'marketplace', icon: <ShoppingCart size={20} />, label: 'Marketplace', action: () => navigate('/marketplace') },
         { id: 'analytics', icon: <BarChart3 size={20} />, label: 'Analytics', action: () => navigate('/analytics') },
+        { id: 'rewards', icon: <Wheat size={20} />, label: 'Impact & Rewards', action: () => navigate('/farmer-rewards') },
       ],
       ngo: [
         { id: 'claimed', icon: <Handshake size={20} />, label: 'Claimed Donations', action: () => navigate('/claimed-donations') },

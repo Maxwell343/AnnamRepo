@@ -98,21 +98,22 @@ async def get_ngo_priority_listings():
 
     for coll in [listings_collection, marketplace_listings]:
         docs = list(coll.find({
-            "status": {"$nin": ["expired", "delivered", "cancelled"]},
+            "status": {"$nin": ["expired", "delivered", "cancelled", "claimed", "in_transit"]},
             "expires_at": {"$exists": True, "$ne": None},
         }))
         for doc in docs:
             doc["id"] = str(doc["_id"])
             del doc["_id"]
             enrich_listing(doc)
-            if doc.get("urgency_status") in ("urgent", "rescue"):
+            
+            is_donation = doc.get("donation_mode") is True
+            urg_status = doc.get("urgency_status")
+            
+            if is_donation or urg_status == "rescue":
                 results.append(doc)
 
-    # Sort: donation_mode first, then by hours_remaining ASC
-    results.sort(key=lambda x: (
-        0 if x.get("donation_mode") else 1,
-        x.get("hours_remaining", 999),
-    ))
+    # Sort: most urgent first
+    results.sort(key=lambda x: x.get("hours_remaining", 999))
 
     return {
         "listings": results,

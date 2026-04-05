@@ -37,6 +37,16 @@ def _job_auto_donate():
     except Exception as e:
         print(f"[SCHEDULER] Error in auto_donate job: {e}")
 
+def _job_autopilot_price_drops():
+    """Wrapper for the autopilot price drops job."""
+    try:
+        from app.services.expiry_engine import process_autopilot_price_drops
+        count = process_autopilot_price_drops()
+        if count > 0:
+            print(f"[SCHEDULER] Autopilot acted on {count} listings")
+    except Exception as e:
+        print(f"[SCHEDULER] Error in autopilot_price_drops job: {e}")
+
 
 def _job_recalculate_impact():
     """Wrapper for the impact recalculation job."""
@@ -72,6 +82,15 @@ def start_scheduler():
         trigger=IntervalTrigger(minutes=5),
         id="auto_donate",
         name="Auto-donate abandoned listings",
+        replace_existing=True,
+    )
+
+    # Job 2.5: AI Autopilot Price Drops — every 5 minutes
+    _scheduler.add_job(
+        _job_autopilot_price_drops,
+        trigger=IntervalTrigger(minutes=5),
+        id="autopilot_price_drops",
+        name="AI Autopilot Price Drops",
         replace_existing=True,
     )
 

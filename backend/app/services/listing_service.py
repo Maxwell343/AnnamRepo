@@ -189,6 +189,12 @@ def create_listing(listing_data: dict) -> dict:
     if "remaining_shelf_life_hours" not in listing_data:
         listing_data = _run_shelf_life_prediction(listing_data)
 
+    # If ML prediction failed or didn't run, fallback to manual shelfLife
+    if "remaining_shelf_life_hours" not in listing_data:
+        shelf_days = float(listing_data.get("shelfLife") or listing_data.get("shelf_life") or 5)
+        if shelf_days > 0:
+            listing_data["remaining_shelf_life_hours"] = shelf_days * 24
+
     # ── Expiry Engine: compute expires_at ──
     shelf_hours = listing_data.get("remaining_shelf_life_hours")
     if shelf_hours:
@@ -314,13 +320,21 @@ def get_all_listings(filters: dict = None, include_expired: bool = False) -> Lis
     
     listings = list(listings_collection.find(query).sort("created_at", -1))
     
+    enriched_listings = []
     # Enrich every listing with dynamic urgency/discount fields
     for listing in listings:
         listing["id"] = str(listing["_id"])
         del listing["_id"]
         enrich_listing(listing)
+        
+        # Strictly filter out logically expired listings from the frontend
+        if not include_expired:
+            if listing.get("hours_remaining", 1) <= 0 or listing.get("urgency_status") == "expired":
+                continue
+                
+        enriched_listings.append(listing)
     
-    return listings
+    return enriched_listings
 
 
 def get_listing_by_id(listing_id: str) -> Optional[dict]:
@@ -333,6 +347,7 @@ def get_listing_by_id(listing_id: str) -> Optional[dict]:
         if listing:
             listing["id"] = str(listing["_id"])
             del listing["_id"]
+            enrich_listing(listing)
         return listing
     except:
         return None

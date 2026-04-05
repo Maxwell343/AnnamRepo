@@ -14,11 +14,18 @@ const FarmerRewards: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const farmerId = localStorage.getItem('userId');
-        const token = localStorage.getItem('token');
+        const saved = localStorage.getItem('user');
+        if (!saved) {
+          navigate('/auth');
+          return;
+        }
+
+        const user = JSON.parse(saved);
+        const farmerId = user?.id;
+        const token = localStorage.getItem('token') || 'dummy-token';
         
-        if (!farmerId || !token) {
-          navigate('/login');
+        if (!farmerId) {
+          navigate('/auth');
           return;
         }
 

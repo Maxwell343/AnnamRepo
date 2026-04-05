@@ -1098,15 +1098,14 @@ const Marketplace: React.FC = () => {
       }
     }
 
-    // Use ML prediction data if available, otherwise fall back to generic calculation
-    const mlHours = apiListing.remaining_shelf_life_hours;
-    const mlStatus = apiListing.freshness_status;
+    // Use native expiry engine fields enriched by our backend
+    const mlHours = apiListing.hours_remaining;
+    const mlStatus = apiListing.urgency_status;
     let shelfLife = 7; // default days
     let spoilageIndicator: SpoilageIndicator;
 
     if (mlHours != null) {
-      // ML prediction available — build spoilage indicator from it
-      const hoursRemaining = Math.max(0, Math.round(mlHours));
+      const hoursRemaining = Math.max(0, mlHours);
       const baseHours = apiListing.base_shelf_life_hours || 168;
       const percentageRemaining = Math.max(0, Math.min(100, (hoursRemaining / baseHours) * 100));
       const daysRemaining = Math.floor(hoursRemaining / 24);
@@ -1115,18 +1114,18 @@ const Marketplace: React.FC = () => {
       let colorCode: string;
       let urgencyMessage: string;
 
-      if (mlStatus === 'CRITICAL') {
+      if (mlStatus === 'critical' || mlStatus === 'expired') {
         riskLevel = 'critical';
         colorCode = '#FF1744';
         urgencyMessage = `⚠️ Only ${hoursRemaining}h left — Buy fast!`;
-      } else if (mlStatus === 'URGENT') {
+      } else if (mlStatus === 'rescue' || mlStatus === 'urgent') {
         riskLevel = 'urgent';
         colorCode = '#FF9100';
         urgencyMessage = `${hoursRemaining}h left — Act Soon`;
       } else {
         riskLevel = hoursRemaining > baseHours * 0.6 ? 'fresh' : 'good';
         colorCode = hoursRemaining > baseHours * 0.6 ? '#64DD17' : '#AEEA00';
-        urgencyMessage = `${daysRemaining}d ${hoursRemaining % 24}h remaining`;
+        urgencyMessage = hoursRemaining > 0 ? `${daysRemaining}d ${hoursRemaining % 24}h remaining` : 'Expired';
       }
 
       spoilageIndicator = { riskLevel, hoursRemaining, daysRemaining, percentageRemaining, colorCode, urgencyMessage };

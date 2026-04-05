@@ -70,6 +70,7 @@ function RoleDashboard() {
     if (raw) {
       const user = JSON.parse(raw)
       if (user?.role === 'farmer') return <FarmerDashboard />
+      if (user?.role === 'ngo') return <ImpactDashboard />
     }
   } catch { /* ignore */ }
   return <HomePage />
@@ -98,7 +99,6 @@ export default function AppRoutes() {
       <Route path="/customer-home" element={<ProtectedRoute><RoleGuard allowedRoles={['customer']}><CustomerHomepage /></RoleGuard></ProtectedRoute>} />
       <Route path="/farmer/complete-profile" element={<ProtectedRoute><RoleGuard allowedRoles={['farmer']}><FarmerProfileSetup /></RoleGuard></ProtectedRoute>} />
       <Route path="/farmer-settings" element={<ProtectedRoute><RoleGuard allowedRoles={['farmer']}><FarmerSettings /></RoleGuard></ProtectedRoute>} />
-      <Route path="/ngo-settings" element={<ProtectedRoute><RoleGuard allowedRoles={['ngo']}><NgoSettings /></RoleGuard></ProtectedRoute>} />
 
       {/* ── Admin Panel ── */}
       <Route path="/admin/*" element={<AdminGuard><AdminRoutes /></AdminGuard>} />
@@ -139,6 +139,7 @@ export default function AppRoutes() {
         <Route path="/leaderboards" element={<RoleGuard allowedRoles={['ngo']}><ImpactPage /></RoleGuard>} />
         <Route path="/claimed-donations" element={<RoleGuard allowedRoles={['ngo']}><ClaimedDonations /></RoleGuard>} />
         <Route path="/ngo-order-tracking" element={<RoleGuard allowedRoles={['ngo']}><NgoOrderTracking /></RoleGuard>} />
+        <Route path="/ngo-settings" element={<RoleGuard allowedRoles={['ngo']}><NgoSettings /></RoleGuard>} />
       </Route>
     </Routes>
   )

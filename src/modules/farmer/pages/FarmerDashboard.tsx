@@ -5,7 +5,7 @@ import { API_ENDPOINTS } from '../../../config/api';
 import {
   Package, PlusCircle, BarChart3, Settings, Clock, Wheat,
   TrendingUp, Users, Truck, AlertTriangle, Edit3, Trash2,
-  ChevronRight, RefreshCw, Leaf, Droplets, Sun, ArrowUpRight, Award, Bell
+  ChevronRight, RefreshCw, Leaf, Droplets, Sun, ArrowUpRight, Award, Bell, Zap, X
 } from 'lucide-react';
 
 // --- Types ---
@@ -54,6 +54,17 @@ interface Activity {
   quantity: string;
   type: string;
   time: string;
+}
+
+interface Nudge {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  listing_id?: string;
+  suggested_action: string;
+  action_value: string;
+  confidence_score: number;
 }
 
 // --- Expiry Helpers ---
@@ -118,6 +129,7 @@ const FarmerDashboard: React.FC = () => {
   });
   const [recentListings, setRecentListings] = useState<Listing[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [nudges, setNudges] = useState<Nudge[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -134,6 +146,14 @@ const FarmerDashboard: React.FC = () => {
         setStats(data.stats || stats);
         setRecentListings(data.recent_listings || []);
         setActivities(data.activities || []);
+      }
+      
+      const nudgeRes = await fetch(API_ENDPOINTS.farmerNudges(userId.toString()));
+      if (nudgeRes.ok) {
+        const nudgeData = await nudgeRes.json();
+        const dismissed = JSON.parse(localStorage.getItem('dismissedNudges') || '[]');
+        const activeNudges = (nudgeData.nudges || []).filter((n: Nudge) => !dismissed.includes(n.id));
+        setNudges(activeNudges);
       }
     } catch (err) {
       console.error('Error fetching farmer dashboard:', err);
@@ -217,8 +237,57 @@ const FarmerDashboard: React.FC = () => {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
 
+  const handleNudgeDismiss = (nudgeId: string) => {
+    const dismissed = JSON.parse(localStorage.getItem('dismissedNudges') || '[]');
+    if (!dismissed.includes(nudgeId)) {
+      dismissed.push(nudgeId);
+      localStorage.setItem('dismissedNudges', JSON.stringify(dismissed));
+    }
+    setNudges(prev => prev.filter(n => n.id !== nudgeId));
+  };
+
+  const handleNudgeAction = (nudge: Nudge) => {
+    // Implement standard action hook or backend endpoint hit. For now, dismiss it and show alert
+    alert(`Applying One-Click Fix: ${nudge.suggested_action}`);
+    handleNudgeDismiss(nudge.id);
+  };
+
   return (
     <div className="farmer-dashboard">
+      {/* ===== AI NUDGE MODAL (Hackathon Upgrade) ===== */}
+      {nudges.length > 0 && (
+        <div className="nudge-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="nudge-modal" style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '24px', maxWidth: '450px', width: '90%', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', position: 'relative' }}>
+            <button onClick={() => handleNudgeDismiss(nudges[0].id)} style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}>
+              <X size={20} />
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ backgroundColor: '#fef2f2', padding: '10px', borderRadius: '50%', color: '#dc2626' }}>
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', color: '#111827', fontWeight: 600 }}>{nudges[0].title}</h3>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#059669', backgroundColor: '#d1fae5', padding: '2px 8px', borderRadius: '10px' }}>AI Predictive Engine</span>
+              </div>
+            </div>
+            <p style={{ color: '#4b5563', fontSize: '14px', lineHeight: 1.5, marginBottom: '20px' }}>
+              {nudges[0].message}
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={() => handleNudgeAction(nudges[0])} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', transition: 'background-color 0.2s' }}>
+                <Zap size={18} />
+                {nudges[0].suggested_action}
+              </button>
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '12px' }}>
+              <button onClick={() => handleNudgeDismiss(nudges[0].id)} style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: '13px', cursor: 'pointer', fontWeight: 500, textDecoration: 'underline' }}>
+                Ignore Suggestion
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ===== WELCOME HEADER ===== */}
       <header className="fd-header">
         <div className="fd-header-left">

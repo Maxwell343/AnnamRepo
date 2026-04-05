@@ -277,6 +277,71 @@ def auto_donate_abandoned_listings() -> int:
     return auto_donated
 
 
+def process_autopilot_price_drops() -> int:
+    """
+    Find listings with enable_auto_reduction=True.
+    Apply sliding price drop based on expiry:
+    - < 48h: 10% drop
+    - < 24h: 30% drop
+    - < 12h: 50% drop
+    Ensures price NEVER drops below autopilot_min_price.
+    """
+    from app.core.database import listings_collection
+    from app.core.database import db
+
+    marketplace_listings = db["marketplace_listings"]
+    now_iso = datetime.now(timezone.utc).isoformat()
+    dropped_count = 0
+
+    for collection in [listings_collection, marketplace_listings]:
+        active = list(collection.find({
+            "status": "available",
+            "enable_auto_reduction": True,
+            "expires_at": {"$exists": True, "$ne": None},
+        }))
+
+        for doc in active:
+            expires_at = doc.get("expires_at")
+            original_price = float(doc.get("original_price") or doc.get("price") or 0)
+            if not expires_at or original_price <= 0:
+                continue
+
+            min_price = float(doc.get("autopilot_min_price") or 1)
+            hours_remaining = compute_hours_remaining(expires_at)
+            
+            # Determine target drop %
+            target_multiplier = 1.0
+            if hours_remaining <= 12:
+                target_multiplier = 0.5   # 50% drop
+            elif hours_remaining <= 24:
+                target_multiplier = 0.7   # 30% drop
+            elif hours_remaining <= 48:
+                target_multiplier = 0.9   # 10% drop
+                
+            if target_multiplier < 1.0:
+                target_price = round(original_price * target_multiplier, 2)
+                # Respect control limit
+                if target_price < min_price:
+                    target_price = min_price
+                    
+                current_price = float(doc.get("price", original_price))
+                if current_price > target_price:
+                    # Apply the drop
+                    collection.update_one(
+                        {"_id": doc["_id"]},
+                        {"$set": {
+                            "price": target_price,
+                            "updated_at": now_iso
+                        }}
+                    )
+                    dropped_count += 1
+
+    if dropped_count > 0:
+        print(f"[EXPIRY-ENGINE] Applied Autopilot price drops to {dropped_count} listings")
+
+    return dropped_count
+
+
 def _parse_quantity_kg(quantity) -> float:
     """Parse a quantity value (could be string like '50 kg' or int) to float kg."""
     if isinstance(quantity, (int, float)):

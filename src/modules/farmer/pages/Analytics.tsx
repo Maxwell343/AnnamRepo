@@ -138,6 +138,39 @@ const Analytics: React.FC = () => {
             icon: listing.status === 'delivered' ? '✅' : listing.status === 'claimed' ? '🤝' : '📦'
           }));
           setRecentActivity(activities);
+
+          // Calculate monthly donations and claims globally
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const monthStats = new Map<string, {donations: number, claimed: number}>();
+          
+          data.listings.forEach((listing: any) => {
+            const dateStr = listing.created_at || listing.updated_at;
+            if (!dateStr) return;
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return;
+            
+            const monthName = months[date.getMonth()];
+            const curr = monthStats.get(monthName) || { donations: 0, claimed: 0 };
+            curr.donations += 1;
+            if (listing.status === 'claimed' || listing.status === 'assigned' || listing.status === 'in_transit' || listing.status === 'delivered') {
+                curr.claimed += 1;
+            }
+            monthStats.set(monthName, curr);
+          });
+          
+          const currentMonth = new Date().getMonth();
+          const newMonthlyData: MonthlyData[] = [];
+          for (let i = 7; i >= 0; i--) {
+            let mInd = currentMonth - i;
+            if (mInd < 0) mInd += 12;
+            const mName = months[mInd];
+            newMonthlyData.push({
+               month: mName,
+               donations: monthStats.get(mName)?.donations || 0,
+               claimed: monthStats.get(mName)?.claimed || 0
+            });
+          }
+          setMonthlyData(newMonthlyData);
         }
       }
     } catch (err) {

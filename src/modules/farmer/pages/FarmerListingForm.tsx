@@ -98,6 +98,7 @@ interface FormData {
   bulkMinQuantity: number;
   bulkDiscountPercent: number;
   enableAutoReduction: boolean;
+  autoPilotMinPrice: number;
   isOrganic: boolean;
   isCertified: boolean;
   pickupAvailable: boolean;
@@ -143,6 +144,7 @@ const FarmerListingForm: React.FC = () => {
     bulkMinQuantity: 50,
     bulkDiscountPercent: 10,
     enableAutoReduction: true,
+    autoPilotMinPrice: 0,
     isOrganic: false,
     isCertified: false,
     pickupAvailable: true,
@@ -470,6 +472,7 @@ const FarmerListingForm: React.FC = () => {
           discount_percent: formData.bulkDiscountPercent
         } : null,
         enable_auto_reduction: formData.enableAutoReduction,
+        autopilot_min_price: formData.enableAutoReduction ? formData.autoPilotMinPrice : null,
         is_organic: formData.isOrganic,
         is_certified: formData.isCertified,
         pickup_available: formData.pickupAvailable,
@@ -912,20 +915,36 @@ const FarmerListingForm: React.FC = () => {
                     </div>
                     
                     {/* Auto Price Reduction */}
-                    <div className="form-group full-width">
-                      <label className="checkbox-label">
+                    <div className="form-group full-width" style={{ backgroundColor: '#f0fdf4', padding: '16px', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
+                      <label className="checkbox-label" style={{ marginBottom: formData.enableAutoReduction ? '12px' : '0' }}>
                         <input
                           type="checkbox"
                           name="enableAutoReduction"
                           checked={formData.enableAutoReduction}
                           onChange={handleCheckboxChange}
                         />
-                        <span>📉 Enable Smart Auto-Price Reduction</span>
+                        <span style={{ fontWeight: 600, color: '#166534' }}>🤖 Enable AI Autopilot (Minimize Waste)</span>
                       </label>
                       {formData.enableAutoReduction && (
-                        <p className="hint">
-                          Price will automatically reduce as expiry approaches to maximize sales and minimize waste.
-                        </p>
+                        <div className="autopilot-config">
+                          <p className="hint" style={{ color: '#15803d', marginBottom: '12px', fontSize: '13px' }}>
+                            The AI will automatically drop prices as expiry approaches to guarantee sale. Set a strict minimum floor price to protect your yield.
+                          </p>
+                          <div className="price-input" style={{ maxWidth: '200px' }}>
+                            <span className="currency">₹</span>
+                            <input
+                              type="number"
+                              name="autoPilotMinPrice"
+                              value={formData.autoPilotMinPrice || ''}
+                              onChange={handleChange}
+                              placeholder="Min floor limit"
+                              min="1"
+                              max={formData.price}
+                              required
+                            />
+                            <span style={{ fontSize: '12px', color: '#6b7280', alignSelf: 'center', marginLeft: '8px' }}>/{formData.unit}</span>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </>
