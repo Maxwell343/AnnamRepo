@@ -5,9 +5,12 @@ from bson import ObjectId
 from fastapi import APIRouter, Body, HTTPException
 from pydantic import BaseModel
 
-from app.core.database import delivery_tasks_collection, listings_collection, users_collection
+from app.core.database import delivery_tasks_collection, listings_collection, users_collection, get_database
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
+db = get_database()
+farmer_settings_collection = db["farmer_settings"]
+ngo_settings_collection = db["ngo_settings"]
 
 
 def _iso(dt: Optional[datetime]) -> str:
@@ -48,11 +51,157 @@ def _status_of(user: Dict[str, Any]) -> str:
 
 
 def _is_kyc_verified(user: Dict[str, Any]) -> bool:
+    if str(user.get("kyc_status") or "").strip().lower() == "approved":
+        return True
     return bool(
         user.get("kycVerified")
         or user.get("kyc_verified")
         or user.get("is_verified")
     )
+
+
+def _kyc_status_value(user: Dict[str, Any]) -> str:
+    status = str(user.get("kyc_status") or "").strip().lower()
+    if status:
+        return status
+    return "approved" if _is_kyc_verified(user) else "pending"
+
+
+def _settings_verification_status(kyc_status: str) -> str:
+    if kyc_status == "approved":
+        return "verified"
+    if kyc_status in {"rejected", "resubmission_required"}:
+        return "rejected"
+    return "pending"
+
+
+def _sync_settings_verification_status(user: Dict[str, Any], kyc_status: str) -> None:
+    user_id = _coerce_id(user.get("_id") or user.get("id"))
+    role = _role_of(user)
+    updates = {
+        "verification_status": _settings_verification_status(kyc_status),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    if role == "farmer":
+        farmer_settings_collection.update_one({"farmer_id": user_id}, {"$set": updates})
+    elif role == "ngo":
+        ngo_settings_collection.update_one({"ngo_id": user_id}, {"$set": updates})
+
+
+def _document_status_from_verification(verification_status: str) -> str:
+    value = str(verification_status or "").strip().lower()
+    if value in {"verified", "approved"}:
+        return "verified"
+    if value in {"rejected", "resubmission_required"}:
+        return "rejected"
+    return "pending"
+
+
+def _build_settings_backed_kyc_documents(user: Dict[str, Any]) -> List[Dict[str, Any]]:
+    user_id = _coerce_id(user.get("_id") or user.get("id"))
+    role = _role_of(user)
+
+    if role == "farmer":
+        settings = farmer_settings_collection.find_one({"farmer_id": user_id}) or {}
+        file_name = str(settings.get("document_file_name") or "").strip()
+        if not file_name:
+            return []
+
+        uploaded_at = settings.get("updated_at") or settings.get("created_at") or datetime.now(timezone.utc)
+        return [
+            {
+                "id": "farmer-verification-document",
+                "type": "id_proof",
+                "name": "Farmer Verification Document",
+                "fileName": file_name,
+                "fileSize": "0 KB",
+                "uploadedAt": _iso(uploaded_at),
+                "status": _document_status_from_verification(settings.get("verification_status") or "pending"),
+            }
+        ]
+
+    if role == "ngo":
+        settings = ngo_settings_collection.find_one({"ngo_id": user_id}) or {}
+        uploaded_at = settings.get("updated_at") or settings.get("created_at") or datetime.now(timezone.utc)
+        status = _document_status_from_verification(settings.get("verification_status") or "pending")
+        docs: List[Dict[str, Any]] = []
+
+        candidates = [
+            ("registration_certificate_file_name", "Registration Certificate"),
+            ("certificate_80g_file_name", "80G Certificate"),
+            ("certificate_12a_file_name", "12A Certificate"),
+        ]
+        for idx, (field_name, label) in enumerate(candidates, start=1):
+            file_name = str(settings.get(field_name) or "").strip()
+            if not file_name:
+                continue
+
+            docs.append(
+                {
+                    "id": f"ngo-document-{idx}",
+                    "type": "registration",
+                    "name": label,
+                    "fileName": file_name,
+                    "fileSize": "0 KB",
+                    "uploadedAt": _iso(uploaded_at),
+                    "status": status,
+                }
+            )
+
+        return docs
+
+    return []
+
+
+def _append_kyc_timeline(
+    user: Dict[str, Any],
+    *,
+    action: str,
+    description: str,
+    status: str,
+    actor: str = "Admin",
+) -> List[Dict[str, Any]]:
+    timeline = list(user.get("kyc_timeline") or [])
+    timeline.insert(
+        0,
+        {
+            "id": f"t{int(datetime.now(timezone.utc).timestamp() * 1000)}",
+            "action": action,
+            "description": description,
+            "timestamp": _iso(datetime.now(timezone.utc)),
+            "actor": actor,
+            "status": status,
+        },
+    )
+    return timeline[:60]
+
+
+def _mark_documents_status(
+    docs: List[Dict[str, Any]],
+    *,
+    target_status: str,
+    rejection_reason: Optional[str] = None,
+    only_ids: Optional[set] = None,
+) -> List[Dict[str, Any]]:
+    updated_docs: List[Dict[str, Any]] = []
+    for doc in docs:
+        doc_copy = dict(doc)
+        doc_id = str(doc_copy.get("id") or "")
+        if only_ids and doc_id not in only_ids:
+            updated_docs.append(doc_copy)
+            continue
+
+        doc_copy["status"] = target_status
+        if rejection_reason:
+            doc_copy["rejectionReason"] = rejection_reason
+            doc_copy["rejection_reason"] = rejection_reason
+        else:
+            doc_copy.pop("rejectionReason", None)
+            doc_copy.pop("rejection_reason", None)
+        updated_docs.append(doc_copy)
+
+    return updated_docs
 
 
 def _user_record(user: Dict[str, Any]) -> Dict[str, Any]:
@@ -176,7 +325,12 @@ def get_user_kyc(user_id: str):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    docs = user.get("kyc_documents") or user.get("documents") or []
+    docs = user.get("kyc_documents") or _build_settings_backed_kyc_documents(user) or user.get("documents") or []
+    submitted_at_raw = user.get("kyc_submitted_at")
+    if not submitted_at_raw and docs:
+        first_doc = docs[0]
+        submitted_at_raw = first_doc.get("uploadedAt") or first_doc.get("uploaded_at")
+
     normalized_docs = []
     for idx, doc in enumerate(docs):
         normalized_docs.append(
@@ -218,8 +372,8 @@ def get_user_kyc(user_id: str):
     ]
 
     return {
-        "status": user.get("kyc_status") or ("approved" if _is_kyc_verified(user) else "pending"),
-        "submittedAt": _iso(user.get("kyc_submitted_at") or user.get("created_at") or datetime.now(timezone.utc)),
+        "status": _kyc_status_value(user),
+        "submittedAt": _iso(submitted_at_raw or user.get("created_at") or datetime.now(timezone.utc)),
         "lastUpdated": _iso(user.get("updated_at") or datetime.now(timezone.utc)),
         "documents": normalized_docs,
         "timeline": timeline,
@@ -234,6 +388,16 @@ def approve_user_kyc(user_id: str, payload: KycApproveRequest):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    now = datetime.now(timezone.utc)
+    docs = user.get("kyc_documents") or _build_settings_backed_kyc_documents(user) or []
+    approved_docs = _mark_documents_status(docs, target_status="verified") if docs else docs
+    timeline = _append_kyc_timeline(
+        user,
+        action="KYC Approved",
+        description="KYC verification approved by admin",
+        status="success",
+    )
+
     users_collection.update_one(
         {"_id": user["_id"]},
         {
@@ -241,11 +405,16 @@ def approve_user_kyc(user_id: str, payload: KycApproveRequest):
                 "kyc_status": "approved",
                 "kycVerified": True,
                 "kyc_verified": True,
+                "kyc_rejection_reason": "",
                 "kyc_notes": payload.notes or "",
-                "updated_at": datetime.now(timezone.utc),
+                "kyc_documents": approved_docs,
+                "kyc_timeline": timeline,
+                "kyc_approved_at": now,
+                "updated_at": now,
             }
         },
     )
+    _sync_settings_verification_status(user, "approved")
     return {"success": True, "status": "approved"}
 
 
@@ -254,6 +423,20 @@ def reject_user_kyc(user_id: str, payload: KycRejectRequest):
     user = _find_user(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    now = datetime.now(timezone.utc)
+    docs = user.get("kyc_documents") or _build_settings_backed_kyc_documents(user) or []
+    rejected_docs = _mark_documents_status(
+        docs,
+        target_status="rejected",
+        rejection_reason=payload.reason,
+    ) if docs else docs
+    timeline = _append_kyc_timeline(
+        user,
+        action="KYC Rejected",
+        description=f"KYC rejected by admin: {payload.reason}",
+        status="error",
+    )
 
     users_collection.update_one(
         {"_id": user["_id"]},
@@ -264,10 +447,13 @@ def reject_user_kyc(user_id: str, payload: KycRejectRequest):
                 "kyc_verified": False,
                 "kyc_rejection_reason": payload.reason,
                 "kyc_notes": payload.notes or "",
-                "updated_at": datetime.now(timezone.utc),
+                "kyc_documents": rejected_docs,
+                "kyc_timeline": timeline,
+                "updated_at": now,
             }
         },
     )
+    _sync_settings_verification_status(user, "rejected")
     return {"success": True, "status": "rejected"}
 
 
@@ -277,16 +463,37 @@ def request_kyc_resubmission(user_id: str, payload: KycResubmitRequest):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    now = datetime.now(timezone.utc)
+    docs = user.get("kyc_documents") or _build_settings_backed_kyc_documents(user) or []
+    selected_ids = {str(doc_id) for doc_id in payload.documentIds}
+    resubmit_docs = _mark_documents_status(
+        docs,
+        target_status="rejected",
+        rejection_reason=payload.reason,
+        only_ids=selected_ids if selected_ids else None,
+    ) if docs else docs
+    timeline = _append_kyc_timeline(
+        user,
+        action="Resubmission Requested",
+        description=f"Admin requested document resubmission: {payload.reason}",
+        status="warning",
+    )
+
     users_collection.update_one(
         {"_id": user["_id"]},
         {
             "$set": {
                 "kyc_status": "resubmission_required",
+                "kycVerified": False,
+                "kyc_verified": False,
                 "kyc_rejection_reason": payload.reason,
-                "updated_at": datetime.now(timezone.utc),
+                "kyc_documents": resubmit_docs,
+                "kyc_timeline": timeline,
+                "updated_at": now,
             }
         },
     )
+    _sync_settings_verification_status(user, "resubmission_required")
     return {"success": True, "status": "resubmission_required", "documents": payload.documentIds}
 
 

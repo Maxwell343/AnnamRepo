@@ -380,6 +380,58 @@
   background: #FAFAFA;
 }
 
+.impact-activity-section {
+  margin-top: 1.5rem;
+}
+
+.impact-state-text {
+  margin: 0;
+  padding: 1rem;
+  color: #6b7280;
+}
+
+.impact-activity-item {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+.impact-activity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.impact-claim-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  background: #1d4ed8;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.impact-claim-btn:hover {
+  background: #1e40af;
+}
+
+.impact-claim-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.impact-meta-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
 .activity-icon {
   font-size: 1.5rem;
   width: 40px;

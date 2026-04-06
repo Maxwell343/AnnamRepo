@@ -88,8 +88,9 @@ def get_listings(
 
 @router.get("/listings/available")
 def get_available():
-    """Get all available listings for NGOs"""
-    listings = get_available_listings()
+    """Get listings explicitly marked for NGO donation."""
+    listings = get_all_listings({"donation_mode": True}, include_expired=False)
+    listings = [listing for listing in listings if listing.get("status") == "available"]
     return {
         "listings": listings,
         "count": len(listings)
@@ -121,31 +122,32 @@ def get_farmer_expired_listings(farmer_id: str):
 
 @router.get("/listings/claimed/{ngo_id}")
 def get_claimed_by_ngo(ngo_id: str):
-    """Get all listings claimed by a specific NGO"""
-    listings = get_all_listings()
-    
-    print(f"[DEBUG] Searching for claimed listings for NGO ID: {ngo_id}")
-    print(f"[DEBUG] Total listings in database: {len(listings)}")
-    
-    # Filter listings claimed by this NGO (not delivered yet - in progress)
-    claimed_listings = []
-    for listing in listings:
-        claimed_by = listing.get("claimed_by")
-        status = listing.get("status")
-        if claimed_by:
-            print(f"[DEBUG] Listing {listing.get('id')} - claimed_by: {claimed_by}, status: {status}")
-            # Handle both dict and string formats
-            if isinstance(claimed_by, dict):
-                # Check for ngo_id field (new format) or id field (old format)
-                claimed_ngo_id = str(claimed_by.get("ngo_id") or claimed_by.get("id") or "")
-                print(f"[DEBUG] Comparing claimed_ngo_id '{claimed_ngo_id}' with ngo_id '{ngo_id}'")
-                if claimed_ngo_id == ngo_id:
-                    claimed_listings.append(listing)
-            elif str(claimed_by) == ngo_id:
-                claimed_listings.append(listing)
-    
-    print(f"[DEBUG] Found {len(claimed_listings)} claimed listings for NGO {ngo_id}")
-    
+    """Get all listings claimed by a specific NGO, including historical records."""
+    listings = get_all_listings(include_expired=True)
+
+    def _is_claimed_by_ngo(claimed_by: object) -> bool:
+        if not claimed_by:
+            return False
+        if isinstance(claimed_by, dict):
+            claimed_ngo_id = claimed_by.get("ngo_id") or claimed_by.get("id")
+            return str(claimed_ngo_id or "") == ngo_id
+        return str(claimed_by) == ngo_id
+
+    claimed_listings = [
+        listing for listing in listings
+        if _is_claimed_by_ngo(listing.get("claimed_by"))
+    ]
+
+    claimed_listings.sort(
+        key=lambda listing: (
+            listing.get("claimed_at")
+            or listing.get("updated_at")
+            or listing.get("created_at")
+            or ""
+        ),
+        reverse=True,
+    )
+
     return {
         "listings": claimed_listings,
         "count": len(claimed_listings)
@@ -202,6 +204,12 @@ def claim_a_listing(listing_id: str, claim: ClaimRequest):
     
     if listing.get("status") != "available":
         raise HTTPException(status_code=400, detail="Listing is not available for claiming")
+
+    if not bool(listing.get("donation_mode")):
+        raise HTTPException(
+            status_code=400,
+            detail="Listing is not yet available for NGO donation. Farmer must mark it as donate first.",
+        )
     
     updated = claim_listing(listing_id, claim.dict())
     

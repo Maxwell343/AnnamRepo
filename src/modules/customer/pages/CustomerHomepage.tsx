@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CustomerHomePage.css';
 import { API_ENDPOINTS } from '../../../config/api';
+import { useToast } from '../../../components/ui/ToastProvider';
 import { ShoppingCart, Leaf, Apple, Wheat, Milk, Sprout, Home, Package, Heart, Tag, MapPin, CreditCard, Settings, Star, LogOut, Search, Truck, Bell, X, Trash2, PartyPopper, Carrot, Cherry, Check, Clock, Bike, Phone, ArrowRight, User, Wallet, Frown, CheckCircle, Hourglass, Flame } from 'lucide-react';
 
 // --- Types ---
@@ -96,6 +97,7 @@ const getTimeAgo = (dateString: string): string => {
 
 const CustomerHomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   
   // State
   const [user, setUser] = useState<User | null>(null);
@@ -303,7 +305,7 @@ const CustomerHomePage: React.FC = () => {
     });
 
     // Show toast notification
-    showToast(`${product.title} added to cart!`, 'success');
+    showToast(`${product.title} added to cart!`, { variant: 'success' });
   };
 
   const removeFromCart = (productId: number) => {
@@ -336,30 +338,13 @@ const CustomerHomePage: React.FC = () => {
   const toggleWishlist = (productId: number) => {
     setWishlist(prev => {
       if (prev.includes(productId)) {
-        showToast('Removed from wishlist', 'info');
+        showToast('Removed from wishlist', { variant: 'info' });
         return prev.filter(id => id !== productId);
       } else {
-        showToast('Added to wishlist!', 'success');
+        showToast('Added to wishlist!', { variant: 'success' });
         return [...prev, productId];
       }
     });
-  };
-
-  // Toast notification
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.innerHTML = `
-      <span class="toast-icon">${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'}</span>
-      <span class="toast-message">${message}</span>
-    `;
-    document.body.appendChild(toast);
-
-    setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
   };
 
   // Filter and sort products
@@ -418,7 +403,7 @@ const CustomerHomePage: React.FC = () => {
 
   const handleCheckout = () => {
     if (cart.length === 0) {
-      showToast('Your cart is empty!', 'error');
+      showToast('Your cart is empty!', { variant: 'error' });
       return;
     }
 
@@ -1421,9 +1406,6 @@ const CustomerHomePage: React.FC = () => {
 
       {renderSearchModal()}
       {renderCartSidebar()}
-
-      {/* Toast Container */}
-      <div id="toast-container" />
     </div>
   );
 };

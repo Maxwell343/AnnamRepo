@@ -164,6 +164,12 @@ class NgoSettingsModel(BaseModel):
     profile_complete: Optional[bool] = False
     completed_at: Optional[str] = None
 
+    # Verification lifecycle (admin-reviewed)
+    verification_status: Optional[str] = None
+    registration_certificate_file_name: Optional[str] = None
+    certificate_80g_file_name: Optional[str] = None
+    certificate_12a_file_name: Optional[str] = None
+
     class Config:
         extra = "allow"
 

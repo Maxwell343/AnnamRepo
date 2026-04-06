@@ -19,6 +19,9 @@ from app.services.listing_service import (
     set_rescue_action,
     claim_listing,
     update_listing,
+    get_listing_age_hours,
+    DONATION_ELIGIBILITY_HOURS,
+    is_listing_expired,
 )
 from app.services.expiry_engine import enrich_listing, compute_hours_remaining
 from app.services.reward_service import get_farmer_rewards, get_leaderboard
@@ -43,7 +46,28 @@ async def rescue_action(listing_id: str, payload: RescueActionRequest):
     if payload.action not in ("donate", "sell_discounted"):
         raise HTTPException(status_code=400, detail="Action must be 'donate' or 'sell_discounted'")
 
-    result = set_rescue_action(listing_id, payload.action, payload.farmer_id)
+    listing = get_listing_by_id(listing_id)
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    if payload.action == "donate":
+        if listing.get("status") != "available":
+            raise HTTPException(status_code=400, detail="Only available listings can be donated")
+
+        if not bool(listing.get("donation_mode")):
+            age_hours = get_listing_age_hours(listing)
+            if age_hours < DONATION_ELIGIBILITY_HOURS:
+                remaining = round(DONATION_ELIGIBILITY_HOURS - age_hours, 1)
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Donation option becomes available after 24 hours. Try again in {remaining}h",
+                )
+
+    try:
+        result = set_rescue_action(listing_id, payload.action, payload.farmer_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
     if not result:
         raise HTTPException(status_code=404, detail="Listing not found")
 
@@ -91,25 +115,23 @@ async def get_rescue_listings():
 @router.get("/rescue/ngo-priority")
 async def get_ngo_priority_listings():
     """
-    NGO priority feed: only urgent + rescue listings.
-    donation_mode listings appear at top, sorted most-urgent-first.
+    NGO priority feed: only farmer-approved donation listings.
     """
     results = []
 
     for coll in [listings_collection, marketplace_listings]:
         docs = list(coll.find({
-            "status": {"$nin": ["expired", "delivered", "cancelled", "claimed", "in_transit"]},
-            "expires_at": {"$exists": True, "$ne": None},
+            "status": "available",
+            "$or": [
+                {"donation_mode": True},
+                {"rescue_action": {"$in": ["donate", "auto_donate"]}},
+            ],
         }))
         for doc in docs:
             doc["id"] = str(doc["_id"])
             del doc["_id"]
             enrich_listing(doc)
-            
-            is_donation = doc.get("donation_mode") is True
-            urg_status = doc.get("urgency_status")
-            
-            if is_donation or urg_status == "rescue":
+            if doc.get("urgency_status") != "expired" and not is_listing_expired(doc):
                 results.append(doc)
 
     # Sort: most urgent first
@@ -154,6 +176,9 @@ async def claim_donation_listing(listing_id: str, ngo_id: str, ngo_name: str = "
     listing = get_listing_by_id(listing_id)
     if not listing:
         raise HTTPException(status_code=404, detail="Listing not found")
+
+    if listing.get("status") != "available":
+        raise HTTPException(status_code=400, detail="Listing is no longer available for claim")
 
     if not listing.get("donation_mode"):
         raise HTTPException(status_code=400, detail="This listing is not in donation mode")

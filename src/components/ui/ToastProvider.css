@@ -1,0 +1,135 @@
+.annam-toast-root {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+.annam-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: min(360px, calc(100vw - 32px));
+  border-radius: 12px;
+  padding: 12px 12px 12px 10px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+  border: 1px solid #e5e7eb;
+  pointer-events: auto;
+  animation: annam-toast-slide-in 0.18s ease-out;
+}
+
+.annam-toast--success {
+  border-left: 4px solid #16a34a;
+}
+
+.annam-toast--error {
+  border-left: 4px solid #dc2626;
+}
+
+.annam-toast--warning {
+  border-left: 4px solid #d97706;
+}
+
+.annam-toast--info {
+  border-left: 4px solid #2563eb;
+}
+
+.annam-toast__icon {
+  min-width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #111827;
+  background: #f3f4f6;
+}
+
+.annam-toast--success .annam-toast__icon {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.annam-toast--error .annam-toast__icon {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.annam-toast--warning .annam-toast__icon {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.annam-toast--info .annam-toast__icon {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
+.annam-toast__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.annam-toast__title {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.annam-toast__message {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #334155;
+}
+
+.annam-toast__close {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.annam-toast__close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+@keyframes annam-toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px) translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .annam-toast-root {
+    top: auto;
+    right: 10px;
+    left: 10px;
+    bottom: 10px;
+  }
+
+  .annam-toast {
+    width: 100%;
+  }
+}

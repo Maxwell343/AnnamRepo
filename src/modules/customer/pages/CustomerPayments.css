@@ -2046,60 +2046,6 @@
 }
 
 /* ============================================
-   TOAST NOTIFICATIONS
-   ============================================ */
-#toast-container {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  z-index: 10000;
-}
-
-.payment-toast {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  background: var(--pay-text);
-  color: white;
-  border-radius: var(--pay-radius);
-  box-shadow: var(--pay-shadow-xl);
-  transform: translateX(120%);
-  opacity: 0;
-  transition: all 0.3s var(--ease-out-expo);
-}
-
-.payment-toast.show {
-  transform: translateX(0);
-  opacity: 1;
-}
-
-.payment-toast.toast-success {
-  background: var(--pay-success);
-}
-
-.payment-toast.toast-error {
-  background: var(--pay-error);
-}
-
-.payment-toast.toast-warning {
-  background: var(--pay-warning);
-}
-
-.toast-icon {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.toast-message {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* ============================================
    RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {

@@ -7,6 +7,7 @@ import {
   Circle, MapPin, LayoutGrid, CircleDot
 } from 'lucide-react';
 import { API_BASE_URL } from '../../../config/api';
+import { useToast } from '../../../components/ui/ToastProvider';
 import './RegionHeatmap.css';
 
 interface Region {
@@ -83,6 +84,7 @@ const AnimatedCounter: React.FC<{ value: number; prefix?: string; suffix?: strin
 };
 
 const RegionHeatmap: React.FC = () => {
+  const { showToast } = useToast();
   const [metric, setMetric] = useState<MetricType>('orders');
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
@@ -1207,7 +1209,10 @@ const RegionHeatmap: React.FC = () => {
                         doc.save(`${selected.name}_Report.pdf`);
                       } catch (error) {
                         console.error('PDF export failed:', error);
-                        alert('Failed to generate PDF. Please try again.');
+                        showToast('Failed to generate PDF. Please try again.', {
+                          title: 'Export Failed',
+                          variant: 'error',
+                        });
                       }
                     }
                   }}
@@ -1234,13 +1239,35 @@ const RegionHeatmap: React.FC = () => {
                           text: contactMessage
                         }).catch(() => {
                           // Fallback: copy to clipboard
-                          navigator.clipboard.writeText(contactMessage);
-                          alert('Region details copied to clipboard. Share via your preferred contact method.');
+                          navigator.clipboard.writeText(contactMessage)
+                            .then(() => {
+                              showToast('Region details copied to clipboard. Share via your preferred contact method.', {
+                                title: 'Copied',
+                                variant: 'success',
+                              });
+                            })
+                            .catch(() => {
+                              showToast('Unable to copy region details right now.', {
+                                title: 'Copy Failed',
+                                variant: 'error',
+                              });
+                            });
                         });
                       } else {
                         // Fallback for browsers without share API
-                        navigator.clipboard.writeText(contactMessage);
-                        alert(`Contact details for ${selected.name}:\n\n${contactMessage}\n\nDetails copied to clipboard!`);
+                        navigator.clipboard.writeText(contactMessage)
+                          .then(() => {
+                            showToast(`Contact details for ${selected.name} copied to clipboard.`, {
+                              title: 'Copied',
+                              variant: 'success',
+                            });
+                          })
+                          .catch(() => {
+                            showToast('Unable to copy region details right now.', {
+                              title: 'Copy Failed',
+                              variant: 'error',
+                            });
+                          });
                       }
                     }
                   }}

@@ -511,8 +511,23 @@
 .ml-action-btn.view:hover { background: #e2e8f0; }
 .ml-action-btn.edit { background: #f0fdf4; color: #16a34a; }
 .ml-action-btn.edit:hover { background: #dcfce7; }
+.ml-action-btn.donate { background: #eff6ff; color: #1d4ed8; }
+.ml-action-btn.donate:hover { background: #dbeafe; }
+.ml-action-btn:disabled { opacity: 0.65; cursor: not-allowed; }
 .ml-action-btn.more { background: #f1f5f9; color: #64748b; padding: 8px; }
 .ml-action-btn.more:hover { background: #e2e8f0; }
+
+.ml-donate-wait {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #92400e;
+  background: #fffbeb;
+}
 
 /* More Dropdown */
 .ml-more-wrap { position: relative; margin-left: auto; }

@@ -11,6 +11,7 @@ import {
   User,
 } from 'lucide-react';
 import { API_ENDPOINTS } from '../../../config/api';
+import { useToast } from '../../../components/ui/ToastProvider';
 import './ImpactDashboard.css';
 
 type DonationListing = {
@@ -34,6 +35,7 @@ type UserData = {
 
 const ImpactDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [listings, setListings] = useState<DonationListing[]>([]);
   const [claimed, setClaimed] = useState<DonationListing[]>([]);
@@ -111,7 +113,7 @@ const ImpactDashboard: React.FC = () => {
       setClaimed((prev) => [updated, ...prev]);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Claim failed';
-      alert(msg);
+      showToast(msg, { variant: 'error', title: 'Claim Failed' });
     } finally {
       setClaimingId(null);
     }
@@ -171,29 +173,29 @@ const ImpactDashboard: React.FC = () => {
           </div>
         </section>
 
-        <section className="activity-section" style={{ marginTop: '1.5rem' }}>
+        <section className="activity-section impact-activity-section">
           <h2>Available Donations</h2>
           <div className="activity-feed">
             {loading ? (
-              <p style={{ padding: '1rem', color: '#6b7280' }}>Loading...</p>
+              <p className="impact-state-text">Loading...</p>
             ) : listings.length === 0 ? (
-              <p style={{ padding: '1rem', color: '#6b7280' }}>No priority listings right now.</p>
+              <p className="impact-state-text">No priority listings right now.</p>
             ) : (
               listings.map((item) => {
                 const name = item.crop_name || item.produce_name || item.title || 'Donation';
                 return (
-                  <div key={item.id} className="activity-item" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center' }}>
+                  <div key={item.id} className="activity-item impact-activity-item">
+                    <div className="impact-activity-row">
                       <strong>{name}</strong>
                       <button
+                        className="impact-claim-btn"
                         onClick={() => handleClaim(item)}
                         disabled={claimingId === item.id}
-                        style={{ border: 'none', borderRadius: 8, padding: '0.45rem 0.7rem', background: '#1d4ed8', color: '#fff', cursor: 'pointer' }}
                       >
                         {claimingId === item.id ? 'Claiming...' : 'Claim Donation'}
                       </button>
                     </div>
-                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', color: '#6b7280', fontSize: '0.9rem' }}>
+                    <div className="impact-meta-row">
                       <span><Package size={14} /> Qty: {item.quantity || 'N/A'}</span>
                       <span><User size={14} /> Farmer: {item.farmer_name || 'Unknown'}</span>
                       <span><Clock3 size={14} /> {Math.max(0, Math.round(item.hours_remaining || 0))}h remaining</span>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CustomerAddresses.css';
-import { Home, Building2, MapPin, Check, X, Info, AlertTriangle, Star, Pencil, Trash2, Smartphone, Flag, ChevronUp, ChevronDown, ArrowLeft, Search, MapPinned, Lightbulb } from 'lucide-react';
-import { renderToStaticMarkup } from 'react-dom/server';
+import { Home, Building2, MapPin, Check, X, Star, Pencil, Trash2, Smartphone, Flag, ChevronUp, ChevronDown, ArrowLeft, Search, MapPinned, Lightbulb } from 'lucide-react';
+import { useToast } from '../../../components/ui/ToastProvider';
 
 // ============================================
 // TYPES
@@ -83,34 +83,6 @@ const validatePincode = (pincode: string): boolean => {
 
 const validatePhone = (phone: string): boolean => {
   return /^[6-9]\d{9}$/.test(phone.replace(/\D/g, ''));
-};
-
-// Toast notification
-const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
-  const icons: Record<string, React.ReactNode> = { success: <Check size={14} />, error: <X size={14} />, info: <Info size={14} />, warning: <AlertTriangle size={14} /> };
-  
-  const toast = document.createElement('div');
-  toast.className = `address-toast toast-${type}`;
-  const iconMarkup = renderToStaticMarkup(icons[type] as React.ReactElement);
-  toast.innerHTML = `
-    <span class="toast-icon">${iconMarkup}</span>
-    <span class="toast-message">${message}</span>
-  `;
-  
-  const container = document.getElementById('toast-container') || (() => {
-    const div = document.createElement('div');
-    div.id = 'toast-container';
-    document.body.appendChild(div);
-    return div;
-  })();
-  
-  container.appendChild(toast);
-  requestAnimationFrame(() => toast.classList.add('show'));
-  
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
 };
 
 // ============================================
@@ -363,6 +335,10 @@ const AddressForm: React.FC<{
   onCancel: () => void;
   isOpen: boolean;
 }> = ({ address, onSubmit, onCancel, isOpen }) => {
+  const { showToast: enqueueToast } = useToast();
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    enqueueToast(message, { variant: type });
+  };
   const [formData, setFormData] = useState({
     type: 'home' as 'home' | 'work' | 'other',
     label: '',
@@ -845,6 +821,10 @@ const EmptyState: React.FC<{ onAddNew: () => void }> = ({ onAddNew }) => (
 
 const CustomerAddresses: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast: enqueueToast } = useToast();
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    enqueueToast(message, { variant: type });
+  };
   
   // State
   const [user, setUser] = useState<User | null>(null);
@@ -1191,9 +1171,6 @@ const CustomerAddresses: React.FC = () => {
         onCancel={handleFormCancel}
         isOpen={isFormOpen}
       />
-
-      {/* Toast Container */}
-      <div id="toast-container" />
     </div>
   );
 };

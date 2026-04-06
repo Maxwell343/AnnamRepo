@@ -40,6 +40,7 @@ import {
   Home,
 } from 'lucide-react';
 import { API_BASE_URL } from '../../../config/api';
+import { useToast } from '../../../components/ui/ToastProvider';
 import './ImpactMetrics.css';
 
 interface HeroMetric {
@@ -76,6 +77,7 @@ interface NGO {
 }
 
 const ImpactMetrics: React.FC = () => {
+  const { showToast } = useToast();
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<'month' | 'quarter' | 'year'>('month');
   const [showCelebration, setShowCelebration] = useState(false);
@@ -355,13 +357,33 @@ Generated: ${new Date().toLocaleString('en-IN')}
       navigator.share({
         title: 'Impact Metrics Report',
         text: reportSummary,
+      }).catch(() => {
+        navigator.clipboard.writeText(reportSummary)
+          .then(() => {
+            showToast('Impact summary copied to clipboard.', {
+              title: 'Copied',
+              variant: 'success',
+            });
+          })
+          .catch(() => {
+            showToast('Unable to share or copy impact summary right now.', {
+              title: 'Share Failed',
+              variant: 'error',
+            });
+          });
       });
     } else {
       // Fallback: Copy to clipboard
       navigator.clipboard.writeText(reportSummary).then(() => {
-        alert('Impact summary copied to clipboard!');
+        showToast('Impact summary copied to clipboard.', {
+          title: 'Copied',
+          variant: 'success',
+        });
       }).catch(() => {
-        alert('Impact Summary:\n\n' + reportSummary);
+        showToast('Unable to copy impact summary right now.', {
+          title: 'Copy Failed',
+          variant: 'error',
+        });
       });
     }
   };

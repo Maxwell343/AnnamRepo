@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Clock, UserCheck, Truck, CheckCircle, Leaf, Apple, Wheat, Package, Handshake, ArrowLeft, RefreshCw, Search, X, MailOpen, User, Calendar, MapPin, Car, Phone, Eye, PartyPopper, ClipboardList, Check } from 'lucide-react';
 import './ClaimedDonations.css';
 import { API_ENDPOINTS } from '../../../config/api';
+import { useToast } from '../../../components/ui/ToastProvider';
 
 interface User {
   id: string;
@@ -36,6 +37,7 @@ type SortOption = 'newest' | 'oldest' | 'delivery_soon';
 
 const ClaimedDonations: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [donations, setDonations] = useState<ClaimedDonation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -114,7 +116,10 @@ const ClaimedDonations: React.FC = () => {
             if (!orgName.trim()) missing.push('Organization Name');
             if (!address.trim()) missing.push('Address');
 
-            alert(`Please complete your organization profile before accessing donations.\n\nMissing fields: ${missing.join(', ')}`);
+            showToast(`Please complete your organization profile before accessing donations. Missing fields: ${missing.join(', ')}`, {
+              variant: 'warning',
+              title: 'Profile Incomplete',
+            });
             navigate('/ngo-settings', { state: { returnTo: '/claimed-donations', incompleteProfile: true } });
             return;
           }
@@ -122,7 +127,10 @@ const ClaimedDonations: React.FC = () => {
           // Fallback: check localStorage
           const ngoName = localStorage.getItem('ngoName') || '';
           if (!parsedUser.name?.trim() || !ngoName.trim()) {
-            alert('Please complete your organization profile before accessing donations.');
+            showToast('Please complete your organization profile before accessing donations.', {
+              variant: 'warning',
+              title: 'Profile Incomplete',
+            });
             navigate('/ngo-settings', { state: { returnTo: '/claimed-donations', incompleteProfile: true } });
             return;
           }

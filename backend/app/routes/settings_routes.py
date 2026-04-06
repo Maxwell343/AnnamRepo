@@ -56,6 +56,8 @@ async def get_farmer_settings_route(farmer_id: str):
 async def save_farmer_settings_route(settings: FarmerSettingsModel):
     """Save farmer settings"""
     settings_dict = settings.dict(exclude_unset=True)
+    settings_dict.pop("verification_status", None)
+    settings_dict.pop("kyc_status", None)
     is_profile_complete = bool(
         (settings_dict.get("name") or "").strip()
         and (settings_dict.get("phone") or "").strip()
@@ -83,6 +85,8 @@ async def update_farmer_settings_route(farmer_id: str, settings: FarmerSettingsM
     """Update farmer settings"""
     settings_dict = settings.dict(exclude_unset=True)
     settings_dict["farmer_id"] = farmer_id
+    settings_dict.pop("verification_status", None)
+    settings_dict.pop("kyc_status", None)
     is_profile_complete = bool(
         (settings_dict.get("name") or "").strip()
         and (settings_dict.get("phone") or "").strip()
@@ -119,6 +123,8 @@ async def get_ngo_settings_route(ngo_id: str):
 async def save_ngo_settings_route(settings: NgoSettingsModel):
     """Save NGO settings"""
     settings_dict = settings.dict(exclude_unset=True)
+    settings_dict.pop("verification_status", None)
+    settings_dict.pop("kyc_status", None)
     is_profile_complete = bool(
         (settings_dict.get("admin_name") or "").strip()
         and (settings_dict.get("admin_phone") or "").strip()
@@ -159,6 +165,8 @@ async def update_ngo_settings_route(ngo_id: str, settings: NgoSettingsModel):
     """Update NGO settings"""
     settings_dict = settings.dict(exclude_unset=True)
     settings_dict["ngo_id"] = ngo_id
+    settings_dict.pop("verification_status", None)
+    settings_dict.pop("kyc_status", None)
     is_profile_complete = bool(
         (settings_dict.get("admin_name") or "").strip()
         and (settings_dict.get("admin_phone") or "").strip()

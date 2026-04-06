@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Listing.css';
 import { API_ENDPOINTS } from '../../../config/api';
+import { useToast } from '../../../components/ui/ToastProvider';
 import { MapContainer, TileLayer, CircleMarker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { LeafletMouseEvent } from 'leaflet';
@@ -30,6 +31,7 @@ const MapFlyTo: React.FC<{ center: LatLng; zoom: number }> = ({ center, zoom }) 
 
 const ListingForm: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -93,7 +95,10 @@ const ListingForm: React.FC = () => {
             if (!farmName.trim()) missing.push('Farm Name');
             if (!farmLocation.trim()) missing.push('Farm Location');
 
-            alert(`Please complete your profile before creating a listing.\n\nMissing fields: ${missing.join(', ')}`);
+            showToast(`Please complete your profile before creating a listing. Missing fields: ${missing.join(', ')}`, {
+              variant: 'warning',
+              title: 'Profile Incomplete',
+            });
             navigate('/farmer-settings', { state: { returnTo: '/listing', incompleteProfile: true } });
             return;
           }
@@ -108,7 +113,10 @@ const ListingForm: React.FC = () => {
           }
 
           if (!parsedUser.name?.trim() || !phone.trim() || !farmName.trim() || !farmLocation.trim()) {
-            alert('Please complete your profile before creating a listing.');
+            showToast('Please complete your profile before creating a listing.', {
+              variant: 'warning',
+              title: 'Profile Incomplete',
+            });
             navigate('/farmer-settings', { state: { returnTo: '/listing', incompleteProfile: true } });
             return;
           }
@@ -193,7 +201,7 @@ const ListingForm: React.FC = () => {
     try {
       const savedUser = localStorage.getItem('user');
       if (!savedUser) {
-        alert('You must be logged in to create a listing');
+        showToast('You must be logged in to create a listing', { variant: 'error' });
         navigate('/');
         return;
       }
@@ -207,7 +215,10 @@ const ListingForm: React.FC = () => {
         : coordsText;
 
       if (!pickup_address) {
-        alert('Please enter a pickup address or pin a location on the map.');
+        showToast('Please enter a pickup address or pin a location on the map.', {
+          variant: 'warning',
+          title: 'Pickup Location Required',
+        });
         setIsSubmitting(false);
         return;
       }
@@ -244,17 +255,24 @@ const ListingForm: React.FC = () => {
           freshness_status: listing.freshness_status || 'SAFE',
         });
         const statusEmoji = listing.freshness_status === 'CRITICAL' ? '🔴' : listing.freshness_status === 'URGENT' ? '🟡' : '🟢';
-        alert(`Listing created successfully!\n\n${statusEmoji} Predicted Shelf Life: ${listing.remaining_shelf_life_hours} hours (${listing.freshness_status})`);
+        showToast(`${statusEmoji} Predicted Shelf Life: ${listing.remaining_shelf_life_hours} hours (${listing.freshness_status})`, {
+          variant: 'success',
+          title: 'Listing Created Successfully',
+          duration: 5000,
+        });
       } else {
-        alert('Listing created successfully!');
+        showToast('Listing created successfully!', { variant: 'success' });
       }
       setTimeout(() => navigate('/dashboard'), 1500);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to create listing';
       if (message.toLowerCase().includes('failed to fetch')) {
-        alert('Error: Failed to reach backend. Please ensure the backend server is running and try again.');
+        showToast('Error: Failed to reach backend. Please ensure the backend server is running and try again.', {
+          variant: 'error',
+          title: 'Network Error',
+        });
       } else {
-        alert(`Error: ${message}`);
+        showToast(`Error: ${message}`, { variant: 'error', title: 'Create Listing Failed' });
       }
     } finally {
       setIsSubmitting(false);

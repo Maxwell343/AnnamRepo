@@ -183,8 +183,8 @@ interface ModalConfig {
 
 const parseVerificationStatus = (raw: unknown): VerificationStatus => {
   const value = String(raw || '').trim().toLowerCase();
-  if (value === 'verified') return 'Verified';
-  if (value === 'rejected') return 'Rejected';
+  if (value === 'verified' || value === 'approved') return 'Verified';
+  if (value === 'rejected' || value === 'resubmission_required') return 'Rejected';
   return 'Pending';
 };
 
@@ -515,7 +515,8 @@ const FarmerSettings: React.FC = () => {
           pickupTime: p.pickup_time || prev.pickupTime,
           availableForPickup:
             typeof p.available_for_pickup === 'boolean' ? p.available_for_pickup : prev.availableForPickup,
-          verificationStatus: parseVerificationStatus(p.verification_status || prev.verificationStatus),
+          verificationStatus: parseVerificationStatus(p.verification_status || p.kyc_status || prev.verificationStatus),
+          documentFileName: p.document_file_name || prev.documentFileName,
           profileImage: p.profile_image || prev.profileImage,
           bio: p.bio || prev.bio,
         }));
@@ -615,7 +616,6 @@ const FarmerSettings: React.FC = () => {
     available_days: form.availableDays,
     pickup_time: form.pickupTime,
     available_for_pickup: form.availableForPickup,
-    verification_status: form.verificationStatus,
     document_file_name: form.documentFileName,
     preferred_ngo: form.preferredNgo,
     minimum_donation_quantity: form.minimumDonationQuantity,
@@ -652,6 +652,16 @@ const FarmerSettings: React.FC = () => {
 
       if (!response.ok) {
         throw new Error(`Save failed with status ${response.status}`);
+      }
+
+      const responseBody = await response.json().catch(() => null);
+      const serverSettings = responseBody?.settings;
+      if (serverSettings) {
+        setForm((prev) => ({
+          ...prev,
+          verificationStatus: parseVerificationStatus(serverSettings.verification_status || serverSettings.kyc_status),
+          documentFileName: serverSettings.document_file_name || prev.documentFileName,
+        }));
       }
 
       localStorage.setItem('farmName', form.farmName);

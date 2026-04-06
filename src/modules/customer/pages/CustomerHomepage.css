@@ -2249,47 +2249,6 @@
   to { transform: rotate(360deg); }
 }
 
-/* ===== TOAST NOTIFICATIONS ===== */
-.toast {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 24px;
-  background: var(--customer-text);
-  color: white;
-  border-radius: var(--customer-radius);
-  box-shadow: var(--customer-shadow-xl);
-  transform: translateY(100px);
-  opacity: 0;
-  transition: all 0.3s var(--ease-out-expo);
-  z-index: 10000;
-}
-
-.toast.show {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-.toast-success {
-  background: var(--customer-success);
-}
-
-.toast-error {
-  background: var(--customer-error);
-}
-
-.toast-icon {
-  font-size: 18px;
-}
-
-.toast-message {
-  font-size: 14px;
-  font-weight: 500;
-}
-
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
   .features-grid {

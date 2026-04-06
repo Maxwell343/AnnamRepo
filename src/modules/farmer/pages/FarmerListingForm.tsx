@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './FarmerListingForm.css';
 import { API_ENDPOINTS } from '../../../config/api';
 import type { ProductType, SellingMode, SmartPriceSuggestion, Location } from '../../../types/marketplace';
+import { useToast } from '../../../components/ui/ToastProvider';
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -122,6 +123,7 @@ interface User {
 
 const FarmerListingForm: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   
   // User state
   const [user, setUser] = useState<User | null>(null);
@@ -205,7 +207,10 @@ const FarmerListingForm: React.FC = () => {
               if (!farmName.trim()) missing.push('Farm Name');
               if (!farmLocation.trim()) missing.push('Farm Location');
 
-              alert(`Please complete your profile before creating a listing.\n\nMissing fields: ${missing.join(', ')}`);
+              showToast(`Please complete your profile before creating a listing. Missing fields: ${missing.join(', ')}`, {
+                variant: 'warning',
+                title: 'Profile Incomplete',
+              });
               navigate('/farmer-settings', { state: { returnTo: '/farmer/new-listing', incompleteProfile: true } });
               return;
             }
@@ -216,7 +221,10 @@ const FarmerListingForm: React.FC = () => {
             const phone = localStorage.getItem('userPhone') || '';
 
             if (!parsedUser.name?.trim() || !phone.trim() || !farmName.trim() || !farmLocation.trim()) {
-              alert('Please complete your profile before creating a listing.');
+              showToast('Please complete your profile before creating a listing.', {
+                variant: 'warning',
+                title: 'Profile Incomplete',
+              });
               navigate('/farmer-settings', { state: { returnTo: '/farmer/new-listing', incompleteProfile: true } });
               return;
             }
@@ -496,7 +504,10 @@ const FarmerListingForm: React.FC = () => {
       }
       
       // Success
-      alert('🎉 Listing created successfully! Your produce is now visible on the marketplace.');
+      showToast('🎉 Listing created successfully! Your produce is now visible on the marketplace.', {
+        variant: 'success',
+        title: 'Success',
+      });
       navigate('/marketplace');
       
     } catch (err: any) {

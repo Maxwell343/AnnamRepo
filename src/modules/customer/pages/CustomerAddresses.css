@@ -1464,60 +1464,6 @@
 }
 
 /* ============================================
-   TOAST NOTIFICATIONS
-   ============================================ */
-#toast-container {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  z-index: 10000;
-}
-
-.address-toast {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  background: var(--addr-text);
-  color: white;
-  border-radius: var(--addr-radius);
-  box-shadow: var(--addr-shadow-xl);
-  transform: translateX(120%);
-  opacity: 0;
-  transition: all 0.3s var(--ease-out-expo);
-}
-
-.address-toast.show {
-  transform: translateX(0);
-  opacity: 1;
-}
-
-.address-toast.toast-success {
-  background: var(--addr-success);
-}
-
-.address-toast.toast-error {
-  background: var(--addr-error);
-}
-
-.address-toast.toast-warning {
-  background: var(--addr-warning);
-}
-
-.toast-icon {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.toast-message {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* ============================================
    RESPONSIVE DESIGN
    ============================================ */
 @media (max-width: 768px) {

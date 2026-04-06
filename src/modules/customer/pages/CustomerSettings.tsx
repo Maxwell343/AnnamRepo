@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CustomerSettings.css';
 import { Check, X, Info, AlertTriangle, Camera, Pencil, Eye, EyeOff, ShieldCheck, Shield, Smartphone, Zap, ArrowRight, ArrowLeft, ClipboardList, Trash2, Package, CreditCard, MapPin, Wallet, Gift, Heart, User, Bell, Lock, Settings as SettingsIcon, Link, HelpCircle, Mail, MessageSquare, Truck, Tag, Sparkles, Newspaper, Target, BarChart3, Handshake, Download, Eraser, Palette, Type, Globe, DollarSign, Scale, Play, Image, Key, Fingerprint, Tablet, Laptop, BookOpen, Phone, Star, Lightbulb, Bug, Wheat, FileText, Undo2, ScrollText, LogOut, Twitter, Instagram, Linkedin, Facebook } from 'lucide-react';
+import { useToast } from '../../../components/ui/ToastProvider';
 
 // ============================================
 // TYPES
@@ -158,33 +159,6 @@ const getRelativeTime = (dateString: string): string => {
   return formatDate(dateString);
 };
 
-// Toast notification
-const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
-  const icons = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠' };
-
-  const toast = document.createElement('div');
-  toast.className = `cs-toast cs-toast-${type}`;
-  toast.innerHTML = `
-    <span class="cs-toast-icon">${icons[type]}</span>
-    <span class="cs-toast-message">${message}</span>
-  `;
-
-  const container = document.getElementById('cs-toast-container') || (() => {
-    const div = document.createElement('div');
-    div.id = 'cs-toast-container';
-    document.body.appendChild(div);
-    return div;
-  })();
-
-  container.appendChild(toast);
-  requestAnimationFrame(() => toast.classList.add('show'));
-
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
-};
-
 // ============================================
 // CUSTOM HOOKS
 // ============================================
@@ -293,6 +267,10 @@ const ProfileSection: React.FC<{
   user: User;
   onUpdateProfile: (updates: Partial<User>) => void;
 }> = ({ user, onUpdateProfile }) => {
+  const { showToast: enqueueToast } = useToast();
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    enqueueToast(message, { variant: type });
+  };
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<{
     name: string;
@@ -399,6 +377,10 @@ const ProfileSection: React.FC<{
 
 // Change Password Modal
 const ChangePasswordModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+  const { showToast: enqueueToast } = useToast();
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    enqueueToast(message, { variant: type });
+  };
   const [formData, setFormData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -520,6 +502,10 @@ const ChangePasswordModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
 
 // Two-Factor Auth Modal
 const TwoFactorModal: React.FC<{ isOpen: boolean; onClose: () => void; onEnable: () => void }> = ({ isOpen, onClose, onEnable }) => {
+  const { showToast: enqueueToast } = useToast();
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    enqueueToast(message, { variant: type });
+  };
   const [step, setStep] = useState<'intro' | 'qr' | 'verify'>('intro');
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
@@ -625,6 +611,10 @@ const TwoFactorModal: React.FC<{ isOpen: boolean; onClose: () => void; onEnable:
 
 // Delete Account Modal
 const DeleteAccountModal: React.FC<{ isOpen: boolean; onClose: () => void; onDelete: () => void }> = ({ isOpen, onClose, onDelete }) => {
+  const { showToast: enqueueToast } = useToast();
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    enqueueToast(message, { variant: type });
+  };
   const [confirmText, setConfirmText] = useState('');
   const [reason, setReason] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -711,6 +701,10 @@ const FAQSection: React.FC = () => {
 
 const CustomerSettings: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast: enqueueToast } = useToast();
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    enqueueToast(message, { variant: type });
+  };
   const [user, setUser] = useState<User | null>(null);
   const [activeSection, setActiveSection] = useState('profile');
   const [isLoading, setIsLoading] = useState(true);
@@ -1149,8 +1143,6 @@ const CustomerSettings: React.FC = () => {
       <ChangePasswordModal isOpen={showPasswordModal} onClose={() => setShowPasswordModal(false)} />
       <TwoFactorModal isOpen={showTFAModal} onClose={() => setShowTFAModal(false)} onEnable={() => showToast('2FA enabled!', 'success')} />
       <DeleteAccountModal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} onDelete={handleDeleteAccount} />
-
-      <div id="cs-toast-container" />
     </div>
   );
 };

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Marketplace.css';
 import { API_ENDPOINTS } from '../../../config/api';
+import { useToast } from '../../../components/ui/ToastProvider';
 import { Leaf, Clock, Package, Handshake, Factory, Zap, Apple, Wheat, Milk, Flame, Home, Sprout, MapPin, Star, UtensilsCrossed, Target, X, Wallet, CheckCircle, ScrollText, BarChart3, ClipboardList, User as UserIcon, Globe, Truck, Droplets, ShoppingCart, Trash2, AlertTriangle, Circle, Search, LayoutGrid, Menu, Check, Siren, Bean } from 'lucide-react';
 import type {
   MarketplaceListing,
@@ -88,6 +89,31 @@ const formatDistance = (km: number): string => {
     return `${Math.round(km * 1000)}m`;
   }
   return `${km.toFixed(1)}km`;
+};
+
+const isApiListingExpired = (apiListing: any): boolean => {
+  const status = String(apiListing?.status || '').toLowerCase();
+  const urgencyStatus = String(apiListing?.urgency_status || '').toLowerCase();
+
+  if (status === 'expired' || urgencyStatus === 'expired') {
+    return true;
+  }
+
+  const rawHoursRemaining = apiListing?.hours_remaining;
+  if (typeof rawHoursRemaining === 'number' && rawHoursRemaining <= 0) {
+    return true;
+  }
+
+  const expiryCandidates = [apiListing?.expires_at, apiListing?.expiry_date, apiListing?.expiry];
+  for (const value of expiryCandidates) {
+    if (!value) continue;
+    const expiresAtMs = new Date(value).getTime();
+    if (!Number.isNaN(expiresAtMs) && expiresAtMs <= Date.now()) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 const getCategoryIcon = (category: ListingCategory): React.ReactNode => {
@@ -1065,6 +1091,7 @@ const NGORescueView: React.FC<{
 
 const Marketplace: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // State
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -1260,8 +1287,9 @@ const Marketplace: React.FC = () => {
           console.log('[MARKETPLACE] API Response Data:', data);
           
           if (data.listings && Array.isArray(data.listings) && data.listings.length > 0) {
-            // Map all API listings to MarketplaceListing format
-            const mappedListings = data.listings.map((apiListing: any) => {
+            // Filter stale expired records defensively, then map for UI.
+            const validListings = data.listings.filter((apiListing: any) => !isApiListingExpired(apiListing));
+            const mappedListings = validListings.map((apiListing: any) => {
               console.log('[MARKETPLACE] Mapping listing:', apiListing);
               return mapApiListingToMarketplace(apiListing);
             });
@@ -1469,9 +1497,12 @@ const Marketplace: React.FC = () => {
         navigate('/auth', { state: { returnTo: '/marketplace' } });
         return;
       }
-      alert(`Rescue confirmed for: ${listing.title}\nQuantity: ${listing.availableQuantity} ${listing.unit}`);
+      showToast(
+        `Rescue confirmed for ${listing.title} (${listing.availableQuantity} ${listing.unit}).`,
+        { title: 'Rescue Confirmed', variant: 'success' }
+      );
     },
-    [user, navigate]
+    [user, navigate, showToast]
   );
 
   const handleCheckout = useCallback(() => {

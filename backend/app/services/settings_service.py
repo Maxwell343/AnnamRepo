@@ -1,9 +1,263 @@
 from app.core.database import get_database
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 from bson import ObjectId
 
 db = get_database()
+
+
+def _now_iso() -> str:
+    return datetime.utcnow().isoformat()
+
+
+def _normalize_verification_status(value: Any) -> str:
+    status = str(value or "").strip().lower()
+    if status in {"approved", "verified"}:
+        return "verified"
+    if status in {"rejected", "resubmission_required"}:
+        return "rejected"
+    return "pending"
+
+
+def _find_user_by_any_id(user_id: str) -> Optional[Dict[str, Any]]:
+    if not user_id:
+        return None
+
+    filters: List[Dict[str, Any]] = []
+    if ObjectId.is_valid(user_id):
+        filters.append({"_id": ObjectId(user_id)})
+    filters.append({"id": user_id})
+    if user_id.isdigit():
+        filters.append({"id": int(user_id)})
+
+    return db.users.find_one({"$or": filters}) if filters else None
+
+
+def _is_user_kyc_verified(user: Optional[Dict[str, Any]]) -> bool:
+    if not user:
+        return False
+    if str(user.get("kyc_status") or "").strip().lower() == "approved":
+        return True
+    return bool(user.get("kycVerified") or user.get("kyc_verified") or user.get("is_verified"))
+
+
+def _verification_status_from_user(user: Optional[Dict[str, Any]]) -> str:
+    if not user:
+        return "pending"
+
+    kyc_status = str(user.get("kyc_status") or "").strip().lower()
+    if kyc_status:
+        return _normalize_verification_status(kyc_status)
+
+    return "verified" if _is_user_kyc_verified(user) else "pending"
+
+
+def _prepend_kyc_timeline_event(
+    existing_timeline: Optional[List[Dict[str, Any]]],
+    *,
+    action: str,
+    description: str,
+    status: str = "info",
+    actor: str = "System",
+) -> List[Dict[str, Any]]:
+    timeline = list(existing_timeline or [])
+    timeline.insert(
+        0,
+        {
+            "id": f"t{int(datetime.utcnow().timestamp() * 1000)}",
+            "action": action,
+            "description": description,
+            "timestamp": _now_iso(),
+            "actor": actor,
+            "status": status,
+        },
+    )
+    return timeline[:50]
+
+
+def _build_farmer_kyc_documents(document_file_name: str, verified: bool) -> List[Dict[str, Any]]:
+    file_name = (document_file_name or "").strip()
+    if not file_name:
+        return []
+
+    return [
+        {
+            "id": "farmer-verification-document",
+            "type": "id_proof",
+            "name": "Farmer Verification Document",
+            "fileName": file_name,
+            "fileSize": "0 KB",
+            "uploadedAt": _now_iso(),
+            "status": "verified" if verified else "pending",
+        }
+    ]
+
+
+def _build_ngo_kyc_documents(settings_data: Dict[str, Any], verified: bool) -> List[Dict[str, Any]]:
+    uploaded_at = settings_data.get("updated_at") or settings_data.get("created_at") or _now_iso()
+
+    candidates = [
+        ("registration_certificate_file_name", "Registration Certificate"),
+        ("certificate_80g_file_name", "80G Certificate"),
+        ("certificate_12a_file_name", "12A Certificate"),
+    ]
+
+    documents: List[Dict[str, Any]] = []
+    for idx, (field_name, label) in enumerate(candidates, start=1):
+        file_name = str(settings_data.get(field_name) or "").strip()
+        if not file_name:
+            continue
+
+        documents.append(
+            {
+                "id": f"ngo-document-{idx}",
+                "type": "registration",
+                "name": label,
+                "fileName": file_name,
+                "fileSize": "0 KB",
+                "uploadedAt": uploaded_at,
+                "status": "verified" if verified else "pending",
+            }
+        )
+
+    return documents
+
+
+def _sync_farmer_kyc_state(
+    farmer_id: str,
+    merged_settings: Dict[str, Any],
+    previous_settings: Optional[Dict[str, Any]],
+) -> str:
+    if not farmer_id:
+        return _normalize_verification_status(merged_settings.get("verification_status"))
+
+    user = _find_user_by_any_id(str(farmer_id))
+    if not user:
+        return _normalize_verification_status(merged_settings.get("verification_status"))
+
+    document_file_name = str(merged_settings.get("document_file_name") or "").strip()
+    previous_document_file_name = str((previous_settings or {}).get("document_file_name") or "").strip()
+
+    current_kyc_status = str(user.get("kyc_status") or "").strip().lower()
+    current_verified = _is_user_kyc_verified(user)
+
+    document_changed = bool(document_file_name) and document_file_name != previous_document_file_name
+    was_document_missing = not previous_document_file_name
+    resubmission_state = current_kyc_status in {"rejected", "resubmission_required"}
+    needs_submission = bool(document_file_name) and (document_changed or was_document_missing or resubmission_state)
+
+    user_updates: Dict[str, Any] = {"updated_at": _now_iso()}
+    docs_should_be_verified = (current_kyc_status == "approved" or current_verified) and not needs_submission
+
+    if document_file_name and (needs_submission or not user.get("kyc_documents")):
+        user_updates["kyc_documents"] = _build_farmer_kyc_documents(
+            document_file_name,
+            verified=docs_should_be_verified,
+        )
+
+    if needs_submission:
+        action = "KYC Resubmitted" if previous_document_file_name else "KYC Submitted"
+        description = f"Farmer uploaded verification document: {document_file_name}"
+        user_updates.update(
+            {
+                "kyc_status": "pending",
+                "kycVerified": False,
+                "kyc_verified": False,
+                "kyc_rejection_reason": "",
+                "kyc_submitted_at": _now_iso(),
+                "kyc_timeline": _prepend_kyc_timeline_event(
+                    user.get("kyc_timeline"),
+                    action=action,
+                    description=description,
+                    status="info",
+                    actor="User",
+                ),
+            }
+        )
+        current_kyc_status = "pending"
+        current_verified = False
+
+    if len(user_updates) > 1:
+        db.users.update_one({"_id": user["_id"]}, {"$set": user_updates})
+
+    if current_kyc_status == "approved" or current_verified:
+        return "verified"
+    if current_kyc_status in {"rejected", "resubmission_required"}:
+        return "rejected"
+    return "pending"
+
+
+def _sync_ngo_kyc_state(
+    ngo_id: str,
+    merged_settings: Dict[str, Any],
+    previous_settings: Optional[Dict[str, Any]],
+) -> str:
+    if not ngo_id:
+        return _normalize_verification_status(merged_settings.get("verification_status"))
+
+    user = _find_user_by_any_id(str(ngo_id))
+    if not user:
+        return _normalize_verification_status(merged_settings.get("verification_status"))
+
+    document_fields = [
+        "registration_certificate_file_name",
+        "certificate_80g_file_name",
+        "certificate_12a_file_name",
+    ]
+
+    current_doc_names = [str(merged_settings.get(field) or "").strip() for field in document_fields]
+    previous_doc_names = [str((previous_settings or {}).get(field) or "").strip() for field in document_fields]
+
+    has_documents_now = any(current_doc_names)
+    had_documents_before = any(previous_doc_names)
+    documents_changed = has_documents_now and current_doc_names != previous_doc_names
+
+    current_kyc_status = str(user.get("kyc_status") or "").strip().lower()
+    current_verified = _is_user_kyc_verified(user)
+    resubmission_state = current_kyc_status in {"rejected", "resubmission_required"}
+
+    needs_submission = has_documents_now and (documents_changed or not had_documents_before or resubmission_state)
+
+    user_updates: Dict[str, Any] = {"updated_at": _now_iso()}
+    docs_should_be_verified = (current_kyc_status == "approved" or current_verified) and not needs_submission
+
+    if has_documents_now and (needs_submission or not user.get("kyc_documents")):
+        user_updates["kyc_documents"] = _build_ngo_kyc_documents(
+            merged_settings,
+            verified=docs_should_be_verified,
+        )
+
+    if needs_submission:
+        action = "KYC Resubmitted" if had_documents_before else "KYC Submitted"
+        uploaded_count = sum(1 for doc_name in current_doc_names if doc_name)
+        description = f"NGO submitted {uploaded_count} compliance document(s) for review"
+        user_updates.update(
+            {
+                "kyc_status": "pending",
+                "kycVerified": False,
+                "kyc_verified": False,
+                "kyc_rejection_reason": "",
+                "kyc_submitted_at": _now_iso(),
+                "kyc_timeline": _prepend_kyc_timeline_event(
+                    user.get("kyc_timeline"),
+                    action=action,
+                    description=description,
+                    status="info",
+                    actor="User",
+                ),
+            }
+        )
+        current_kyc_status = "pending"
+        current_verified = False
+
+    if len(user_updates) > 1:
+        db.users.update_one({"_id": user["_id"]}, {"$set": user_updates})
+
+    if current_kyc_status == "approved" or current_verified:
+        return "verified"
+    if current_kyc_status in {"rejected", "resubmission_required"}:
+        return "rejected"
+    return "pending"
 
 
 # ==================== DRIVER SETTINGS ====================
@@ -20,9 +274,9 @@ async def save_driver_settings(settings_data: Dict) -> Dict:
     """Save or update driver settings"""
     driver_id = settings_data.get("driver_id")
     existing = db.driver_settings.find_one({"driver_id": driver_id})
-    
-    settings_data["updated_at"] = datetime.utcnow().isoformat()
-    
+
+    settings_data["updated_at"] = _now_iso()
+
     if existing:
         db.driver_settings.update_one(
             {"driver_id": driver_id},
@@ -30,10 +284,10 @@ async def save_driver_settings(settings_data: Dict) -> Dict:
         )
         settings_data["_id"] = str(existing["_id"])
     else:
-        settings_data["created_at"] = datetime.utcnow().isoformat()
+        settings_data["created_at"] = _now_iso()
         result = db.driver_settings.insert_one(settings_data)
         settings_data["_id"] = str(result.inserted_id)
-    
+
     return settings_data
 
 
@@ -54,40 +308,71 @@ async def get_farmer_settings(farmer_id: str) -> Optional[Dict]:
                 if settings and settings.get("farmer_id") != farmer_id:
                     db.farmer_settings.update_one(
                         {"_id": settings["_id"]},
-                        {"$set": {"farmer_id": farmer_id, "updated_at": datetime.utcnow().isoformat()}}
+                        {"$set": {"farmer_id": farmer_id, "updated_at": _now_iso()}},
                     )
                     settings["farmer_id"] = farmer_id
         except Exception:
             settings = None
 
-    if settings:
-        settings["_id"] = str(settings["_id"])
+    if not settings:
+        return None
+
+    user = _find_user_by_any_id(farmer_id)
+    verification_status = _verification_status_from_user(user)
+    if settings.get("verification_status") != verification_status:
+        db.farmer_settings.update_one(
+            {"_id": settings["_id"]},
+            {"$set": {"verification_status": verification_status, "updated_at": _now_iso()}},
+        )
+        settings["verification_status"] = verification_status
+
+    settings["_id"] = str(settings["_id"])
     return settings
 
 
 async def save_farmer_settings(settings_data: Dict) -> Dict:
-    """Save or update farmer settings"""
+    """Save or update farmer settings and sync KYC state to user profile."""
     farmer_id = settings_data.get("farmer_id")
     existing = db.farmer_settings.find_one({"farmer_id": farmer_id})
 
     # If nothing is linked by farmer_id yet, try matching an older record by email.
     if not existing and settings_data.get("email"):
         existing = db.farmer_settings.find_one({"email": settings_data.get("email")})
-    
-    settings_data["updated_at"] = datetime.utcnow().isoformat()
-    
+
+    previous_settings = dict(existing) if existing else {}
+    merged_settings = dict(previous_settings)
+    merged_settings.update(settings_data)
+
+    # Prevent client-side tampering of verification state; admin KYC decides this value.
+    merged_settings["verification_status"] = _normalize_verification_status(
+        merged_settings.get("verification_status")
+    )
+    merged_settings["updated_at"] = _now_iso()
+
     if existing:
         db.farmer_settings.update_one(
             {"_id": existing["_id"]},
-            {"$set": settings_data}
+            {"$set": merged_settings},
         )
-        settings_data["_id"] = str(existing["_id"])
+        settings_id = existing["_id"]
     else:
-        settings_data["created_at"] = datetime.utcnow().isoformat()
-        result = db.farmer_settings.insert_one(settings_data)
-        settings_data["_id"] = str(result.inserted_id)
-    
-    return settings_data
+        merged_settings["created_at"] = _now_iso()
+        result = db.farmer_settings.insert_one(merged_settings)
+        settings_id = result.inserted_id
+
+    final_status = _sync_farmer_kyc_state(str(farmer_id or ""), merged_settings, previous_settings)
+    final_status = _normalize_verification_status(final_status)
+
+    if merged_settings.get("verification_status") != final_status:
+        merged_settings["verification_status"] = final_status
+        merged_settings["updated_at"] = _now_iso()
+        db.farmer_settings.update_one(
+            {"_id": settings_id},
+            {"$set": {"verification_status": final_status, "updated_at": merged_settings["updated_at"]}},
+        )
+
+    merged_settings["_id"] = str(settings_id)
+    return merged_settings
 
 
 # ==================== NGO SETTINGS ====================
@@ -95,30 +380,61 @@ async def save_farmer_settings(settings_data: Dict) -> Dict:
 async def get_ngo_settings(ngo_id: str) -> Optional[Dict]:
     """Get NGO settings by NGO ID"""
     settings = db.ngo_settings.find_one({"ngo_id": ngo_id})
-    if settings:
-        settings["_id"] = str(settings["_id"])
+    if not settings:
+        return None
+
+    user = _find_user_by_any_id(ngo_id)
+    verification_status = _verification_status_from_user(user)
+    if settings.get("verification_status") != verification_status:
+        db.ngo_settings.update_one(
+            {"_id": settings["_id"]},
+            {"$set": {"verification_status": verification_status, "updated_at": _now_iso()}},
+        )
+        settings["verification_status"] = verification_status
+
+    settings["_id"] = str(settings["_id"])
     return settings
 
 
 async def save_ngo_settings(settings_data: Dict) -> Dict:
-    """Save or update NGO settings"""
+    """Save or update NGO settings and sync KYC state to user profile."""
     ngo_id = settings_data.get("ngo_id")
     existing = db.ngo_settings.find_one({"ngo_id": ngo_id})
-    
-    settings_data["updated_at"] = datetime.utcnow().isoformat()
-    
+
+    previous_settings = dict(existing) if existing else {}
+    merged_settings = dict(previous_settings)
+    merged_settings.update(settings_data)
+
+    # Prevent client-side tampering of verification state; admin KYC decides this value.
+    merged_settings["verification_status"] = _normalize_verification_status(
+        merged_settings.get("verification_status")
+    )
+    merged_settings["updated_at"] = _now_iso()
+
     if existing:
         db.ngo_settings.update_one(
-            {"ngo_id": ngo_id},
-            {"$set": settings_data}
+            {"_id": existing["_id"]},
+            {"$set": merged_settings},
         )
-        settings_data["_id"] = str(existing["_id"])
+        settings_id = existing["_id"]
     else:
-        settings_data["created_at"] = datetime.utcnow().isoformat()
-        result = db.ngo_settings.insert_one(settings_data)
-        settings_data["_id"] = str(result.inserted_id)
-    
-    return settings_data
+        merged_settings["created_at"] = _now_iso()
+        result = db.ngo_settings.insert_one(merged_settings)
+        settings_id = result.inserted_id
+
+    final_status = _sync_ngo_kyc_state(str(ngo_id or ""), merged_settings, previous_settings)
+    final_status = _normalize_verification_status(final_status)
+
+    if merged_settings.get("verification_status") != final_status:
+        merged_settings["verification_status"] = final_status
+        merged_settings["updated_at"] = _now_iso()
+        db.ngo_settings.update_one(
+            {"_id": settings_id},
+            {"$set": {"verification_status": final_status, "updated_at": merged_settings["updated_at"]}},
+        )
+
+    merged_settings["_id"] = str(settings_id)
+    return merged_settings
 
 
 # ==================== USER PROFILE ====================

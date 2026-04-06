@@ -115,7 +115,6 @@ const AvailablePickups: React.FC = () => {
   const [pickups, setPickups] = useState<PickupTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalFetchedCount, setTotalFetchedCount] = useState(0);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [profileChecking, setProfileChecking] = useState(true);
   
@@ -264,7 +263,7 @@ const AvailablePickups: React.FC = () => {
             if (!vehicleNumber.trim()) missing.push('Vehicle Number');
             if (!licenseNumber.trim()) missing.push('Driving License Number');
 
-            alert(`Please complete your profile before accepting pickups.\n\nMissing fields: ${missing.join(', ')}`);
+            showToastMessage(`Complete your profile before accepting pickups. Missing: ${missing.join(', ')}`, 'warning');
             navigate('/driver-settings', { state: { returnTo: '/available-pickups', incompleteProfile: true } });
             return;
           }
@@ -273,7 +272,7 @@ const AvailablePickups: React.FC = () => {
           const phone = localStorage.getItem('userPhone') || '';
           const vehicleNumber = localStorage.getItem('vehicleNumber') || '';
           if (!parsedUser.name?.trim() || !phone.trim() || !vehicleNumber.trim()) {
-            alert('Please complete your profile before accepting pickups.');
+            showToastMessage('Please complete your profile before accepting pickups.', 'warning');
             navigate('/driver-settings', { state: { returnTo: '/available-pickups', incompleteProfile: true } });
             return;
           }
@@ -299,11 +298,6 @@ const AvailablePickups: React.FC = () => {
       fetchPickups();
     }
   }, [user, fetchPickups]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    navigate('/');
-  };
 
   const showToastMessage = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
     setToastMessage(message);

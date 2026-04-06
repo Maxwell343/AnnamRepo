@@ -1787,65 +1787,6 @@
 }
 
 /* ============================================
-   TOAST NOTIFICATIONS
-   ============================================ */
-
-#cs-toast-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 10001;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  pointer-events: none;
-}
-
-.cs-toast {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 20px;
-  border-radius: var(--cs-radius-sm);
-  background: var(--cs-surface);
-  box-shadow: var(--cs-shadow-lg);
-  pointer-events: auto;
-  opacity: 0;
-  transform: translateX(50px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  border: 1px solid var(--cs-border);
-  max-width: 360px;
-}
-
-.cs-toast.show {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.cs-toast-icon {
-  font-size: 16px;
-  font-weight: 700;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--cs-radius-full);
-  flex-shrink: 0;
-}
-
-.cs-toast-success .cs-toast-icon { background: var(--cs-success-light); color: var(--cs-success); }
-.cs-toast-error .cs-toast-icon { background: var(--cs-danger-light); color: var(--cs-danger); }
-.cs-toast-info .cs-toast-icon { background: var(--cs-info-light); color: var(--cs-info); }
-.cs-toast-warning .cs-toast-icon { background: var(--cs-warning-light); color: var(--cs-warning); }
-
-.cs-toast-message {
-  font-size: 13px;
-  color: var(--cs-text);
-  font-weight: 500;
-}
-
-/* ============================================
    RESPONSIVE
    ============================================ */
 

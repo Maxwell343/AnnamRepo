@@ -3,11 +3,12 @@ import RescueModal from './RescueModal';
 import { useNavigate } from 'react-router-dom';
 import './Mylistings.css';
 import { API_ENDPOINTS } from '../../../config/api';
+import { useToast } from '../../../components/ui/ToastProvider';
 import {
   Package, PlusCircle, Search, Filter, Grid3X3, List,
   RefreshCw, Trash2, Edit3, Copy, Eye, X, Clock,
   MapPin, IndianRupee, Leaf, ChevronDown, AlertTriangle,
-  TrendingUp, Truck, CheckCircle2, XCircle, MoreVertical
+  TrendingUp, Truck, CheckCircle2, XCircle, MoreVertical, Handshake
 } from 'lucide-react';
 
 // --- Types ---
@@ -43,6 +44,9 @@ interface Listing {
   urgency_status?: 'normal' | 'urgent' | 'rescue' | 'expired' | 'safe' | 'warning' | 'critical';
   hours_remaining?: number;
   donation_mode?: boolean;
+  donate_available?: boolean;
+  donate_available_in_hours?: number;
+  hours_since_listing?: number;
 }
 
 type FilterStatus = 'all' | 'available' | 'claimed' | 'in_transit' | 'delivered' | 'expired';
@@ -75,6 +79,7 @@ const STATUS_CONFIG: Record<string, { icon: React.ReactNode; label: string; colo
 // ─── COMPONENT ──────────────────────────────────────────────────────────────
 const MyListings: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,6 +95,7 @@ const MyListings: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
+  const [donatingId, setDonatingId] = useState<number | string | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | number | null>(null);
   const [rescueModalListing, setRescueModalListing] = useState<Listing | null>(null);
 
@@ -145,13 +151,41 @@ const MyListings: React.FC = () => {
       setShowDeleteModal(false);
       setSelectedListing(null);
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, { variant: 'error', title: 'Delete Failed' });
     } finally {
       setDeletingId(null);
     }
   };
 
   const handleEditListing = (listingId: number | string) => navigate(`/edit-listing/${listingId}`);
+
+  const handleDonateListing = async (listingId: number | string) => {
+    if (!user) return;
+
+    setDonatingId(listingId);
+    try {
+      const response = await fetch(API_ENDPOINTS.rescue.action(String(listingId)), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'donate', farmer_id: String(user.id) }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || data.message || 'Failed to mark listing as donation');
+      }
+
+      await fetchListings();
+      showToast('Listing marked for NGO donation successfully. NGOs can now claim it.', {
+        variant: 'success',
+        title: 'Donation Enabled',
+      });
+    } catch (err: any) {
+      showToast(`Error: ${err.message}`, { variant: 'error', title: 'Donation Failed' });
+    } finally {
+      setDonatingId(null);
+    }
+  };
 
   const handleDuplicateListing = (listing: Listing) => {
     navigate('/listing', {
@@ -350,6 +384,9 @@ const MyListings: React.FC = () => {
             const typeConf = TYPE_CONFIG[listing.type] || TYPE_CONFIG.Other;
             const statusConf = STATUS_CONFIG[listing.status] || STATUS_CONFIG.available;
             const pickupAddr = listing.pickup_location || listing.pickup_address || '';
+            const donateAvailableInHours = listing.donate_available_in_hours ?? Math.max(0, 24 - (listing.hours_since_listing ?? 0));
+            const donateAvailable = Boolean(listing.donate_available) || donateAvailableInHours <= 0;
+            const donateWaitHours = Math.max(0, Math.ceil(donateAvailableInHours));
 
             return (
               <div key={listing.id} className={`ml-card ${viewMode} ${listing.status}`}>
@@ -432,6 +469,20 @@ const MyListings: React.FC = () => {
                     <button className="ml-action-btn error" onClick={() => setRescueModalListing(listing)} style={{ color: 'red', fontWeight: 'bold' }}>
                       <AlertTriangle size={15} /> Action Needed
                     </button>
+                  )}
+                  {listing.status === 'available' && !listing.donation_mode && donateAvailable && (
+                    <button
+                      className="ml-action-btn donate"
+                      onClick={() => handleDonateListing(listing.id)}
+                      disabled={donatingId === listing.id}
+                    >
+                      <Handshake size={15} /> {donatingId === listing.id ? 'Publishing...' : 'Donate'}
+                    </button>
+                  )}
+                  {listing.status === 'available' && !listing.donation_mode && !donateAvailable && (
+                    <span className="ml-donate-wait">
+                      <Clock size={13} /> Donate in {donateWaitHours}h
+                    </span>
                   )}
                   <button className="ml-action-btn view" onClick={() => { setSelectedListing(listing); setShowDetailsModal(true); }}>
                     <Eye size={15} /> View

@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
-import './AuthStyles.css';import { API_ENDPOINTS } from '../../../config/api';
+import './AuthStyles.css';
+import { API_ENDPOINTS } from '../../../config/api';
+import { useToast } from '../../../components/ui/ToastProvider';
 const ForgotPasswordPage: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [email, setEmail] = useState<string>('');
   const [emailError, setEmailError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -49,7 +52,10 @@ const ForgotPasswordPage: React.FC = () => {
 
       // DEV: Show OTP in alert for testing (remove in production!)
       if (data.dev_otp) {
-        alert(`[DEV] Your OTP is: ${data.dev_otp}`);
+        showToast(`[DEV] OTP: ${data.dev_otp}`, {
+          title: 'Development OTP',
+          variant: 'warning',
+        });
       }
 
       setSuccessMessage('OTP sent to your email address!');

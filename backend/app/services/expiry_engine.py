@@ -226,7 +226,8 @@ def mark_expired_listings_batch() -> int:
 
 def auto_donate_abandoned_listings() -> int:
     """
-    Find listings with < 6h remaining that have NO rescue_action set.
+    Find listings with < 6h remaining that have NO rescue_action set
+    and are explicitly opted-in (`allow_auto_donate=True`).
     Auto-convert them to donation mode for zero food wastage.
     """
     from app.core.database import listings_collection
@@ -242,6 +243,7 @@ def auto_donate_abandoned_listings() -> int:
             "expires_at": {"$exists": True, "$ne": None},
             "rescue_action": {"$in": [None, ""]},
             "donation_mode": {"$ne": True},
+            "allow_auto_donate": True,
         }))
 
         for doc in active:

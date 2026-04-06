@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CustomerPayments.css';
-import { CreditCard, Smartphone, Check, X, Info, AlertTriangle, Wheat, Gem, Gift, Wallet, ScrollText, Landmark, Star, Pencil, Trash2, ShoppingCart, Undo2, Plus, Minus, Hourglass, Clock, ClipboardList, Lock, ArrowLeft, ArrowRight, Circle, FileText, HelpCircle, Zap, Lightbulb } from 'lucide-react';
+import { CreditCard, Smartphone, Check, X, Wheat, Gem, Gift, Wallet, ScrollText, Landmark, Star, Pencil, Trash2, ShoppingCart, Undo2, Plus, Minus, Hourglass, Clock, ClipboardList, Lock, ArrowLeft, ArrowRight, Circle, FileText, HelpCircle, Zap, Lightbulb } from 'lucide-react';
+import { useToast } from '../../../components/ui/ToastProvider';
 
 // ============================================
 // TYPES
@@ -126,13 +127,6 @@ const maskCardNumber = (last4: string): string => {
   return `•••• •••• •••• ${last4}`;
 };
 
-const maskUPI = (upiId: string): string => {
-  const parts = upiId.split('@');
-  if (parts.length !== 2) return upiId;
-  const masked = parts[0].slice(0, 2) + '••••' + parts[0].slice(-2);
-  return `${masked}@${parts[1]}`;
-};
-
 const getRelativeTime = (dateString: string): string => {
   const now = new Date();
   const date = new Date(dateString);
@@ -146,33 +140,6 @@ const getRelativeTime = (dateString: string): string => {
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
   return formatDate(dateString);
-};
-
-// Toast notification
-const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
-  const icons: Record<string, React.ReactNode> = { success: <Check size={14} />, error: <X size={14} />, info: <Info size={14} />, warning: <AlertTriangle size={14} /> };
-  
-  const toast = document.createElement('div');
-  toast.className = `payment-toast toast-${type}`;
-  toast.innerHTML = `
-    <span class="toast-icon">${icons[type]}</span>
-    <span class="toast-message">${message}</span>
-  `;
-  
-  const container = document.getElementById('toast-container') || (() => {
-    const div = document.createElement('div');
-    div.id = 'toast-container';
-    document.body.appendChild(div);
-    return div;
-  })();
-  
-  container.appendChild(toast);
-  requestAnimationFrame(() => toast.classList.add('show'));
-  
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
 };
 
 // ============================================
@@ -526,13 +493,14 @@ const OfferCard: React.FC<{
   index: number;
 }> = ({ offer, onApply, index }) => {
   const [copied, setCopied] = useState(false);
+  const { showToast } = useToast();
 
   const copyCode = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (offer.code) {
       navigator.clipboard.writeText(offer.code);
       setCopied(true);
-      showToast('Code copied to clipboard!', 'success');
+      showToast('Code copied to clipboard!', { variant: 'success' });
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -610,6 +578,7 @@ const AddPaymentMethodModal: React.FC<{
   onClose: () => void;
   onAdd: (method: Omit<PaymentMethod, 'id' | 'createdAt'>) => void;
 }> = ({ isOpen, onClose, onAdd }) => {
+  const { showToast } = useToast();
   const [step, setStep] = useState<'select' | 'card' | 'upi' | 'netbanking'>('select');
   const [formData, setFormData] = useState({
     cardNumber: '',
@@ -730,7 +699,7 @@ const AddPaymentMethodModal: React.FC<{
     onAdd(newMethod);
     setIsSubmitting(false);
     onClose();
-    showToast('Payment method added successfully!', 'success');
+    showToast('Payment method added successfully!', { variant: 'success' });
   };
 
   if (!isOpen) return null;
@@ -991,6 +960,7 @@ const AddMoneyModal: React.FC<{
   onAdd: (amount: number) => void;
   paymentMethods: PaymentMethod[];
 }> = ({ isOpen, onClose, onAdd, paymentMethods }) => {
+  const { showToast } = useToast();
   const [amount, setAmount] = useState<string>('');
   const [selectedMethod, setSelectedMethod] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -1007,11 +977,11 @@ const AddMoneyModal: React.FC<{
   const handleSubmit = async () => {
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount < 10) {
-      showToast('Minimum amount is ₹10', 'error');
+      showToast('Minimum amount is ₹10', { variant: 'error' });
       return;
     }
     if (!selectedMethod) {
-      showToast('Please select a payment method', 'error');
+      showToast('Please select a payment method', { variant: 'error' });
       return;
     }
 
@@ -1019,7 +989,7 @@ const AddMoneyModal: React.FC<{
     onAdd(numAmount);
     setIsProcessing(false);
     onClose();
-    showToast(`₹${numAmount} added to wallet successfully!`, 'success');
+    showToast(`₹${numAmount} added to wallet successfully!`, { variant: 'success' });
   };
 
   if (!isOpen) return null;
@@ -1232,6 +1202,7 @@ const TransactionDetailModal: React.FC<{
 
 const CustomerPayments: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   
   // State
   const [user, setUser] = useState<User | null>(null);
@@ -1297,7 +1268,7 @@ const CustomerPayments: React.FC = () => {
 
   const handleDeleteMethod = (id: string) => {
     setPaymentMethods(prev => prev.filter(m => m.id !== id));
-    showToast('Payment method removed', 'success');
+    showToast('Payment method removed', { variant: 'success' });
   };
 
   const handleSetDefaultMethod = (id: string) => {
@@ -1305,7 +1276,7 @@ const CustomerPayments: React.FC = () => {
       ...m,
       isDefault: m.id === id
     })));
-    showToast('Default payment method updated', 'success');
+    showToast('Default payment method updated', { variant: 'success' });
   };
 
   const handleAddMoney = (amount: number) => {
@@ -1317,7 +1288,7 @@ const CustomerPayments: React.FC = () => {
   };
 
   const handleApplyOffer = (offer: Offer) => {
-    showToast(`Offer "${offer.title}" will be applied at checkout`, 'success');
+    showToast(`Offer "${offer.title}" will be applied at checkout`, { variant: 'success' });
   };
 
   // Filter transactions
@@ -1640,9 +1611,6 @@ const CustomerPayments: React.FC = () => {
         transaction={selectedTransaction}
         onClose={() => setSelectedTransaction(null)}
       />
-
-      {/* Toast Container */}
-      <div id="toast-container" />
     </div>
   );
 };

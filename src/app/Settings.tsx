@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Settings.css';
+import { useToast } from '../components/ui/ToastProvider';
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // Redirect to role-specific settings page
   useEffect(() => {
@@ -95,7 +97,10 @@ const SettingsPage: React.FC = () => {
     }
 
     console.log("Settings saved successfully:", formData);
-    alert("Settings saved successfully!");
+    showToast('Settings saved successfully!', {
+      title: 'Saved',
+      variant: 'success',
+    });
     navigate('/dashboard');
   };
 

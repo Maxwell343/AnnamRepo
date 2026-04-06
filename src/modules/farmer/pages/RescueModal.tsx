@@ -18,6 +18,8 @@ const RescueModal: React.FC<RescueModalProps> = ({ listing, isOpen, onClose, onA
 
   const isRescue = listing.rescueInfo?.urgencyStatus === 'rescue';
   const hoursRemaining = listing.rescueInfo?.hoursRemaining || 0;
+  const donateAvailableInHours = listing.donate_available_in_hours ?? Math.max(0, 24 - (listing.hours_since_listing || 0));
+  const donateAvailable = Boolean(listing.donate_available) || donateAvailableInHours <= 0;
 
   useEffect(() => {
     if (!listing.expires_at && !listing.expiryDate) return;
@@ -115,12 +117,17 @@ const RescueModal: React.FC<RescueModalProps> = ({ listing, isOpen, onClose, onA
           <button 
             className="rm-action-card donate"
             onClick={() => handleAction('donate')}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !donateAvailable}
+            title={donateAvailable ? 'Donate to NGO' : `Available in ${Math.ceil(donateAvailableInHours)}h`}
           >
             <div className="rm-card-icon"><Gift size={24} /></div>
             <div className="rm-card-text">
               <h4>Donate to NGO</h4>
-              <p>Zero food waste. Earn impact points and tax benefits.</p>
+              <p>
+                {donateAvailable
+                  ? 'Zero food waste. Earn impact points and tax benefits.'
+                  : `Available in ${Math.ceil(donateAvailableInHours)}h after listing.`}
+              </p>
             </div>
           </button>
 

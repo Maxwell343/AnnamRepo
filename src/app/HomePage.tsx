@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HomePage.css';
 import { API_ENDPOINTS } from '../config/api';
+import { useToast } from '../components/ui/ToastProvider';
 
 // --- Types ---
 interface FoodListing {
@@ -33,6 +34,7 @@ interface FoodListing {
     driver_phone?: string;
     vehicle_number?: string;
   };
+  donation_mode?: boolean;
 }
 
 interface User {
@@ -149,6 +151,7 @@ function getCountdownDisplay(expiryStr: string | undefined, createdAtStr?: strin
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('All');
   const [listings, setListings] = useState<FoodListing[]>([]);
@@ -308,14 +311,14 @@ const HomePage: React.FC = () => {
 
   const handleClaimDonation = async (listingId: string) => {
     if (user?.role !== 'ngo') {
-      alert('Only NGOs can claim donations');
+      showToast('Only NGOs can claim donations', { variant: 'warning' });
       return;
     }
 
     const qtyStr = claimQuantity[listingId]?.trim();
     
     if (!qtyStr || parseFloat(qtyStr) <= 0) {
-      alert('Please enter a valid quantity to claim');
+      showToast('Please enter a valid quantity to claim', { variant: 'warning' });
       return;
     }
 
@@ -356,9 +359,11 @@ const HomePage: React.FC = () => {
         return newState;
       });
 
-      alert(`Successfully claimed ${claimedQty}kg! Remaining quantity has been updated.`);
+      showToast(`Successfully claimed ${claimedQty}kg! Remaining quantity has been updated.`, {
+        variant: 'success',
+      });
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, { variant: 'error' });
       console.error('Claim error:', err);
     } finally {
       setClaimingId(null);
@@ -367,7 +372,7 @@ const HomePage: React.FC = () => {
 
   const handleDeleteListing = async (listingId: string) => {
     if (user?.role !== 'farmer') {
-      alert('Only farmers can delete their listings');
+      showToast('Only farmers can delete their listings', { variant: 'warning' });
       return;
     }
 
@@ -398,10 +403,10 @@ const HomePage: React.FC = () => {
         prevListings.filter(listing => listing.id !== listingId)
       );
 
-      alert('Listing deleted successfully');
+      showToast('Listing deleted successfully', { variant: 'success' });
     } catch (err: any) {
       console.error('Delete error:', err);
-      alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, { variant: 'error' });
     }
   };
 
@@ -438,9 +443,9 @@ const HomePage: React.FC = () => {
 
       // Refresh delivery tasks
       fetchDeliveryTasks(user.id);
-      alert('Delivery accepted successfully!');
+      showToast('Delivery accepted successfully!', { variant: 'success' });
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, { variant: 'error' });
     }
   };
 
@@ -462,9 +467,9 @@ const HomePage: React.FC = () => {
       }
 
       fetchDeliveryTasks(user.id);
-      alert(`Status updated to: ${newStatus}`);
+      showToast(`Status updated to: ${newStatus}`, { variant: 'success' });
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, { variant: 'error' });
     }
   };
 
@@ -481,8 +486,8 @@ const HomePage: React.FC = () => {
         // Farmers see only their own listings (compare as strings)
         return filteredListings.filter(l => String(l.farmer_id) === String(user.id));
       case 'ngo':
-        // NGOs see all available listings
-        return filteredListings.filter(l => l.status === 'available' || !l.status);
+        // NGOs see only listings explicitly marked for donation by farmers.
+        return filteredListings.filter(l => (l.status === 'available' || !l.status) && !!l.donation_mode);
       case 'driver':
         // Drivers see claimed listings ready for pickup and assigned/in_transit listings they accepted
         return filteredListings.filter(l => l.status === 'claimed' || l.status === 'assigned' || l.status === 'in_transit');
@@ -606,7 +611,7 @@ const HomePage: React.FC = () => {
             <div className="stat-card warning">
               <div className="stat-icon">🌾</div>
               <div className="stat-content">
-                <span className="stat-value">{listings.filter(l => l.status === 'available' || !l.status).length}</span>
+                <span className="stat-value">{listings.filter(l => (l.status === 'available' || !l.status) && !!l.donation_mode).length}</span>
                 <span className="stat-label">Available Donations</span>
                 <span className="stat-change">Ready to claim</span>
               </div>

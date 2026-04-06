@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Package, Truck, CheckCircle, XCircle, Circle, Wallet, ClipboardList, Bell, Search, X, RefreshCw, MailOpen, Flame, Zap, Leaf, Apple, Wheat, Ruler, MapPin, Phone, Map, Flag, Calendar, FileText, Eye, Camera, Sprout, Building2, BarChart3, Hourglass, Clock } from 'lucide-react';
 import './MyDeliveries.css';
 import { API_ENDPOINTS } from '../../../config/api';
+import { useToast } from '../../../components/ui/ToastProvider';
 
 // --- Types ---
 interface User {
@@ -58,6 +59,7 @@ type SortOption = 'newest' | 'priority' | 'distance' | 'earnings';
 
 const MyDeliveries: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [deliveries, setDeliveries] = useState<DeliveryTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -155,7 +157,10 @@ const MyDeliveries: React.FC = () => {
             if (!vehicleNumber.trim()) missing.push('Vehicle Number');
             if (!licenseNumber.trim()) missing.push('Driving License Number');
 
-            alert(`Please complete your profile before viewing deliveries.\n\nMissing fields: ${missing.join(', ')}`);
+            showToast(`Please complete your profile before viewing deliveries. Missing fields: ${missing.join(', ')}`, {
+              variant: 'warning',
+              title: 'Profile Incomplete',
+            });
             navigate('/driver-settings', { state: { returnTo: '/my-deliveries', incompleteProfile: true } });
             return;
           }
@@ -164,7 +169,10 @@ const MyDeliveries: React.FC = () => {
           const phone = localStorage.getItem('userPhone') || '';
           const vehicleNumber = localStorage.getItem('vehicleNumber') || '';
           if (!parsedUser.name?.trim() || !phone.trim() || !vehicleNumber.trim()) {
-            alert('Please complete your profile before viewing deliveries.');
+            showToast('Please complete your profile before viewing deliveries.', {
+              variant: 'warning',
+              title: 'Profile Incomplete',
+            });
             navigate('/driver-settings', { state: { returnTo: '/my-deliveries', incompleteProfile: true } });
             return;
           }
@@ -232,7 +240,7 @@ const MyDeliveries: React.FC = () => {
       setShowUpdateModal(false);
       setSelectedDelivery(null);
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, { variant: 'error', title: 'Update Failed' });
     } finally {
       setUpdatingId(null);
     }

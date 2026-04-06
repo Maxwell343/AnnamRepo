@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './History.css';
 import { API_ENDPOINTS } from '../config/api';
+import { useToast } from '../components/ui/ToastProvider';
 
 interface HistoryItem {
   id: number;
@@ -16,6 +17,7 @@ interface HistoryItem {
 
 const HistoryPage: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'completed' | 'pending'>('completed');
   const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set());
   const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
@@ -149,7 +151,10 @@ const HistoryPage: React.FC = () => {
 
   const handleDownloadCertificate = (itemName: string) => {
     // In a real app, this would trigger a PDF download
-    alert(`Generating Official Donation Certificate for: ${itemName}...\n\n(This serves as proof for 80G Tax Benefits)`);
+    showToast(`Generating official donation certificate for ${itemName}.`, {
+      title: 'Certificate Generation',
+      variant: 'info',
+    });
   };
 
   return (

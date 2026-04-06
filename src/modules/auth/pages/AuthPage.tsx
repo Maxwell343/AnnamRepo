@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Leaf, Sprout, Building2, Truck, ShoppingCart, Check, X, Eye, EyeOff, ArrowRight, User, Phone, MapPin, Mail, Lock } from 'lucide-react';
 import './AuthStyles.css';
 import { API_ENDPOINTS } from '../../../config/api';
+import { useToast } from '../../../components/ui/ToastProvider';
 
 // Declare google global for TypeScript
 declare global {
@@ -43,6 +44,7 @@ const GOOGLE_CLIENT_ID = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '252
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { showToast } = useToast();
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [emailError, setEmailError] = useState<string>('');
@@ -432,7 +434,10 @@ const AuthPage: React.FC = () => {
         localStorage.setItem('user', JSON.stringify(user));
         window.dispatchEvent(new CustomEvent('annam-role-transition', { detail: { path: getRedirectUrl(), role: user.role } }));
       } else {
-        alert('Account created successfully! Please login.');
+        showToast('Account created successfully. Please login.', {
+          title: 'Signup Complete',
+          variant: 'success',
+        });
         setIsLogin(true);
         setFormData({
           email: formData.email,

@@ -19,6 +19,48 @@ import asyncio
 import re
 
 
+DONATION_ELIGIBILITY_HOURS = 24
+
+
+def _parse_iso_datetime(value: Any) -> Optional[datetime]:
+    """Parse ISO-like datetime strings and normalize to UTC-aware datetime."""
+    if not value:
+        return None
+
+    if isinstance(value, datetime):
+        dt = value
+    else:
+        try:
+            dt = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        except Exception:
+            return None
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+
+    return dt.astimezone(timezone.utc)
+
+
+def get_listing_age_hours(listing: dict) -> float:
+    """Return listing age in hours based on created_at; 0 when unavailable/invalid."""
+    created_at = _parse_iso_datetime(listing.get("created_at"))
+    if not created_at:
+        return 0.0
+
+    now = datetime.now(timezone.utc)
+    age_hours = (now - created_at).total_seconds() / 3600
+    return max(0.0, round(age_hours, 2))
+
+
+def can_farmer_donate_listing(listing: dict) -> bool:
+    """A listing can be manually donated only after 24h, while still available."""
+    if listing.get("status") != "available":
+        return False
+    if bool(listing.get("donation_mode")):
+        return False
+    return get_listing_age_hours(listing) >= DONATION_ELIGIBILITY_HOURS
+
+
 def is_listing_expired(listing: dict) -> bool:
     """Check if a listing has expired — delegates to expiry engine."""
     expires_at = listing.get("expires_at")
@@ -73,7 +115,7 @@ def mark_expired_listings() -> int:
 
 
 def notify_ngos_new_listing(listing_data: dict):
-    """Send WhatsApp notification to all NGOs about a new listing"""
+    """Send WhatsApp notification to all NGOs about a donation-ready listing."""
     try:
         # Find all NGO users
         ngos = users_collection.find({"role": "ngo"})
@@ -98,13 +140,13 @@ def notify_ngos_new_listing(listing_data: dict):
                 quantity = listing_data.get("quantity", "")
                 location = listing_data.get("location", listing_data.get("pickup_location", ""))
                 
-                message = f"""🌾 *New Food Listing Available!*
+                message = f"""🌾 *New Donation Listing Available!*
 
 📦 *Item:* {produce_name}
 📊 *Quantity:* {quantity}
 📍 *Location:* {location}
 
-A farmer has listed fresh produce for donation. Open the ANNAM app to claim this listing before it expires!
+                A farmer has marked this produce for donation. Open the ANNAM app to claim this listing before it expires!
 
 🙏 Thank you for helping reduce food waste."""
 
@@ -220,6 +262,7 @@ def create_listing(listing_data: dict) -> dict:
     # ── Initialize rescue fields ──
     listing_data["donation_mode"] = False
     listing_data["rescue_action"] = None
+    listing_data["allow_auto_donate"] = bool(listing_data.get("allow_auto_donate", False))
     listing_data["coordinates"] = {"lat": lat, "lng": lng} if lat and lng else None
     
     result = listings_collection.insert_one(listing_data)
@@ -292,9 +335,6 @@ def create_listing(listing_data: dict) -> dict:
     except Exception as e:
         print(f"[MARKETPLACE SYNC] Failed to sync to marketplace: {e}")
     
-    # Notify all NGOs about the new listing
-    notify_ngos_new_listing(listing_data)
-    
     return listing_data
 
 
@@ -326,10 +366,21 @@ def get_all_listings(filters: dict = None, include_expired: bool = False) -> Lis
         listing["id"] = str(listing["_id"])
         del listing["_id"]
         enrich_listing(listing)
+
+        listing_age_hours = get_listing_age_hours(listing)
+        listing["hours_since_listing"] = round(listing_age_hours, 1)
+        listing["donate_available"] = can_farmer_donate_listing(listing)
+        listing["donate_available_in_hours"] = round(max(0.0, DONATION_ELIGIBILITY_HOURS - listing_age_hours), 1)
         
-        # Strictly filter out logically expired listings from the frontend
+        # Strictly filter out all expired listings, including legacy records
+        # that may only have expiry/expiry_date and stale status values.
         if not include_expired:
-            if listing.get("hours_remaining", 1) <= 0 or listing.get("urgency_status") == "expired":
+            if (
+                listing.get("status") == "expired"
+                or listing.get("hours_remaining", 1) <= 0
+                or listing.get("urgency_status") == "expired"
+                or is_listing_expired(listing)
+            ):
                 continue
                 
         enriched_listings.append(listing)
@@ -348,6 +399,10 @@ def get_listing_by_id(listing_id: str) -> Optional[dict]:
             listing["id"] = str(listing["_id"])
             del listing["_id"]
             enrich_listing(listing)
+            listing_age_hours = get_listing_age_hours(listing)
+            listing["hours_since_listing"] = round(listing_age_hours, 1)
+            listing["donate_available"] = can_farmer_donate_listing(listing)
+            listing["donate_available_in_hours"] = round(max(0.0, DONATION_ELIGIBILITY_HOURS - listing_age_hours), 1)
         return listing
     except:
         return None
@@ -711,12 +766,24 @@ def donate_listing(listing_id: str, farmer_id: str = None, listing: dict = None)
     if not listing:
         return None
 
+    if listing.get("status") != "available":
+        raise ValueError("Only available listings can be donated")
+
+    if bool(listing.get("donation_mode")):
+        return listing
+
+    age_hours = get_listing_age_hours(listing)
+    if age_hours < DONATION_ELIGIBILITY_HOURS:
+        remaining_hours = round(DONATION_ELIGIBILITY_HOURS - age_hours, 1)
+        raise ValueError(f"Donation option becomes available after 24 hours. Try again in {remaining_hours}h")
+
     now_iso = datetime.utcnow().isoformat()
     farmer_id = farmer_id or listing.get("farmer_id")
 
     update_data = {
         "donation_mode": True,
         "rescue_action": "donate",
+        "donation_requested_at": now_iso,
         "donated_at": now_iso,
         "updated_at": now_iso,
     }
@@ -744,5 +811,11 @@ def donate_listing(listing_id: str, farmer_id: str = None, listing: dict = None)
         update_impact_on_rescue(listing)
     except Exception as e:
         print(f"[RESCUE] Failed to update impact: {e}")
+
+    # Notify NGOs only when listing is explicitly marked for donation.
+    try:
+        notify_ngos_new_listing(updated or listing)
+    except Exception as e:
+        print(f"[RESCUE] Failed to notify NGOs after donation action: {e}")
 
     return updated
