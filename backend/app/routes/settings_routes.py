@@ -129,7 +129,6 @@ async def save_ngo_settings_route(settings: NgoSettingsModel):
         (settings_dict.get("admin_name") or "").strip()
         and (settings_dict.get("admin_phone") or "").strip()
         and (settings_dict.get("organization_name") or "").strip()
-        and (settings_dict.get("address") or "").strip()
     )
     settings_dict["profile_complete"] = is_profile_complete
     if is_profile_complete:
@@ -171,7 +170,6 @@ async def update_ngo_settings_route(ngo_id: str, settings: NgoSettingsModel):
         (settings_dict.get("admin_name") or "").strip()
         and (settings_dict.get("admin_phone") or "").strip()
         and (settings_dict.get("organization_name") or "").strip()
-        and (settings_dict.get("address") or "").strip()
     )
     settings_dict["profile_complete"] = is_profile_complete
     if is_profile_complete:

@@ -404,6 +404,8 @@ async def save_ngo_settings(settings_data: Dict) -> Dict:
     previous_settings = dict(existing) if existing else {}
     merged_settings = dict(previous_settings)
     merged_settings.update(settings_data)
+    if ngo_id and not merged_settings.get("user_id"):
+        merged_settings["user_id"] = str(ngo_id)
 
     # Prevent client-side tampering of verification state; admin KYC decides this value.
     merged_settings["verification_status"] = _normalize_verification_status(

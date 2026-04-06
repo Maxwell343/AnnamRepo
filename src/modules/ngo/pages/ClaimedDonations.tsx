@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Clock, UserCheck, Truck, CheckCircle, Leaf, Apple, Wheat, Package, Handshake, ArrowLeft, RefreshCw, Search, X, MailOpen, User, Calendar, MapPin, Car, Phone, Eye, PartyPopper, ClipboardList, Check } from 'lucide-react';
 import './ClaimedDonations.css';
@@ -47,6 +47,7 @@ const ClaimedDonations: React.FC = () => {
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [selectedDonation, setSelectedDonation] = useState<ClaimedDonation | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const profileToastShownRef = useRef(false);
 
   // Fetch claimed donations
   const fetchClaimedDonations = useCallback(async () => {
@@ -100,38 +101,57 @@ const ClaimedDonations: React.FC = () => {
 
       // Check if NGO profile is complete before allowing access
       const checkProfile = async () => {
+        const warnAndRedirect = (missing: string[]) => {
+          if (profileToastShownRef.current) return;
+          profileToastShownRef.current = true;
+          showToast(
+            `Please complete your organization profile before accessing donations. Missing fields: ${missing.join(', ')}`,
+            {
+              variant: 'warning',
+              title: 'Profile Incomplete',
+            },
+          );
+          navigate('/ngo-settings', { state: { returnTo: '/claimed-donations', incompleteProfile: true } });
+        };
+
         try {
           const response = await fetch(API_ENDPOINTS.ngoSettings(parsedUser.id.toString()));
           const data = await response.json();
 
-          const adminName = data?.admin_name || parsedUser.name || '';
-          const adminPhone = data?.admin_phone || '';
-          const orgName = data?.organization_name || localStorage.getItem('ngoName') || '';
-          const address = data?.address || '';
+          if (data?.profile_complete || parsedUser?.profileComplete) {
+            return;
+          }
 
-          if (!adminName.trim() || !adminPhone.trim() || !orgName.trim() || !address.trim()) {
-            const missing: string[] = [];
-            if (!adminName.trim()) missing.push('Admin Name');
-            if (!adminPhone.trim()) missing.push('Phone Number');
-            if (!orgName.trim()) missing.push('Organization Name');
-            if (!address.trim()) missing.push('Address');
+          const adminName = (data?.admin_name || parsedUser.name || '').trim();
+          const adminEmail = (data?.admin_email || parsedUser.email || '').trim();
+          const adminPhone = (data?.admin_phone || '').trim();
+          const orgName = (data?.organization_name || localStorage.getItem('ngoName') || '').trim();
+          const orgEmail = (data?.organization_email || '').trim();
+          const orgPhone = (data?.organization_phone || '').trim();
+          const mission = (data?.mission || '').trim();
+          const focusAreas = Array.isArray(data?.cause_areas) ? data.cause_areas : [];
+          const donationTypes = Array.isArray(data?.donation_types) ? data.donation_types : [];
+          const availability = (data?.availability || '').trim();
 
-            showToast(`Please complete your organization profile before accessing donations. Missing fields: ${missing.join(', ')}`, {
-              variant: 'warning',
-              title: 'Profile Incomplete',
-            });
-            navigate('/ngo-settings', { state: { returnTo: '/claimed-donations', incompleteProfile: true } });
+          const missing: string[] = [];
+          if (!adminName) missing.push('Admin Name');
+          if (!adminEmail) missing.push('Admin Email');
+          if (!adminPhone) missing.push('Admin Phone');
+          if (!orgName) missing.push('Organization Name');
+          if (!orgEmail) missing.push('Organization Email');
+          if (!orgPhone) missing.push('Organization Phone');
+          if (!mission) missing.push('Mission');
+          if (!focusAreas.length) missing.push('Focus Areas');
+          if (!donationTypes.length) missing.push('Donation Types');
+          if (!availability) missing.push('Availability');
+
+          if (missing.length) {
+            warnAndRedirect(missing);
             return;
           }
         } catch (err) {
-          // Fallback: check localStorage
-          const ngoName = localStorage.getItem('ngoName') || '';
-          if (!parsedUser.name?.trim() || !ngoName.trim()) {
-            showToast('Please complete your organization profile before accessing donations.', {
-              variant: 'warning',
-              title: 'Profile Incomplete',
-            });
-            navigate('/ngo-settings', { state: { returnTo: '/claimed-donations', incompleteProfile: true } });
+          if (!parsedUser?.profileComplete) {
+            warnAndRedirect(['Organization Profile']);
             return;
           }
         } finally {

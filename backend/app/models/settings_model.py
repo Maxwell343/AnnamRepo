@@ -92,6 +92,7 @@ class FarmerSettingsModel(BaseModel):
 
 class NgoSettingsModel(BaseModel):
     ngo_id: str
+    user_id: Optional[str] = None
     
     # Admin details
     admin_name: Optional[str] = None
@@ -102,6 +103,9 @@ class NgoSettingsModel(BaseModel):
     organization_name: Optional[str] = None
     organization_email: Optional[str] = None
     organization_phone: Optional[str] = None
+    website: Optional[str] = None
+    year_established: Optional[str] = None
+    team_size: Optional[str] = None
 
     # Extended org profile fields used by NGO settings page
     admin_role: Optional[str] = None
@@ -113,9 +117,6 @@ class NgoSettingsModel(BaseModel):
     gst_number: Optional[str] = None
     mission: Optional[str] = None
     vision: Optional[str] = None
-    year_established: Optional[str] = None
-    team_size: Optional[str] = None
-    website: Optional[str] = None
 
     # Address
     address: Optional[str] = None
@@ -142,6 +143,9 @@ class NgoSettingsModel(BaseModel):
     bank_branch: Optional[str] = None
     upi_id: Optional[str] = None
     payment_gateway: Optional[str] = None
+    donation_types: Optional[List[str]] = None
+    availability: Optional[str] = None
+    pickup_preferences: Optional[str] = None
 
     # Preferences
     notifications_email: Optional[bool] = True
@@ -161,6 +165,7 @@ class NgoSettingsModel(BaseModel):
     logo: Optional[str] = None
     cover_image: Optional[str] = None
     primary_color: Optional[str] = None
+    profile_image: Optional[str] = None
     profile_complete: Optional[bool] = False
     completed_at: Optional[str] = None
 

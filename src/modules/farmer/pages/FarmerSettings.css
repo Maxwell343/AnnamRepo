@@ -413,6 +413,13 @@
   padding: 32px 40px 20px;
 }
 
+.fs-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .fs-header h1 {
   margin: 0;
   font-size: 28px;
@@ -436,6 +443,11 @@
 @media (max-width: 768px) {
   .fs-header {
     padding: 80px 20px 20px;
+  }
+
+  .fs-header-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .fs-content {
