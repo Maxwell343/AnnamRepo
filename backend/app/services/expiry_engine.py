@@ -135,33 +135,86 @@ def enrich_listing(listing: dict) -> dict:
     Dynamically compute and attach real-time fields to a listing dict.
     These fields are NEVER persisted in the database.
 
+    PRIORITY ORDER for remaining hours:
+      1. Dynamic computation from base_shelf_life_hours + harvest_datetime + weather
+      2. expires_at countdown
+      3. Stored remaining_shelf_life_hours (legacy fallback)
+
     Adds:
       - urgency_status
       - hours_remaining
+      - remaining_shelf_life_hours (dynamic override)
       - discounted_price
       - pickup_priority
       - is_rescue
       - is_donation
     """
+    hours_remaining = None
     expires_at = listing.get("expires_at")
-    if not expires_at:
-        # Try computing from created_at + remaining_shelf_life_hours
+
+    # ── Priority 1: Dynamic computation (preferred) ──
+    if listing.get("base_shelf_life_hours") and listing.get("harvest_datetime"):
+        try:
+            from app.services.shelf_life_service import compute_remaining_shelf_life, _derive_status, compute_hours_since_harvest
+            dynamic_remaining = compute_remaining_shelf_life(listing)
+            if dynamic_remaining is not None:
+                hours_remaining = dynamic_remaining
+                # Override the stored static value with dynamic one
+                listing["remaining_shelf_life_hours"] = dynamic_remaining
+                listing["hours_since_harvest"] = round(
+                    compute_hours_since_harvest(listing["harvest_datetime"]), 1
+                )
+                listing["freshness_status"] = _derive_status(dynamic_remaining)
+                # Recompute expires_at from harvest + effective shelf life
+                from app.services.shelf_life_service import (
+                    parse_harvest_datetime, compute_weather_decay_factor,
+                    fetch_weather_sync, WEATHER_DEFAULTS
+                )
+                harvest_dt = parse_harvest_datetime(listing["harvest_datetime"])
+                if harvest_dt:
+                    lat = listing.get("latitude")
+                    lng = listing.get("longitude")
+                    weather = fetch_weather_sync(lat, lng) if lat and lng else WEATHER_DEFAULTS.copy()
+                    decay = compute_weather_decay_factor(weather["temperature_c"], weather["humidity_percent"])
+                    effective = float(listing["base_shelf_life_hours"]) * decay
+                    new_expires = harvest_dt + timedelta(hours=effective)
+                    expires_at = new_expires.isoformat()
+                    listing["prediction_weather"] = weather
+        except Exception as e:
+            print(f"[ENRICH] Dynamic computation failed: {e}")
+
+    # ── Priority 2: expires_at countdown ──
+    if hours_remaining is None and expires_at:
+        hours_remaining = compute_hours_remaining(expires_at)
+
+    # ── Priority 3: Legacy fallback ──
+    if hours_remaining is None:
         created_at = listing.get("created_at")
         shelf_hours = listing.get("remaining_shelf_life_hours")
         if created_at and shelf_hours:
             expires_at = compute_expires_at(created_at, float(shelf_hours))
-        else:
-            # No expiry data — return as normal
-            listing["urgency_status"] = "normal"
-            listing["hours_remaining"] = 999
-            listing["discounted_price"] = listing.get("price") or listing.get("original_price") or 0
-            listing["pickup_priority"] = "low"
-            listing["is_rescue"] = False
-            listing["is_donation"] = bool(listing.get("donation_mode"))
-            return listing
+            hours_remaining = compute_hours_remaining(expires_at)
 
-    hours_remaining = compute_hours_remaining(expires_at)
-    urgency = compute_urgency_status(expires_at)
+    # ── Fallback: no expiry data at all ──
+    if hours_remaining is None:
+        listing["urgency_status"] = "normal"
+        listing["hours_remaining"] = 999
+        listing["remaining_shelf_life_hours"] = 999
+        listing["discounted_price"] = listing.get("price") or listing.get("original_price") or 0
+        listing["pickup_priority"] = "low"
+        listing["is_rescue"] = False
+        listing["is_donation"] = bool(listing.get("donation_mode"))
+        return listing
+
+    # ── Derive urgency from hours_remaining ──
+    if hours_remaining <= 0:
+        urgency = "expired"
+    elif hours_remaining < RESCUE_THRESHOLD:
+        urgency = "rescue"
+    elif hours_remaining < URGENT_THRESHOLD:
+        urgency = "urgent"
+    else:
+        urgency = "normal"
 
     original_price = (
         listing.get("original_price")

@@ -53,12 +53,16 @@ def get_listing_age_hours(listing: dict) -> float:
 
 
 def can_farmer_donate_listing(listing: dict) -> bool:
-    """A listing can be manually donated only after 24h, while still available."""
+    """A listing can be donated when remaining shelf life ≤ 24h, while still available."""
     if listing.get("status") != "available":
         return False
     if bool(listing.get("donation_mode")):
         return False
-    return get_listing_age_hours(listing) >= DONATION_ELIGIBILITY_HOURS
+    # Use hours_remaining (set by enrich_listing) or remaining_shelf_life_hours
+    shelf_hours = listing.get("hours_remaining") or listing.get("remaining_shelf_life_hours")
+    if shelf_hours is None:
+        return False
+    return float(shelf_hours) <= DONATION_ELIGIBILITY_HOURS
 
 
 def is_listing_expired(listing: dict) -> bool:
@@ -370,7 +374,9 @@ def get_all_listings(filters: dict = None, include_expired: bool = False) -> Lis
         listing_age_hours = get_listing_age_hours(listing)
         listing["hours_since_listing"] = round(listing_age_hours, 1)
         listing["donate_available"] = can_farmer_donate_listing(listing)
-        listing["donate_available_in_hours"] = round(max(0.0, DONATION_ELIGIBILITY_HOURS - listing_age_hours), 1)
+        # donate_available_in_hours = how many hours until shelf life drops to 24h
+        shelf_hours = listing.get("hours_remaining") or listing.get("remaining_shelf_life_hours") or 999
+        listing["donate_available_in_hours"] = round(max(0.0, float(shelf_hours) - DONATION_ELIGIBILITY_HOURS), 1)
         
         # Strictly filter out all expired listings, including legacy records
         # that may only have expiry/expiry_date and stale status values.
@@ -402,7 +408,8 @@ def get_listing_by_id(listing_id: str) -> Optional[dict]:
             listing_age_hours = get_listing_age_hours(listing)
             listing["hours_since_listing"] = round(listing_age_hours, 1)
             listing["donate_available"] = can_farmer_donate_listing(listing)
-            listing["donate_available_in_hours"] = round(max(0.0, DONATION_ELIGIBILITY_HOURS - listing_age_hours), 1)
+            shelf_hours = listing.get("hours_remaining") or listing.get("remaining_shelf_life_hours") or 999
+            listing["donate_available_in_hours"] = round(max(0.0, float(shelf_hours) - DONATION_ELIGIBILITY_HOURS), 1)
         return listing
     except:
         return None
@@ -772,10 +779,11 @@ def donate_listing(listing_id: str, farmer_id: str = None, listing: dict = None)
     if bool(listing.get("donation_mode")):
         return listing
 
-    age_hours = get_listing_age_hours(listing)
-    if age_hours < DONATION_ELIGIBILITY_HOURS:
-        remaining_hours = round(DONATION_ELIGIBILITY_HOURS - age_hours, 1)
-        raise ValueError(f"Donation option becomes available after 24 hours. Try again in {remaining_hours}h")
+    # Guard: only allow donation when remaining shelf life ≤ 24h
+    shelf_hours = listing.get("hours_remaining") or listing.get("remaining_shelf_life_hours")
+    if shelf_hours is not None and float(shelf_hours) > DONATION_ELIGIBILITY_HOURS:
+        wait_hours = round(float(shelf_hours) - DONATION_ELIGIBILITY_HOURS, 1)
+        raise ValueError(f"Donation available when shelf life drops to 24h. Currently {round(float(shelf_hours), 1)}h remaining. Try again in {wait_hours}h")
 
     now_iso = datetime.utcnow().isoformat()
     farmer_id = farmer_id or listing.get("farmer_id")

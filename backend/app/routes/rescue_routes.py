@@ -55,13 +55,9 @@ async def rescue_action(listing_id: str, payload: RescueActionRequest):
             raise HTTPException(status_code=400, detail="Only available listings can be donated")
 
         if not bool(listing.get("donation_mode")):
-            age_hours = get_listing_age_hours(listing)
-            if age_hours < DONATION_ELIGIBILITY_HOURS:
-                remaining = round(DONATION_ELIGIBILITY_HOURS - age_hours, 1)
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Donation option becomes available after 24 hours. Try again in {remaining}h",
-                )
+            # The service layer (donate_listing) now handles the dynamic 
+            # remaining_shelf_life_hours check and throws a correct ValueError.
+            pass
 
     try:
         result = set_rescue_action(listing_id, payload.action, payload.farmer_id)

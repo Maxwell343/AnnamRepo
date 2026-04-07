@@ -384,7 +384,7 @@ const MyListings: React.FC = () => {
             const typeConf = TYPE_CONFIG[listing.type] || TYPE_CONFIG.Other;
             const statusConf = STATUS_CONFIG[listing.status] || STATUS_CONFIG.available;
             const pickupAddr = listing.pickup_location || listing.pickup_address || '';
-            const donateAvailableInHours = listing.donate_available_in_hours ?? Math.max(0, 24 - (listing.hours_since_listing ?? 0));
+            const donateAvailableInHours = listing.donate_available_in_hours ?? Math.max(0, (listing.hours_remaining ?? 999) - 24);
             const donateAvailable = Boolean(listing.donate_available) || donateAvailableInHours <= 0;
             const donateWaitHours = Math.max(0, Math.ceil(donateAvailableInHours));
 
