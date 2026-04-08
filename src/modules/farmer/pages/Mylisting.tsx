@@ -8,7 +8,7 @@ import {
   Package, PlusCircle, Search, Filter, Grid3X3, List,
   RefreshCw, Trash2, Edit3, Copy, Eye, X, Clock,
   MapPin, IndianRupee, Leaf, ChevronDown, AlertTriangle,
-  TrendingUp, Truck, CheckCircle2, XCircle, MoreVertical, Handshake
+  TrendingUp, Truck, CheckCircle2, XCircle, MoreVertical, Handshake, Tag
 } from 'lucide-react';
 
 // --- Types ---
@@ -30,7 +30,7 @@ interface Listing {
   description?: string;
   image?: string;
   created_at?: string;
-  status: 'available' | 'claimed' | 'in_transit' | 'delivered' | 'expired';
+  status: 'available' | 'claimed' | 'in_transit' | 'delivered' | 'expired' | 'pending_donation' | 'discounted';
   claimed_by?: {
     id: number;
     name: string;
@@ -74,6 +74,8 @@ const STATUS_CONFIG: Record<string, { icon: React.ReactNode; label: string; colo
   in_transit: { icon: <Truck size={14} />,        label: 'In Transit', color: '#e65100', bg: '#fff3e0' },
   delivered:  { icon: <CheckCircle2 size={14} />, label: 'Delivered',  color: '#00695c', bg: '#e0f2f1' },
   expired:    { icon: <XCircle size={14} />,      label: 'Expired',    color: '#c62828', bg: '#ffebee' },
+  pending_donation: { icon: <Handshake size={14} />, label: 'Finding NGO...', color: '#d97706', bg: '#fef3c7' },
+  discounted: { icon: <CheckCircle2 size={14} />, label: 'Discounted', color: '#2e7d32', bg: '#e8f5e9'},
 };
 
 // ─── COMPONENT ──────────────────────────────────────────────────────────────
@@ -175,8 +177,8 @@ const MyListings: React.FC = () => {
         throw new Error(data.detail || data.message || 'Failed to mark listing as donation');
       }
 
-      await fetchListings();
-      showToast('Listing marked for NGO donation successfully. NGOs can now claim it.', {
+      setListings(prev => prev.map(l => l.id === listingId ? data.listing : l));
+      showToast('Finding nearest NGO... Assigned to smart routing flow.', {
         variant: 'success',
         title: 'Donation Enabled',
       });
@@ -465,7 +467,7 @@ const MyListings: React.FC = () => {
 
                 {/* Card Actions */}
                 <div className="ml-card-actions">
-                  {listing.status === 'available' && listing.urgency_status === 'rescue' && !listing.donation_mode && (
+                  {listing.status === 'available' && (listing.urgency_status === 'rescue' || listing.urgency_status === 'urgent') && !listing.donation_mode && (
                     <button className="ml-action-btn error" onClick={() => setRescueModalListing(listing)} style={{ color: 'red', fontWeight: 'bold' }}>
                       <AlertTriangle size={15} /> Action Needed
                     </button>
@@ -478,6 +480,16 @@ const MyListings: React.FC = () => {
                     >
                       <Handshake size={15} /> {donatingId === listing.id ? 'Publishing...' : 'Donate'}
                     </button>
+                  )}
+                  {listing.status === 'discounted' && (
+                    <span className="ml-donate-wait" style={{ color: 'green' }}>
+                      <Tag size={13} style={{ marginRight: 4 }}/> Fast Sale 50% Off
+                    </span>
+                  )}
+                  {listing.status === 'pending_donation' && (
+                     <span className="ml-donate-wait" style={{ color: 'orange' }}>
+                        <Clock size={13} style={{ marginRight: 4 }}/> Waiting for NGO...
+                     </span>
                   )}
                   {listing.status === 'available' && !listing.donation_mode && !donateAvailable && (
                     <span className="ml-donate-wait">
@@ -654,8 +666,8 @@ const MyListings: React.FC = () => {
           listing={rescueModalListing as any}
           isOpen={true}
           onClose={() => setRescueModalListing(null)}
-          onActionComplete={(_updated) => {
-            fetchListings();
+          onActionComplete={(updated) => {
+            setListings(prev => prev.map(l => l.id === updated.id ? updated : l));
             setRescueModalListing(null);
           }}
         />

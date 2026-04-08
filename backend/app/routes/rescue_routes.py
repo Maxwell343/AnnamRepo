@@ -11,6 +11,7 @@ API endpoints for:
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional, List
 from datetime import datetime
+from pydantic import BaseModel
 
 from app.models.listing_model import RescueActionRequest
 from app.services.listing_service import (
@@ -109,20 +110,28 @@ async def get_rescue_listings():
 
 
 @router.get("/rescue/ngo-priority")
-async def get_ngo_priority_listings():
+async def get_ngo_priority_listings(ngo_id: Optional[str] = Query(None)):
     """
     NGO priority feed: only farmer-approved donation listings.
     """
     results = []
 
     for coll in [listings_collection, marketplace_listings]:
-        docs = list(coll.find({
+        cond_available = {
             "status": "available",
             "$or": [
                 {"donation_mode": True},
                 {"rescue_action": {"$in": ["donate", "auto_donate"]}},
             ],
-        }))
+        }
+        or_conditions = [cond_available]
+        if ngo_id:
+            or_conditions.append({
+                "status": "pending_donation",
+                "pending_ngo_id": str(ngo_id)
+            })
+
+        docs = list(coll.find({"$or": or_conditions}))
         for doc in docs:
             doc["id"] = str(doc["_id"])
             del doc["_id"]
@@ -173,8 +182,12 @@ async def claim_donation_listing(listing_id: str, ngo_id: str, ngo_name: str = "
     if not listing:
         raise HTTPException(status_code=404, detail="Listing not found")
 
-    if listing.get("status") != "available":
+    status = listing.get("status")
+    if status not in ["available", "pending_donation"]:
         raise HTTPException(status_code=400, detail="Listing is no longer available for claim")
+        
+    if status == "pending_donation" and listing.get("pending_ngo_id") and str(listing.get("pending_ngo_id")) != str(ngo_id):
+        raise HTTPException(status_code=403, detail="Listing is routed to another NGO")
 
     if not listing.get("donation_mode"):
         raise HTTPException(status_code=400, detail="This listing is not in donation mode")
@@ -185,10 +198,61 @@ async def claim_donation_listing(listing_id: str, ngo_id: str, ngo_name: str = "
     }
     updated = claim_listing(listing_id, ngo_data)
 
+    # ── Immediately trigger driver dispatch (Ola-style) ────────────────────
+    dispatch_result = None
+    try:
+        from app.services.dispatch_service import broadcast_to_nearest_driver
+        dispatch_result = broadcast_to_nearest_driver(
+            listing_id=listing_id,
+            ngo_id=ngo_id,
+            ngo_name=ngo_name,
+        )
+    except Exception as exc:
+        print(f"[DISPATCH] Auto-dispatch failed: {exc}")
+        dispatch_result = {"status": "error", "message": str(exc)}
+
     return {
         "message": "Donation claimed successfully",
         "listing": updated,
+        "dispatch": dispatch_result,
     }
+
+
+class NgoResponsePayload(BaseModel):
+    ngo_id: str
+    response: str # 'accept' or 'decline'
+
+@router.post("/rescue/{listing_id}/ngo-response")
+async def ngo_donation_response(listing_id: str, payload: NgoResponsePayload):
+    from app.services.donation_routing_service import handle_ngo_decline
+    from bson import ObjectId
+
+    if payload.response not in ("accept", "decline"):
+        raise HTTPException(status_code=400, detail="Response must be 'accept' or 'decline'")
+
+    if payload.response == "accept":
+        ngo_data = {"ngo_id": payload.ngo_id, "ngo_name": "Assigned NGO"}
+        try:
+            updated = claim_listing(listing_id, ngo_data)
+            
+            # Since the flow says we change to "donated", but claim_listing might set "claimed"
+            # let's explicitly set status to "donated" for the smart route requirement
+            now_iso = datetime.utcnow().isoformat()
+            query = {"_id": ObjectId(listing_id)} if ObjectId.is_valid(listing_id) else {"id": listing_id}
+            update_data = {"status": "donated", "updated_at": now_iso}
+            db.listings.update_one(query, {"$set": update_data})
+            db.marketplace_listings.update_one(query, {"$set": update_data})
+            updated["status"] = "donated"
+
+            return {"message": "Donation accepted", "listing": updated}
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+    elif payload.response == "decline":
+        try:
+            updated = handle_ngo_decline(listing_id, payload.ngo_id)
+            return {"message": "Donation declined. Rerouted successfully.", "listing": updated}
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))
 
 
 # ============================================

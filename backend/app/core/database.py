@@ -21,6 +21,11 @@ notifications_collection = db["notifications"]
 farmer_rewards_collection = db["farmer_rewards"]
 marketplace_listings_collection = db["marketplace_listings"]
 
+# ── Smart Mobility collections ────────────────────────────────────────────────
+drivers_collection    = db["drivers"]
+deliveries_collection = db["deliveries"]
+driver_requests_collection = db["driver_requests"]
+
 def get_database():
     """Get the MongoDB database instance"""
     return db
@@ -63,6 +68,33 @@ def init_collections():
         # Create indexes for farmer rewards (leaderboard)
         farmer_rewards_collection.create_index([("farmer_id", ASCENDING)], unique=True)
         farmer_rewards_collection.create_index([("total_points", DESCENDING)])
+
+        # ── Smart Mobility: Driver indexes ────────────────────────────────────
+        drivers_collection.create_index([("status", ASCENDING)])
+        drivers_collection.create_index([("last_active_time", ASCENDING)])
+        drivers_collection.create_index([("phone", ASCENDING)], unique=True, sparse=True)
+        # 2dsphere index enables native MongoDB geo queries if needed in future
+        try:
+            drivers_collection.create_index(
+                [("latitude", ASCENDING), ("longitude", ASCENDING)]
+            )
+        except Exception:
+            pass  # geo index may already exist
+
+        # ── Smart Mobility: Delivery indexes ─────────────────────────────────
+        deliveries_collection.create_index([("driver_id", ASCENDING)])
+        deliveries_collection.create_index([("listing_id", ASCENDING)])
+        deliveries_collection.create_index([("ngo_id", ASCENDING)])
+        deliveries_collection.create_index([("status", ASCENDING)])
+        deliveries_collection.create_index([("created_at", DESCENDING)])
+
+        # ── Smart Mobility: Driver Requests (dispatch) indexes ────────────
+        driver_requests_collection.create_index(
+            [("driver_id", ASCENDING), ("status", ASCENDING)]
+        )
+        driver_requests_collection.create_index([("listing_id", ASCENDING)])
+        driver_requests_collection.create_index([("expires_at", ASCENDING)])
+        driver_requests_collection.create_index([("status", ASCENDING)])
         
         print("✅ Database collections and indexes initialized successfully!")
         return True

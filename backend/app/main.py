@@ -8,6 +8,9 @@ from app.routes.notification_routes import router as notification_router
 from app.routes.marketplace_routes import router as marketplace_router
 from app.routes.admin_routes import router as admin_router
 from app.routes.rescue_routes import router as rescue_router
+from app.routes.driver_routes import router as driver_router
+from app.routes.mobility_routes import router as mobility_router
+from app.routes.dispatch_routes import router as dispatch_router
 
 
 @asynccontextmanager
@@ -18,7 +21,7 @@ async def lifespan(app: FastAPI):
         from app.services.scheduler import start_scheduler
         start_scheduler()
     except Exception as e:
-        print(f"⚠️  Scheduler failed to start: {e}")
+        print(f"Scheduler failed to start: {e}")
     yield
     # ── Shutdown ──
     try:
@@ -35,6 +38,8 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
 ]
 
 app.add_middleware(
@@ -52,6 +57,9 @@ app.include_router(notification_router)
 app.include_router(marketplace_router)
 app.include_router(admin_router)
 app.include_router(rescue_router)
+app.include_router(driver_router)
+app.include_router(mobility_router)
+app.include_router(dispatch_router)
 
 @app.get("/")
 def root():

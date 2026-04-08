@@ -21,6 +21,8 @@ class ListingStatus(str, Enum):
     CANCELLED = "cancelled"
     RESCUE = "rescue"
     DONATION = "donation"
+    PENDING_DONATION = "pending_donation"
+    DISCOUNTED = "discounted"
 
 class ListingCreate(BaseModel):
     title: str
@@ -41,6 +43,8 @@ class ListingCreate(BaseModel):
     harvest_datetime: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    pending_ngo_id: Optional[str] = None
+    declined_ngo_ids: Optional[List[str]] = []
 
 class ListingUpdate(BaseModel):
     title: Optional[str] = None

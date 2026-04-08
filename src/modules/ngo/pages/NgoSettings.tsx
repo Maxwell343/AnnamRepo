@@ -4,6 +4,32 @@ import { API_ENDPOINTS } from '../../../config/api';
 import '../../farmer/pages/FarmerSettings.css';
 
 // Icons as SVG components
+import 'leaflet/dist/leaflet.css';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import { MapPin } from 'lucide-react';
+
+// Custom Pin Icon
+const pinIcon = new L.Icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+function LocationMarker({ position, setPosition }: { position: [number, number] | null, setPosition: (p: [number, number]) => void }) {
+  useMapEvents({
+    click(e) {
+      setPosition([e.latlng.lat, e.latlng.lng]);
+    },
+  });
+  return position === null ? null : (
+    <Marker position={position} icon={pinIcon}></Marker>
+  );
+}
 const Icons = {
   User: () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -107,6 +133,13 @@ const Icons = {
       <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
     </svg>
   ),
+  Map: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+      <line x1="9" y1="3" x2="9" y2="21"></line>
+      <line x1="15" y1="3" x2="15" y2="21"></line>
+    </svg>
+  ),
 };
 
 type NgoSettingsForm = {
@@ -126,6 +159,11 @@ type NgoSettingsForm = {
   availability: string;
   pickupPreferences: string;
   profileImage: string;
+  location: {
+    lat: number | null;
+    lng: number | null;
+    address: string;
+  };
 };
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
@@ -151,6 +189,7 @@ const DONATION_TYPES = ['Fresh Produce', 'Dry Goods', 'Cooked Meals', 'Dairy', '
 
 const SECTIONS = [
   { id: 'organization', label: 'Organization Info', icon: Icons.Farm },
+  { id: 'location', label: 'Location & Routing', icon: Icons.Map },
   { id: 'admin', label: 'Admin Info', icon: Icons.User },
   { id: 'impact', label: 'Cause & Impact', icon: Icons.Shield },
   { id: 'donation', label: 'Donation Preferences', icon: Icons.Heart },
@@ -261,6 +300,11 @@ const NgoSettings: React.FC = () => {
     availability: 'weekdays',
     pickupPreferences: '',
     profileImage: '',
+    location: {
+      lat: null,
+      lng: null,
+      address: '',
+    },
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -358,6 +402,7 @@ const NgoSettings: React.FC = () => {
             availability: data.availability || prev.availability,
             pickupPreferences: data.pickup_preferences || prev.pickupPreferences,
             profileImage: data.profile_image || prev.profileImage,
+            location: data.location || { lat: data.gps_lat || null, lng: data.gps_lng || null, address: data.address || '' },
           }));
         }
       } catch (err) {
@@ -409,6 +454,64 @@ const NgoSettings: React.FC = () => {
     }
   };
 
+  const handleUseCurrentLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      addToast('Geolocation is not supported by your browser', 'error');
+      return;
+    }
+    
+    addToast('Fetching your location...', 'info');
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setForm(prev => ({
+          ...prev,
+          location: { ...prev.location, lat: latitude, lng: longitude }
+        }));
+        
+        try {
+           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+           const data = await res.json();
+           if(data && data.display_name) {
+               setForm(prev => ({
+                 ...prev,
+                 location: { lat: latitude, lng: longitude, address: data.display_name }
+               }));
+           }
+        } catch(e) { /* ignore reverse geocode fail */ }
+        
+        addToast('Location updated successfully', 'success');
+      },
+      () => {
+        addToast('Unable to retrieve your location. Please check browser permissions.', 'error');
+      }
+    );
+  }, [addToast]);
+
+  const handleGeocodeAddress = useCallback(async () => {
+    if (!form.location.address) {
+      addToast('Please enter an address to search', 'warning');
+      return;
+    }
+    try {
+      addToast('Searching for address...', 'info');
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(form.location.address)}`);
+      const data = await res.json();
+      if(data && data.length > 0) {
+          const { lat, lon } = data[0];
+          setForm(prev => ({
+              ...prev,
+              location: { ...prev.location, lat: parseFloat(lat), lng: parseFloat(lon) }
+          }));
+          addToast('Location pinned on map.', 'success');
+      } else {
+          addToast('Address not found. Please try again or use the map picker.', 'warning');
+      }
+    } catch(e) {
+      addToast('Failed to find address.', 'error');
+    }
+  }, [form.location.address, addToast]);
+
   const buildSettingsPayload = (userId: string) => ({
     ngo_id: userId,
     user_id: userId,
@@ -429,9 +532,14 @@ const NgoSettings: React.FC = () => {
     pickup_preferences: form.pickupPreferences,
     profile_image: form.profileImage,
     profile_complete: isProfileComplete,
+    location: form.location,
   });
 
   const persistSettings = async (successMessage: string) => {
+    if (!form.location.lat || !form.location.lng) {
+      addToast('Location is required for donation routing', 'error');
+      return;
+    }
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (!user?.id) {
       addToast('Unable to save: user not found. Please log in again.', 'error');
@@ -704,6 +812,86 @@ const NgoSettings: React.FC = () => {
                     </div>
                   </div>
 
+                </div>
+              </CollapsibleSection>
+            )}
+
+            {activeSection === 'location' && (
+              <CollapsibleSection
+                id="location"
+                title="Location & Routing"
+                icon={Icons.Map}
+                isExpanded={true}
+                onToggle={() => {}}
+              >
+                <div className="fs-form-grid">
+                  <div className="fs-field fs-field-full">
+                    <label htmlFor="location.address">Address</label>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <input
+                        id="location.address"
+                        name="address"
+                        value={form.location.address}
+                        onChange={(e) => setForm(prev => ({ ...prev, location: { ...prev.location, address: e.target.value } }))}
+                        className="fs-input"
+                        placeholder="Enter full address"
+                        style={{ flex: 1 }}
+                      />
+                      <button type="button" className="fs-btn fs-btn-secondary" onClick={handleGeocodeAddress}>
+                        Find
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="fs-field">
+                    <label htmlFor="location.lat">Latitude</label>
+                    <input
+                      id="location.lat"
+                      name="lat"
+                      type="number"
+                      value={form.location.lat ?? ''}
+                      onChange={(e) => setForm(prev => ({ ...prev, location: { ...prev.location, lat: parseFloat(e.target.value) || null } }))}
+                      className="fs-input"
+                      placeholder="e.g. 19.0760"
+                      readOnly
+                    />
+                  </div>
+                  <div className="fs-field">
+                    <label htmlFor="location.lng">Longitude</label>
+                    <input
+                      id="location.lng"
+                      name="lng"
+                      type="number"
+                      value={form.location.lng ?? ''}
+                      onChange={(e) => setForm(prev => ({ ...prev, location: { ...prev.location, lng: parseFloat(e.target.value) || null } }))}
+                      className="fs-input"
+                      placeholder="e.g. 72.8777"
+                      readOnly
+                    />
+                  </div>
+                  
+                  <div className="fs-field fs-field-full" style={{ marginBottom: '1rem' }}>
+                    <button type="button" className="fs-btn fs-btn-primary" onClick={handleUseCurrentLocation} style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem', alignItems: 'center' }}>
+                      <MapPin size={18} /> Use Current Location
+                    </button>
+                  </div>
+                </div>
+
+                <div className="fs-map-container" style={{ height: '300px', width: '100%', borderRadius: '8px', overflow: 'hidden', marginTop: '1rem', border: '1px solid var(--border)', zIndex: 0 }}>
+                  <MapContainer 
+                    center={form.location.lat && form.location.lng ? [form.location.lat, form.location.lng] : [20.5937, 78.9629]} 
+                    zoom={form.location.lat ? 13 : 4} 
+                    style={{ height: '100%', width: '100%', zIndex: 0 }}
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <LocationMarker 
+                      position={form.location.lat && form.location.lng ? [form.location.lat, form.location.lng] : null} 
+                      setPosition={(pos) => setForm(prev => ({ ...prev, location: { ...prev.location, lat: pos[0], lng: pos[1] } }))} 
+                    />
+                  </MapContainer>
                 </div>
               </CollapsibleSection>
             )}

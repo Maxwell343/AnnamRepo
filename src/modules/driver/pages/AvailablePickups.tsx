@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AvailablePickups.css';
 import { API_ENDPOINTS } from '../../../config/api';
@@ -135,6 +135,159 @@ const AvailablePickups: React.FC = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error' | 'warning'>('success');
 
+  // ── Dispatch Request State (Ola-style) ──────────────────────────────
+  interface DispatchRequest {
+    id: string;
+    listing_id: string;
+    listing_title: string;
+    listing_type: string;
+    listing_quantity: string;
+    pickup_address: string;
+    pickup_lat: number;
+    pickup_lng: number;
+    ngo_name: string;
+    ngo_address: string;
+    dest_lat: number;
+    dest_lng: number;
+    driver_id: string;
+    distance_km: number;
+    estimated_minutes: number;
+    earnings: number;
+    priority: 'urgent' | 'high' | 'normal';
+    remaining_seconds: number;
+    farmer_name: string;
+    farmer_phone: string;
+    hours_remaining: number;
+    attempt_number: number;
+  }
+  const [incomingRequest, setIncomingRequest] = useState<DispatchRequest | null>(null);
+  const [countdown, setCountdown] = useState(30);
+  const [isAccepting, setIsAccepting] = useState(false);
+  const [isDeclining, setIsDeclining] = useState(false);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // ── Hotspots State ──────────────────────────────────────────────
+  interface Hotspot {
+    message: string;
+    center_lat: number;
+    center_lng: number;
+    pickup_count: number;
+    distance_km: number;
+    most_urgent_hours: number;
+    urgency: 'critical' | 'high';
+  }
+  const [hotspots, setHotspots] = useState<Hotspot[]>([]);
+
+  // ── Dispatch: Poll for incoming requests every 5s ────────────────────
+  const pollForDispatchRequest = useCallback(async () => {
+    if (!user || !isOnline) return;
+    try {
+      const res = await fetch(API_ENDPOINTS.dispatch.incomingRequest(String(user.id)));
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.has_request && data.request) {
+        const req = data.request as DispatchRequest;
+        // Only trigger if we don't already have this request
+        if (!incomingRequest || incomingRequest.id !== req.id) {
+          setIncomingRequest(req);
+          setCountdown(req.remaining_seconds || 30);
+          // Sound + vibration
+          try {
+            if (!audioRef.current) {
+              audioRef.current = new Audio('data:audio/wav;base64,UklGRlYAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YTIAAABkAGQAZABkAGQAZABkAGQAZABkAGQAZABkAGQAZABkAGQAZABkAGQAZABkAGQAZAA=');
+            }
+            audioRef.current.play().catch(() => {});
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+          } catch { /* ignore audio errors */ }
+        }
+      } else {
+        if (incomingRequest) {
+          setIncomingRequest(null);
+        }
+      }
+    } catch {
+      // polling error, silently ignore
+    }
+  }, [user, isOnline, incomingRequest]);
+
+  useEffect(() => {
+    if (!user || !isOnline) return;
+    // Poll every 5s for incoming dispatch requests
+    const pollInterval = setInterval(pollForDispatchRequest, 5000);
+    // Also poll immediately on mount
+    pollForDispatchRequest();
+    return () => clearInterval(pollInterval);
+  }, [user, isOnline, pollForDispatchRequest]);
+
+  // ── Dispatch: Countdown timer ────────────────────────────────────────
+  useEffect(() => {
+    if (!incomingRequest) {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+      return;
+    }
+    countdownRef.current = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          // Auto-decline on timeout
+          handleDeclineDispatch(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, [incomingRequest?.id]);
+
+  // ── Dispatch: Accept handler ─────────────────────────────────────────
+  const handleAcceptDispatch = async () => {
+    if (!incomingRequest || !user) return;
+    setIsAccepting(true);
+    try {
+      const res = await fetch(API_ENDPOINTS.dispatch.acceptRequest(incomingRequest.id), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ driver_id: String(user.id) }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Failed to accept');
+      setIncomingRequest(null);
+      showToastMessage('Pickup accepted! Launching navigation...', 'success');
+      setTimeout(() => navigate('/route-map'), 800);
+    } catch (err: any) {
+      showToastMessage(err.message || 'Failed to accept request', 'error');
+    } finally {
+      setIsAccepting(false);
+    }
+  };
+
+  // ── Dispatch: Decline handler ────────────────────────────────────────
+  const handleDeclineDispatch = async (isTimeout = false) => {
+    if (!incomingRequest || !user) return;
+    setIsDeclining(true);
+    try {
+      await fetch(API_ENDPOINTS.dispatch.declineRequest(incomingRequest.id), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          driver_id: String(user.id),
+          reason: isTimeout ? 'timeout' : 'driver_declined',
+        }),
+      });
+      setIncomingRequest(null);
+      if (!isTimeout) showToastMessage('Request declined. Waiting for next request...', 'warning');
+    } catch {
+      setIncomingRequest(null);
+    } finally {
+      setIsDeclining(false);
+    }
+  };
+
   // Fetch available pickups from API
   const fetchPickups = useCallback(async () => {
     if (!user) return;
@@ -205,6 +358,21 @@ const AvailablePickups: React.FC = () => {
         setTotalFetchedCount(0);
         setPickups([]);
       }
+
+      // Fetch Hotspots Recommendations if driver is idle
+      if (isOnline && !incomingRequest) {
+         fetch(API_ENDPOINTS.dispatch.hotspots(String(user.id)))
+           .then(r => r.json())
+           .then(rData => {
+              if (rData && Array.isArray(rData.recommendations)) {
+                 setHotspots(rData.recommendations);
+              }
+           })
+           .catch(() => {});
+      } else {
+         setHotspots([]);
+      }
+
     } catch (err) {
       console.error('Error fetching pickups:', err);
       setTotalFetchedCount(0);
@@ -212,28 +380,46 @@ const AvailablePickups: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, driverLocation]);
+  }, [user, driverLocation, isOnline, incomingRequest]);
 
   useEffect(() => {
-    if (!('geolocation' in navigator)) return;
+    if (!('geolocation' in navigator) || !isOnline || !user) return;
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setDriverLocation({
+    const watchId = navigator.geolocation.watchPosition(
+      async (position) => {
+        const coords = {
           lng: position.coords.longitude,
           lat: position.coords.latitude,
-        });
+        };
+        setDriverLocation(coords);
+
+        try {
+          await fetch(API_ENDPOINTS.driverLocation, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              driver_id: user.id,
+              lat: coords.lat,
+              lng: coords.lng,
+              timestamp: new Date().toISOString()
+            })
+          });
+        } catch (e) {
+          console.error('Failed to sync live tracking', e);
+        }
       },
       () => {
-        // Location failure: fallback to API-provided distance.
+        console.warn('Geolocation tracking temporarily unavailable.');
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 60000,
+        maximumAge: 0,
       }
     );
-  }, []);
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [isOnline, user]);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -350,10 +536,9 @@ const AvailablePickups: React.FC = () => {
       setShowAcceptModal(false);
       setSelectedPickup(null);
       
-      showToastMessage('Pickup accepted successfully! Check My Deliveries.', 'success');
+      showToastMessage('Pickup accepted successfully! Launching navigation...', 'success');
       
-      // Optionally navigate to my deliveries
-      // setTimeout(() => navigate('/my-deliveries'), 2000);
+      setTimeout(() => navigate('/route-map'), 1000);
     } catch (err: any) {
       showToastMessage(err.message || 'Failed to accept pickup', 'error');
     } finally {
@@ -584,6 +769,45 @@ const AvailablePickups: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* Reposition Recommendations (Hotspots) */}
+        {isOnline && hotspots.length > 0 && !loading && (
+          <section className="hotspots-section" style={{ marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '16px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Flame size={18} color="#ef4444" /> Fleet Intelligence: High-Demand Zones
+            </h3>
+            <div className="hotspots-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+              {hotspots.map((hs, idx) => (
+                <div key={idx} className="hotspot-card" style={{
+                  background: 'linear-gradient(135deg, #fff5f5, #ffe4e6)',
+                  border: '1px solid #fecdd3',
+                  borderRadius: '16px',
+                  padding: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px'
+                }}>
+                  <div style={{
+                    width: '40px', height: '40px', borderRadius: '50%', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444'
+                  }}>
+                    <MapPin size={20} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ margin: 0, fontSize: '14px', color: '#b91c1c' }}>{hs.pickup_count} pickups nearby</h4>
+                    <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#991b1b', lineHeight: 1.4 }}>
+                      {hs.message}
+                    </p>
+                  </div>
+                  <button onClick={() => navigate('/route-map')} style={{
+                    background: '#ef4444', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
+                  }}>
+                    Navigate
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Filters */}
         <section className="pickups-filters">
@@ -1037,6 +1261,128 @@ const AvailablePickups: React.FC = () => {
                     </>
                   ) : (
                     <><CheckCircle size={14} /> Confirm & Accept</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════
+             INCOMING DISPATCH REQUEST MODAL (Ola/Uber-style)
+           ═══════════════════════════════════════════════════════════════ */}
+        {incomingRequest && (
+          <div className="dispatch-overlay">
+            <div className="dispatch-modal">
+              {/* Animated ring countdown */}
+              <div className="dispatch-countdown-ring">
+                <svg viewBox="0 0 120 120" className="countdown-svg">
+                  <circle cx="60" cy="60" r="54" className="countdown-track" />
+                  <circle
+                    cx="60" cy="60" r="54"
+                    className="countdown-progress"
+                    style={{
+                      strokeDasharray: `${2 * Math.PI * 54}`,
+                      strokeDashoffset: `${2 * Math.PI * 54 * (1 - countdown / 30)}`,
+                    }}
+                  />
+                </svg>
+                <div className="countdown-number">
+                  <span className="countdown-value">{countdown}</span>
+                  <span className="countdown-label">seconds</span>
+                </div>
+              </div>
+
+              {/* Header */}
+              <div className="dispatch-header">
+                <div className="dispatch-pulse-dot" />
+                <h2 className="dispatch-title">New Pickup Request!</h2>
+                {incomingRequest.priority === 'urgent' && (
+                  <span className="dispatch-priority-badge urgent"><Flame size={14} /> URGENT</span>
+                )}
+                {incomingRequest.priority === 'high' && (
+                  <span className="dispatch-priority-badge high"><Zap size={14} /> HIGH PRIORITY</span>
+                )}
+                {incomingRequest.attempt_number > 1 && (
+                  <span className="dispatch-attempt-badge">Attempt #{incomingRequest.attempt_number}</span>
+                )}
+              </div>
+
+              {/* Stats row */}
+              <div className="dispatch-stats">
+                <div className="dispatch-stat">
+                  <Ruler size={18} />
+                  <span className="dispatch-stat-value">{incomingRequest.distance_km} km</span>
+                  <span className="dispatch-stat-label">Distance</span>
+                </div>
+                <div className="dispatch-stat">
+                  <Clock size={18} />
+                  <span className="dispatch-stat-value">{incomingRequest.estimated_minutes} min</span>
+                  <span className="dispatch-stat-label">ETA</span>
+                </div>
+                <div className="dispatch-stat earnings">
+                  <Wallet size={18} />
+                  <span className="dispatch-stat-value">₹{incomingRequest.earnings}</span>
+                  <span className="dispatch-stat-label">Earnings</span>
+                </div>
+              </div>
+
+              {/* Route */}
+              <div className="dispatch-route">
+                <div className="dispatch-route-point">
+                  <div className="dispatch-marker pickup"><MapPin size={16} /></div>
+                  <div className="dispatch-route-info">
+                    <span className="dispatch-route-label">PICKUP</span>
+                    <span className="dispatch-route-name">{incomingRequest.farmer_name}</span>
+                    <span className="dispatch-route-addr">{incomingRequest.pickup_address}</span>
+                  </div>
+                </div>
+                <div className="dispatch-route-line">
+                  <span className="dispatch-dotted-line" />
+                  <span className="dispatch-route-crop">
+                    <Package size={14} /> {incomingRequest.listing_title} • {incomingRequest.listing_quantity}
+                  </span>
+                </div>
+                <div className="dispatch-route-point">
+                  <div className="dispatch-marker delivery"><Flag size={16} /></div>
+                  <div className="dispatch-route-info">
+                    <span className="dispatch-route-label">DELIVER</span>
+                    <span className="dispatch-route-name">{incomingRequest.ngo_name}</span>
+                    <span className="dispatch-route-addr">{incomingRequest.ngo_address || 'NGO Location'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Expiry warning */}
+              {incomingRequest.hours_remaining <= 12 && (
+                <div className="dispatch-expiry-warning">
+                  <AlertTriangle size={14} />
+                  <span>Crop expires in <strong>{Math.round(incomingRequest.hours_remaining)}h</strong> — Handle with urgency</span>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="dispatch-actions">
+                <button
+                  className="dispatch-btn decline"
+                  onClick={() => handleDeclineDispatch(false)}
+                  disabled={isDeclining || isAccepting}
+                >
+                  {isDeclining ? (
+                    <><span className="btn-spinner" /> Declining...</>
+                  ) : (
+                    <><XCircle size={20} /> Decline</>
+                  )}
+                </button>
+                <button
+                  className="dispatch-btn accept"
+                  onClick={handleAcceptDispatch}
+                  disabled={isAccepting || isDeclining}
+                >
+                  {isAccepting ? (
+                    <><span className="btn-spinner" /> Accepting...</>
+                  ) : (
+                    <><CheckCircle size={20} /> Accept Pickup</>
                   )}
                 </button>
               </div>

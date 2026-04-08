@@ -1,6 +1,11 @@
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 
+class LocationModel(BaseModel):
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    address: Optional[str] = None
+
 class DriverSettingsModel(BaseModel):
     driver_id: str
     
@@ -118,12 +123,15 @@ class NgoSettingsModel(BaseModel):
     mission: Optional[str] = None
     vision: Optional[str] = None
 
-    # Address
+    # Address & Location
+    location: Optional[LocationModel] = None
     address: Optional[str] = None
     city: Optional[str] = None
     state: Optional[str] = None
     pincode: Optional[str] = None
     country: Optional[str] = None
+    gps_lat: Optional[float] = None  # retained for legacy compat
+    gps_lng: Optional[float] = None  # retained for legacy compat
 
     # Impact and social
     cause_areas: Optional[List[str]] = None

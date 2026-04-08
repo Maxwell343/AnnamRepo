@@ -352,13 +352,12 @@ def get_all_listings(filters: dict = None, include_expired: bool = False) -> Lis
     # First, mark any newly expired listings
     mark_expired_listings()
     
-    query = filters or {}
+    query = dict(filters) if filters else {}
     
     # Exclude expired listings by default
     if not include_expired:
-        if "$or" in query:
-            # If there's already an $or clause, we need to combine carefully
-            query = {"$and": [query, {"status": {"$ne": "expired"}}]}
+        if "$or" in query or "status" in query or "$and" in query:
+            query = {"$and": [query.copy(), {"status": {"$ne": "expired"}}]}
         else:
             query["status"] = {"$ne": "expired"}
     
@@ -534,11 +533,11 @@ def create_delivery_task(listing: dict, driver_data: dict) -> dict:
         "pickup_lng": listing.get("pickup_lng") or listing_location.get("lng"),
         "pickup_time": listing.get("pickup_time"),
         
-        "ngo_id": listing.get("claimed_by", {}).get("ngo_id"),
-        "ngo_name": listing.get("claimed_by", {}).get("ngo_name"),
-        "ngo_phone": listing.get("claimed_by", {}).get("ngo_phone"),
-        "delivery_address": listing.get("claimed_by", {}).get("ngo_address"),
-        "delivery_location": listing.get("claimed_by", {}).get("ngo_address"),
+        "ngo_id": claimed_by.get("ngo_id") if isinstance(claimed_by, dict) else str(claimed_by) if claimed_by else None,
+        "ngo_name": claimed_by.get("ngo_name") if isinstance(claimed_by, dict) else None,
+        "ngo_phone": claimed_by.get("ngo_phone") if isinstance(claimed_by, dict) else None,
+        "delivery_address": claimed_by.get("ngo_address") if isinstance(claimed_by, dict) else None,
+        "delivery_location": claimed_by.get("ngo_address") if isinstance(claimed_by, dict) else None,
         "delivery_lat": listing.get("delivery_lat") or (claimed_location or {}).get("lat"),
         "delivery_lng": listing.get("delivery_lng") or (claimed_location or {}).get("lng"),
         
@@ -749,17 +748,12 @@ def set_rescue_action(listing_id: str, action: str, farmer_id: str = None) -> Op
     if not listing:
         return None
 
-    now_iso = datetime.utcnow().isoformat()
-
     if action == "donate":
         return donate_listing(listing_id, farmer_id, listing)
     elif action == "sell_discounted":
-        update_data = {
-            "rescue_action": "sell_discounted",
-            "donation_mode": False,
-            "updated_at": now_iso,
-        }
-        return update_listing(listing_id, update_data)
+        from app.services.donation_routing_service import apply_failsafe_discount
+        # By bypassing declined ids and calling apply_failsafe directly, we instantly get 50% discount and 'discounted' status
+        return apply_failsafe_discount(listing_id, listing)
     
     return None
 
@@ -788,14 +782,19 @@ def donate_listing(listing_id: str, farmer_id: str = None, listing: dict = None)
     now_iso = datetime.utcnow().isoformat()
     farmer_id = farmer_id or listing.get("farmer_id")
 
-    update_data = {
-        "donation_mode": True,
-        "rescue_action": "donate",
-        "donation_requested_at": now_iso,
-        "donated_at": now_iso,
-        "updated_at": now_iso,
-    }
-    updated = update_listing(listing_id, update_data)
+    try:
+        from app.services.donation_routing_service import initiate_donation_request
+        updated = initiate_donation_request(listing_id, farmer_id)
+    except Exception as e:
+        print(f"[RESCUE] Routing failed: {e}")
+        # manual fallback
+        update_data = {
+            "donation_mode": True,
+            "rescue_action": "donate",
+            "donation_requested_at": now_iso,
+            "updated_at": now_iso,
+        }
+        updated = update_listing(listing_id, update_data)
 
     # Award reward points
     if farmer_id:

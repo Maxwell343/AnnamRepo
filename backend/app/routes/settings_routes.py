@@ -28,7 +28,25 @@ async def get_driver_settings_route(driver_id: str):
 async def save_driver_settings_route(settings: DriverSettingsModel):
     """Save driver settings"""
     settings_dict = settings.dict(exclude_unset=True)
+    is_profile_complete = bool(
+        (settings_dict.get("name") or "").strip()
+        and (settings_dict.get("phone") or "").strip()
+        and (settings_dict.get("vehicle_number") or "").strip()
+        and (settings_dict.get("license_number") or "").strip()
+    )
     result = await save_driver_settings(settings_dict)
+
+    if settings_dict.get("driver_id"):
+        await update_user_profile(settings_dict["driver_id"], {
+            "name": settings_dict.get("name"),
+            "email": settings_dict.get("email"),
+            "phone": settings_dict.get("phone"),
+            "vehicle_number": settings_dict.get("vehicle_number"),
+            "profile_complete": is_profile_complete,
+            "profileComplete": is_profile_complete,
+            "profileCompleted": is_profile_complete,
+        })
+
     return {"message": "Settings saved successfully", "settings": result}
 
 
@@ -37,7 +55,24 @@ async def update_driver_settings_route(driver_id: str, settings: DriverSettingsM
     """Update driver settings"""
     settings_dict = settings.dict(exclude_unset=True)
     settings_dict["driver_id"] = driver_id
+    is_profile_complete = bool(
+        (settings_dict.get("name") or "").strip()
+        and (settings_dict.get("phone") or "").strip()
+        and (settings_dict.get("vehicle_number") or "").strip()
+        and (settings_dict.get("license_number") or "").strip()
+    )
     result = await save_driver_settings(settings_dict)
+    
+    await update_user_profile(driver_id, {
+        "name": settings_dict.get("name"),
+        "email": settings_dict.get("email"),
+        "phone": settings_dict.get("phone"),
+        "vehicle_number": settings_dict.get("vehicle_number"),
+        "profile_complete": is_profile_complete,
+        "profileComplete": is_profile_complete,
+        "profileCompleted": is_profile_complete,
+    })
+
     return {"message": "Settings updated successfully", "settings": result}
 
 

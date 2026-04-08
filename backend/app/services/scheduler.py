@@ -57,6 +57,28 @@ def _job_recalculate_impact():
         print(f"[SCHEDULER] Error in impact recalc job: {e}")
 
 
+def _job_auto_offline_drivers():
+    """Auto-offline drivers inactive for more than 1 hour."""
+    try:
+        from app.services.driver_service import auto_offline_inactive_drivers
+        count = auto_offline_inactive_drivers()
+        if count > 0:
+            print(f"[SCHEDULER] Auto-offlined {count} inactive driver(s)")
+    except Exception as e:
+        print(f"[SCHEDULER] Error in auto_offline_drivers job: {e}")
+
+
+def _job_expire_dispatch_requests():
+    """Auto-expire stale driver dispatch requests and cascade to next driver."""
+    try:
+        from app.services.dispatch_service import expire_stale_requests
+        count = expire_stale_requests()
+        if count > 0:
+            print(f"[SCHEDULER] Expired {count} stale driver dispatch request(s)")
+    except Exception as e:
+        print(f"[SCHEDULER] Error in expire_dispatch_requests job: {e}")
+
+
 def start_scheduler():
     """Initialize and start the background scheduler."""
     global _scheduler
@@ -103,8 +125,26 @@ def start_scheduler():
         replace_existing=True,
     )
 
+    # Job 4: Auto-offline inactive drivers — every 10 minutes
+    _scheduler.add_job(
+        _job_auto_offline_drivers,
+        trigger=IntervalTrigger(minutes=10),
+        id="auto_offline_drivers",
+        name="Auto-offline inactive drivers",
+        replace_existing=True,
+    )
+
+    # Job 5: Expire stale driver dispatch requests — every 15 seconds
+    _scheduler.add_job(
+        _job_expire_dispatch_requests,
+        trigger=IntervalTrigger(seconds=15),
+        id="expire_dispatch_requests",
+        name="Expire stale driver dispatch requests",
+        replace_existing=True,
+    )
+
     _scheduler.start()
-    print("✅ [SCHEDULER] Background scheduler started with 3 jobs")
+    print("[SCHEDULER] Background scheduler started with 6 jobs")
 
     # Ensure clean shutdown
     atexit.register(stop_scheduler)

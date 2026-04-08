@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, Flag, MapPin, Navigation, Package, Truck } from 'lucide-react';
+import { ChevronLeft, Navigation, Phone, CheckCircle, Package, Flag, AlertTriangle, Crosshair } from 'lucide-react';
 import Map, { Layer, Marker, Source } from 'react-map-gl/mapbox';
 import { API_ENDPOINTS } from '../../../config/api';
 import './RouteMap.css';
@@ -22,6 +22,7 @@ type DirectionsApiResponse = {
   routes: Array<{
     geometry: RouteGeometry;
     distance?: number;
+    duration?: number;
   }>;
 };
 
@@ -32,34 +33,23 @@ type DriverTask = {
   status: 'pending' | 'assigned' | 'picked_up' | 'in_transit' | 'delivered' | string;
   pickup_address?: string;
   delivery_address?: string;
+  farmer?: { phone: string; name: string };
+  ngo?: { phone: string; name: string };
+  farmer_phone?: string;
+  farmer_name?: string;
+  ngo_phone?: string;
+  ngo_name?: string;
   pickup_lat?: number;
   pickup_lng?: number;
   delivery_lat?: number;
   delivery_lng?: number;
-  pickup_location?: {
-    lat?: number;
-    lng?: number;
-  };
-  delivery_location?: {
-    lat?: number;
-    lng?: number;
-  };
-  current_location?: {
-    lat?: number;
-    lng?: number;
-  };
+  pickup_location?: { lat?: number; lng?: number; address?: string };
+  delivery_location?: { lat?: number; lng?: number; address?: string };
+  current_location?: { lat?: number; lng?: number };
 };
-
-type ListingTrackingPayload = {
-  listing?: any;
-  task?: DriverTask | null;
-};
-
-const MAX_SERVICE_DISTANCE_KM = 5;
 
 const readRuntimeMapboxToken = (): string => {
   if (typeof window === 'undefined') return '';
-
   const localToken = window.localStorage.getItem('MAPBOX_TOKEN') || '';
   const windowToken = (window as any).MAPBOX_TOKEN || '';
   return localToken || windowToken;
@@ -78,28 +68,15 @@ const routeLineLayer = {
   id: 'routeLine',
   type: 'line',
   paint: {
-    'line-color': '#3b82f6',
-    'line-width': 5,
-    'line-opacity': 0.9,
+    'line-color': '#0f766e',
+    'line-width': 6,
+    'line-opacity': 0.8,
   },
   layout: {
     'line-join': 'round',
     'line-cap': 'round',
   },
 } as const;
-
-const toRad = (deg: number): number => (deg * Math.PI) / 180;
-
-const getDistanceKm = (from: LngLat, to: LngLat): number => {
-  const earthRadiusKm = 6371;
-  const dLat = toRad(to.lat - from.lat);
-  const dLng = toRad(to.lng - from.lng);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(from.lat)) * Math.cos(toRad(to.lat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return earthRadiusKm * c;
-};
 
 const geocodeAddress = async (address: string, token: string): Promise<LngLat | null> => {
   if (!address.trim() || !token) return null;
@@ -137,20 +114,34 @@ const RouteMap: React.FC = () => {
   const [driverId, setDriverId] = useState<string | null>(null);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [activeTask, setActiveTask] = useState<DriverTask | null>(null);
+  
   const [driverLocation, setDriverLocation] = useState<LngLat | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [pickupLocation, setPickupLocation] = useState<LngLat | null>(null);
   const [dropLocation, setDropLocation] = useState<LngLat | null>(null);
+  
   const [viewState, setViewState] = useState({
     longitude: DEFAULT_VIEW_CENTER.lng,
     latitude: DEFAULT_VIEW_CENTER.lat,
-    zoom: 12,
+    zoom: 14,
+    pitch: 45,
+    bearing: 0
   });
+  
   const [stage, setStage] = useState<Stage>('PICKUP');
   const [routeGeometry, setRouteGeometry] = useState<RouteGeometry | null>(null);
   const [routeDistanceKm, setRouteDistanceKm] = useState<number | null>(null);
-  const [isRouteLoading, setIsRouteLoading] = useState(false);
-  const [routeError, setRouteError] = useState<string | null>(null);
+  const [routeDurationMins, setRouteDurationMins] = useState<number | null>(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  useEffect(() => {
+    document.body.classList.add('routemap-active');
+    document.documentElement.classList.add('routemap-active');
+    return () => {
+      document.body.classList.remove('routemap-active');
+      document.documentElement.classList.remove('routemap-active');
+    };
+  }, []);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -158,196 +149,122 @@ const RouteMap: React.FC = () => {
       navigate('/auth');
       return;
     }
-
     const parsedUser = JSON.parse(storedUser);
     if (parsedUser.role !== 'driver') {
       navigate('/home');
       return;
     }
-
     setDriverId(String(parsedUser.id));
   }, [navigate]);
 
-  useEffect(() => {
+  const fetchActiveTask = useCallback(async () => {
     if (!driverId) return;
+    try {
+      const response = await fetch(API_ENDPOINTS.driverTasks(driverId));
+      if (!response.ok) return;
+      const data = await response.json();
+      const tasks: DriverTask[] = data.tasks || [];
+      const selectedTask = tasks.find((task) =>
+        ['pending', 'picked_up', 'in_transit', 'assigned'].includes(task.status)
+      );
 
-    const fetchActiveTask = async () => {
-      try {
-        const response = await fetch(API_ENDPOINTS.driverTasks(driverId));
-        if (!response.ok) {
-          setActiveTaskId(null);
-          setActiveTask(null);
-          return;
-        }
-
-        const data = await response.json();
-        const tasks: DriverTask[] = data.tasks || [];
-        const selectedTask = tasks.find((task) =>
-          ['pending', 'picked_up', 'in_transit', 'assigned'].includes(task.status)
-        );
-
-        setActiveTaskId(selectedTask ? String(selectedTask.id) : null);
-        setActiveTask(selectedTask || null);
-      } catch {
+      if (selectedTask) {
+        setActiveTaskId(String(selectedTask.id));
+        setActiveTask(selectedTask);
+        setStage(['picked_up', 'in_transit'].includes(selectedTask.status) ? 'DELIVERY' : 'PICKUP');
+      } else {
         setActiveTaskId(null);
         setActiveTask(null);
       }
-    };
-
-    fetchActiveTask();
+    } catch (e) {
+      console.error(e);
+    }
   }, [driverId]);
 
   useEffect(() => {
-    if (!activeTask) {
-      setPickupLocation(null);
-      setDropLocation(null);
-      return;
-    }
+    fetchActiveTask();
+  }, [fetchActiveTask]);
 
+  useEffect(() => {
+    if (!activeTask) return;
     const resolveStops = async () => {
-      const pickupFromTask = resolveTaskPoint(
-        activeTask.pickup_lat,
-        activeTask.pickup_lng,
-        activeTask.pickup_location
-      );
-      const dropFromTask = resolveTaskPoint(
-        activeTask.delivery_lat,
-        activeTask.delivery_lng,
-        activeTask.delivery_location
-      );
-
+      const pickupFromTask = resolveTaskPoint(activeTask.pickup_lat, activeTask.pickup_lng, activeTask.pickup_location);
+      const dropFromTask = resolveTaskPoint(activeTask.delivery_lat, activeTask.delivery_lng, activeTask.delivery_location);
+      
       let fallbackPickup: LngLat | null = null;
       let fallbackDrop: LngLat | null = null;
-      let pickupAddressFallback = activeTask.pickup_address || '';
-      let dropAddressFallback = activeTask.delivery_address || '';
 
       if ((!pickupFromTask || !dropFromTask) && activeTask.listing_id) {
         try {
           const trackingRes = await fetch(API_ENDPOINTS.listingTracking(String(activeTask.listing_id)));
           if (trackingRes.ok) {
-            const trackingData = (await trackingRes.json()) as ListingTrackingPayload;
-            const listing = trackingData?.listing || {};
+            const trData = await trackingRes.json();
+            const listing = trData?.listing || {};
             const claimedBy = listing?.claimed_by || {};
-
-            fallbackPickup = resolveTaskPoint(
-              listing?.pickup_lat,
-              listing?.pickup_lng,
-              listing?.pickup_location || listing?.location
-            );
-
-            fallbackDrop = resolveTaskPoint(
-              listing?.delivery_lat,
-              listing?.delivery_lng,
-              listing?.delivery_location || claimedBy?.location
-            );
-
-            pickupAddressFallback =
-              pickupAddressFallback ||
-              listing?.pickup_address ||
-              listing?.location_address ||
-              listing?.location?.address ||
-              '';
-
-            dropAddressFallback =
-              dropAddressFallback ||
-              listing?.delivery_address ||
-              claimedBy?.ngo_address ||
-              claimedBy?.address ||
-              claimedBy?.location?.address ||
-              '';
+            fallbackPickup = resolveTaskPoint(listing.pickup_lat, listing.pickup_lng, listing.location);
+            fallbackDrop = resolveTaskPoint(listing.delivery_lat, listing.delivery_lng, claimedBy.location);
           }
-        } catch {
-          // Best-effort fallback only.
-        }
+        } catch (e) {}
       }
 
-      const [pickupGeo, dropGeo] = await Promise.all([
-        pickupFromTask || fallbackPickup
-          ? Promise.resolve(null)
-          : geocodeAddress(pickupAddressFallback, MAPBOX_TOKEN),
-        dropFromTask || fallbackDrop
-          ? Promise.resolve(null)
-          : geocodeAddress(dropAddressFallback, MAPBOX_TOKEN),
-      ]);
-
-      const resolvedPickup = pickupFromTask || fallbackPickup || pickupGeo;
-      const resolvedDrop = dropFromTask || fallbackDrop || dropGeo;
-
-      setPickupLocation(resolvedPickup || null);
-      setDropLocation(resolvedDrop || null);
-
-      // Keep the map centered near delivery area once coordinates are known.
-      const center = resolvedDrop || resolvedPickup;
-      if (center) {
-        setViewState((prev) => ({
-          ...prev,
-          longitude: center.lng,
-          latitude: center.lat,
-          zoom: Math.max(prev.zoom, 11),
-        }));
-      }
+      setPickupLocation(pickupFromTask || fallbackPickup || null);
+      setDropLocation(dropFromTask || fallbackDrop || null);
     };
-
     resolveStops();
   }, [activeTask]);
 
-  useEffect(() => {
-    if (!activeTask) return;
-    setStage(['picked_up', 'in_transit'].includes(activeTask.status) ? 'DELIVERY' : 'PICKUP');
-  }, [activeTask]);
-
+  // LIVE GEOLOCATION TRACKING (ZOMATO STYLE)
   useEffect(() => {
     if (!('geolocation' in navigator)) {
-      setLocationError('Geolocation is not supported in this browser. Using default location.');
+      setLocationError('Geolocation is not supported in this browser.');
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
+    const watchId = navigator.geolocation.watchPosition(
+      async (position) => {
         const currentLocation: LngLat = {
           lng: position.coords.longitude,
           lat: position.coords.latitude,
         };
         setDriverLocation(currentLocation);
         setLocationError(null);
+
+        // Update View State to follow Driver
         setViewState((prev) => ({
           ...prev,
           longitude: currentLocation.lng,
           latitude: currentLocation.lat,
-          zoom: Math.max(prev.zoom, 12),
+          zoom: Math.max(prev.zoom, 14),
         }));
+
+        // Push real-time coordinates to backend
+        if (driverId) {
+          try {
+            await fetch(API_ENDPOINTS.driverLocation, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                driver_id: driverId,
+                lat: currentLocation.lat,
+                lng: currentLocation.lng,
+                timestamp: new Date().toISOString()
+              })
+            });
+          } catch (e) {}
+        }
       },
       () => {
-        setLocationError('Location permission denied. Using default location.');
+        setLocationError('Location permission denied. Navigate to settings to enable GPS.');
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 30000,
+        maximumAge: 0,
       }
     );
-  }, []);
 
-  useEffect(() => {
-    if (!activeTaskId || !driverLocation) return;
-
-    const updateLocation = async () => {
-      try {
-        await fetch(API_ENDPOINTS.deliveryTaskLocation(activeTaskId), {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lat: driverLocation.lat,
-            lng: driverLocation.lng,
-          }),
-        });
-      } catch {
-        // Best-effort update; UI remains functional even if tracking update fails.
-      }
-    };
-
-    updateLocation();
-  }, [activeTaskId, driverLocation]);
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [driverId]);
 
   const origin = useMemo<LngLat | null>(
     () => driverLocation ?? resolveTaskPoint(activeTask?.current_location?.lat, activeTask?.current_location?.lng),
@@ -359,16 +276,8 @@ const RouteMap: React.FC = () => {
     [stage, pickupLocation, dropLocation]
   );
 
-  const straightDistanceKm = useMemo(() => {
-    if (!origin || !destination) return null;
-    return getDistanceKm(origin, destination);
-  }, [origin, destination]);
-  const withinServiceRange =
-    straightDistanceKm !== null && straightDistanceKm <= MAX_SERVICE_DISTANCE_KM;
-
   const routeFeature = useMemo(() => {
     if (!routeGeometry) return null;
-
     return {
       type: 'Feature' as const,
       properties: {},
@@ -376,231 +285,213 @@ const RouteMap: React.FC = () => {
     };
   }, [routeGeometry]);
 
-  const fetchRoute = useCallback(
-    async (signal?: AbortSignal) => {
-      if (!origin || !destination) {
-        setRouteGeometry(null);
-        setRouteDistanceKm(null);
-        setRouteError('Task coordinates are unavailable. Update pickup and delivery addresses.');
-        return;
+  const fetchRoute = useCallback(async () => {
+    if (!origin || !destination || !MAPBOX_TOKEN) return;
+    try {
+      const from = `${origin.lng},${origin.lat}`;
+      const to = `${destination.lng},${destination.lat}`;
+      const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${from};${to}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`;
+      
+      const response = await fetch(directionsUrl);
+      if (!response.ok) throw new Error('API Failed');
+      const data = (await response.json()) as DirectionsApiResponse;
+      const firstRoute = data.routes?.[0];
+      if (firstRoute?.geometry) {
+        setRouteGeometry(firstRoute.geometry);
+        if (firstRoute.distance) setRouteDistanceKm(firstRoute.distance / 1000);
+        if (firstRoute.duration) setRouteDurationMins(Math.ceil(firstRoute.duration / 60));
       }
-
-      if (!MAPBOX_TOKEN) {
-        setRouteError('Mapbox token missing. Set VITE_MAPBOX_TOKEN in your .env file.');
-        setRouteGeometry(null);
-        setRouteDistanceKm(null);
-        return;
-      }
-
-      setIsRouteLoading(true);
-      setRouteError(null);
-
-      try {
-        const from = `${origin.lng},${origin.lat}`;
-        const to = `${destination.lng},${destination.lat}`;
-        const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${from};${to}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`;
-
-        const response = await fetch(directionsUrl, { signal });
-        if (!response.ok) {
-          throw new Error(`Directions API failed with status ${response.status}`);
-        }
-
-        const data = (await response.json()) as DirectionsApiResponse;
-        const firstRoute = data.routes?.[0];
-        const geometry = firstRoute?.geometry;
-
-        if (!geometry || geometry.type !== 'LineString' || !geometry.coordinates?.length) {
-          throw new Error('No valid route geometry returned by Mapbox.');
-        }
-
-        setRouteGeometry(geometry);
-        setRouteDistanceKm(typeof firstRoute.distance === 'number' ? firstRoute.distance / 1000 : null);
-      } catch (error) {
-        if (signal?.aborted) return;
-        console.error('Route fetch failed:', error);
-        setRouteGeometry(null);
-        setRouteDistanceKm(null);
-        setRouteError('Unable to fetch route right now. Please try again.');
-      } finally {
-        if (!signal?.aborted) {
-          setIsRouteLoading(false);
-        }
-      }
-    },
-    [destination, origin]
-  );
+    } catch (e) {
+      console.error(e);
+    }
+  }, [destination, origin]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetchRoute(controller.signal);
-
-    return () => controller.abort();
+    fetchRoute();
+    const interval = setInterval(fetchRoute, 15000); // Recalculate route periodically
+    return () => clearInterval(interval);
   }, [fetchRoute]);
 
-  const stageTitle = stage === 'PICKUP' ? 'Go to Pickup' : 'Deliver Order';
-  const stageSubtitle =
-    stage === 'PICKUP'
-      ? 'Driver route is currently optimized to pickup location.'
-      : 'Driver route is currently optimized to drop location.';
-  const hasMapboxToken = MAPBOX_TOKEN.length > 0;
+  const handleUpdateStatus = async () => {
+    if (!activeTaskId || !activeTask) return;
+    setIsUpdatingStatus(true);
+    const newStatus = stage === 'PICKUP' ? 'picked_up' : 'delivered';
+    
+    try {
+      const response = await fetch(API_ENDPOINTS.deliveryTaskStatus(activeTaskId), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (response.ok) {
+        if (newStatus === 'picked_up') {
+          setStage('DELIVERY');
+          setActiveTask(prev => prev ? ({ ...prev, status: 'picked_up' }) : null);
+        } else {
+          navigate('/driver-dashboard'); // Or home, delivery completes
+        }
+      }
+    } catch (e) {
+      console.error('Failed to update status', e);
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  const centerOnDriver = () => {
+    if (driverLocation) {
+      setViewState(prev => ({
+        ...prev,
+        longitude: driverLocation.lng,
+        latitude: driverLocation.lat,
+        zoom: 16
+      }));
+    }
+  };
+
+  const openDialer = (phone?: string) => {
+    if (phone) window.open(`tel:${phone.replace(/\s/g, '')}`);
+  };
+
+  if (!MAPBOX_TOKEN) {
+    return (
+      <div className="routemap-container">
+        <div className="map-overlay-error">
+          <AlertTriangle size={36} className="error-icon" />
+          <h3>Map Missing</h3>
+          <p>Please setup Mapbox Token to view Live Navigation.</p>
+          <button className="btn-contact primary" onClick={() => navigate('/home')}>Return Home</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="routemap-container">
       <div className="routemap-page-content">
-        <header className="top-header">
-          <div className="header-left">
-            <h1 className="page-title">
-              <Navigation size={22} /> Route Map
-            </h1>
-            <p className="page-subtitle">Live driver routing with Mapbox directions</p>
-          </div>
-
-          <div className="header-right map-stage-actions">
-            <button
-              className={`view-toggle ${stage === 'PICKUP' ? 'active' : ''}`}
-              onClick={() => setStage('PICKUP')}
-              type="button"
-            >
-              <Package size={14} /> Pickup Stage
-            </button>
-            <button
-              className={`view-toggle ${stage === 'DELIVERY' ? 'active' : ''}`}
-              onClick={() => setStage('DELIVERY')}
-              type="button"
-            >
-              <Flag size={14} /> Delivery Stage
-            </button>
-          </div>
-        </header>
-
-        <section className="map-section enlarged">
-          <div className="map-placeholder mapbox-live-map">
-            {hasMapboxToken ? (
-              <Map
-                {...viewState}
-                onMove={(evt: any) => setViewState(evt.viewState)}
-                style={{ width: '100%', height: '100%' }}
-                mapStyle="mapbox://styles/mapbox/streets-v11"
-                mapboxAccessToken={MAPBOX_TOKEN}
-                reuseMaps
-              >
-                {origin && (
-                  <Marker longitude={origin.lng} latitude={origin.lat} anchor="bottom">
-                    <span className="map-emoji-marker" title="Current Location">
-                      {'\u{1F4CD}'}
-                    </span>
-                  </Marker>
-                )}
-
-                {pickupLocation && (
-                  <Marker longitude={pickupLocation.lng} latitude={pickupLocation.lat} anchor="bottom">
-                    <span className="map-emoji-marker" title="Pickup">
-                      {'\u{1F4E6}'}
-                    </span>
-                  </Marker>
-                )}
-
-                {dropLocation && (
-                  <Marker longitude={dropLocation.lng} latitude={dropLocation.lat} anchor="bottom">
-                    <span className="map-emoji-marker" title="Drop">
-                      {'\u{1F3C1}'}
-                    </span>
-                  </Marker>
-                )}
-
-                {routeFeature && (
-                  <Source id="route" type="geojson" data={routeFeature}>
-                    <Layer {...routeLineLayer} />
-                  </Source>
-                )}
-              </Map>
-            ) : null}
-
-            <div className="mapbox-stage-overlay">
-              <h3 className="mapbox-stage-title">{stageTitle}</h3>
-              {activeTask?.title && <p className="mapbox-stage-subtitle">Order: {activeTask.title}</p>}
-              <p className="mapbox-stage-subtitle">{stageSubtitle}</p>
-              {isRouteLoading && <p className="mapbox-stage-subtitle">Updating route...</p>}
-              {driverLocation && <p className="mapbox-stage-subtitle">Using your current location</p>}
-              {routeDistanceKm !== null && (
-                <p className="mapbox-stage-subtitle">Distance to destination: {routeDistanceKm.toFixed(2)} km</p>
-              )}
-              {straightDistanceKm !== null && !withinServiceRange && (
-                <p className="mapbox-stage-subtitle">
-                  Current distance from destination: {straightDistanceKm.toFixed(2)} km
-                </p>
-              )}
-            </div>
-
-            {routeError && (
-              <div className="mapbox-route-error" role="alert">
-                <AlertTriangle size={14} /> {routeError}
-              </div>
-            )}
-
-            {!routeError && locationError && (
-              <div className="mapbox-route-error" role="alert">
-                <AlertTriangle size={14} /> {locationError}
-              </div>
-            )}
-
-            {!hasMapboxToken && (
-              <div className="mapbox-route-error" role="alert">
-                <AlertTriangle size={14} /> Missing VITE_MAPBOX_TOKEN. Add it to your frontend environment.
-              </div>
-            )}
-          </div>
-        </section>
-
-        <div className="route-summary">
-          <div className="summary-card">
-            <span className="summary-icon">
-              <Truck size={16} />
-            </span>
-            <div className="summary-content">
-              <span className="summary-value">Driver</span>
-              <span className="summary-label">
-                {origin ? `${origin.lat.toFixed(4)}, ${origin.lng.toFixed(4)}` : 'Live location unavailable'}
-              </span>
-            </div>
-          </div>
-          <div className="summary-card">
-            <span className="summary-icon">
-              <MapPin size={16} />
-            </span>
-            <div className="summary-content">
-              <span className="summary-value">Destination</span>
-              <span className="summary-label">
-                {destination
-                  ? `${destination.lat.toFixed(4)}, ${destination.lng.toFixed(4)}`
-                  : 'Destination coordinates unavailable'}
-              </span>
-            </div>
-          </div>
-          <div className="summary-card">
-            <span className="summary-icon">
-              <Navigation size={16} />
-            </span>
-            <div className="summary-content">
-              <span className="summary-value">Distance</span>
-              <span className="summary-label">
-                {routeDistanceKm !== null
-                  ? `${routeDistanceKm.toFixed(2)} km`
-                  : straightDistanceKm !== null
-                    ? `${straightDistanceKm.toFixed(2)} km`
-                    : 'Unavailable'}
-              </span>
-            </div>
+        
+        {/* Floating Top Nav */}
+        <div className="floating-header">
+          <button className="back-layer-btn" onClick={() => navigate('/home')}>
+            <ChevronLeft size={24} />
+          </button>
+          
+          <div className="floating-status-pill">
+            <Navigation size={16} /> 
+            {activeTask ? (stage === 'PICKUP' ? 'Heading to Pickup' : 'Delivering Order') : 'No Active Delivery'}
           </div>
         </div>
 
-        {!activeTask && (
-          <div className="no-route">
-            <span className="no-route-icon">🗺️</span>
-            <h3>No Accepted Delivery Yet</h3>
-            <p>Accept a pickup from Available Pickups to see it on your route map.</p>
+        {/* Map Layer */}
+        <div className="map-section fullscreen">
+          <Map
+            {...viewState}
+            onMove={(evt: any) => setViewState(evt.viewState)}
+            style={{ width: '100%', height: '100%' }}
+            mapStyle="mapbox://styles/mapbox/streets-v11"
+            mapboxAccessToken={MAPBOX_TOKEN}
+            reuseMaps
+          >
+            {routeFeature && (
+              <Source id="route" type="geojson" data={routeFeature}>
+                <Layer {...routeLineLayer} />
+              </Source>
+            )}
+
+            {origin && (
+              <Marker longitude={origin.lng} latitude={origin.lat} anchor="center">
+                <div className="driver-marker">
+                  <Navigation size={22} fill="currentColor" style={{ transform: 'rotate(45deg)' }} />
+                </div>
+              </Marker>
+            )}
+
+            {destination && (
+              <Marker longitude={destination.lng} latitude={destination.lat} anchor="bottom">
+                <div className="destination-marker">
+                  <div className="marker-pulse"></div>
+                  <div className="pin-icon" style={{ position: 'absolute', bottom: 10 }}>
+                    {stage === 'PICKUP' ? <Package /> : <Flag />}
+                  </div>
+                </div>
+              </Marker>
+            )}
+          </Map>
+        </div>
+
+        {locationError && !origin && (
+          <div className="map-overlay-error" style={{ top: '30%' }}>
+            <AlertTriangle size={32} className="error-icon" />
+            <h3>GPS Required</h3>
+            <p>{locationError}</p>
           </div>
         )}
+
+        {/* Zomato-style Floating Bottom Sheet */}
+        {activeTask && (
+          <div className="zomato-bottom-sheet">
+            <div className="recenter-btn" onClick={centerOnDriver}>
+              <Crosshair size={20} />
+            </div>
+
+            <div className="sheet-header">
+              <div className="eta-box">
+                <span className="eta-time">{routeDurationMins !== null ? `${routeDurationMins} min` : '--'}</span>
+                <span className="eta-sub">Estimated Arrival</span>
+              </div>
+              <div className="distance-badge">
+                {routeDistanceKm !== null ? `${routeDistanceKm.toFixed(1)} km` : '--'} away
+              </div>
+            </div>
+
+            <div className="sheet-content">
+              <div className="location-details">
+                <div className={`location-icon-wrapper ${stage === 'DELIVERY' ? 'delivery' : ''}`}>
+                  {stage === 'PICKUP' ? <Package size={20} /> : <Flag size={20} />}
+                </div>
+                <div className="address-info">
+                  <h3>{stage === 'PICKUP' ? (activeTask.farmer_name || activeTask.farmer?.name || 'Farmer') : (activeTask.ngo_name || activeTask.ngo?.name || 'NGO')}</h3>
+                  <p>{stage === 'PICKUP' ? (activeTask.pickup_address || activeTask.pickup_location?.address || 'Pickup location') : (activeTask.delivery_address || activeTask.delivery_location?.address || 'Drop location')}</p>
+                </div>
+              </div>
+
+              <div className="contact-actions">
+                {stage === 'PICKUP' ? (
+                  <button className="btn-contact" onClick={() => openDialer(activeTask.farmer_phone || activeTask.farmer?.phone)}>
+                    <Phone size={16} /> Call Sender
+                  </button>
+                ) : (
+                  <button className="btn-contact" onClick={() => openDialer(activeTask.ngo_phone || activeTask.ngo?.phone)}>
+                    <Phone size={16} /> Call NGO
+                  </button>
+                )}
+              </div>
+
+              <div className="swipe-action-container">
+                <button 
+                  className="btn-swipe-action" 
+                  onClick={handleUpdateStatus}
+                  disabled={isUpdatingStatus}
+                >
+                  <CheckCircle size={20} />
+                  {stage === 'PICKUP' ? 'Confirm Pickup Received' : 'Complete Delivery'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!activeTask && (
+          <div className="zomato-bottom-sheet" style={{ padding: 24, textAlign: 'center', alignItems: 'center' }}>
+            <AlertTriangle size={32} color="#f59e0b" style={{ marginBottom: 12 }} />
+            <h3 style={{ margin: '0 0 8px 0' }}>No Active Deliveries</h3>
+            <p style={{ margin: 0, color: '#64748b' }}>Accept a pickup run to see live GPS tracking.</p>
+            <button className="btn-swipe-action" onClick={() => navigate('/home')} style={{ marginTop: 24 }}>
+              Go Back
+            </button>
+          </div>
+        )}
+
       </div>
     </div>
   );

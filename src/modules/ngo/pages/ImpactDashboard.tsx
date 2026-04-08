@@ -30,6 +30,8 @@ type DonationListing = {
   status?: string;
   type?: string;
   claimed_by?: { ngo_id?: string; ngo_name?: string } | string | null;
+  dispatch_status?: string;
+  dispatch_driver_name?: string;
 };
 
 type ActivityItem = {
@@ -95,7 +97,7 @@ const ImpactDashboard: React.FC = () => {
 
     try {
       const [priorityRes, availableRes, claimedRes, dashboardRes, activityRes] = await Promise.all([
-        fetch(API_ENDPOINTS.rescue.ngoPriority),
+        fetch(API_ENDPOINTS.rescue.ngoPriority(String(user.id))),
         fetch(API_ENDPOINTS.marketplace.ngoRescue),
         fetch(API_ENDPOINTS.claimedListings(String(user.id))),
         fetch(API_ENDPOINTS.marketplace.ngoDashboard(String(user.id))),
@@ -149,10 +151,33 @@ const ImpactDashboard: React.FC = () => {
       setRefreshing(false);
     }
   }, [navigate, user]);
-
   useEffect(() => {
     loadDashboard();
   }, [loadDashboard]);
+
+  // Real-time polling for dispatch status
+  useEffect(() => {
+    if (!user) return;
+    const hasActiveDispatch = claimed.some(item =>
+      item.dispatch_status === 'finding_driver' || 
+      item.dispatch_status === 'trying_next_driver' ||
+      item.status === 'in_transit' && !item.dispatch_driver_name
+    );
+
+    if (hasActiveDispatch) {
+      const pollTimer = setInterval(() => {
+        fetch(API_ENDPOINTS.claimedListings(String(user.id)))
+          .then(res => res.json())
+          .then(data => {
+            if (data?.listings && Array.isArray(data.listings)) {
+              setClaimed(data.listings);
+            }
+          })
+          .catch(() => {});
+      }, 5000); // 5s poll while dispatching
+      return () => clearInterval(pollTimer);
+    }
+  }, [claimed, user]);
 
   const handleClaim = async (listing: DonationListing) => {
     if (!user || claimingId) return;
@@ -210,7 +235,7 @@ const ImpactDashboard: React.FC = () => {
     return type ? (map[type] || '🍱') : '🍱';
   };
 
-  const getStatusConfig = (status?: string) => {
+  const getStatusConfig = (status?: string, listing?: DonationListing) => {
     const map: Record<string, { label: string; className: string }> = {
       available: { label: 'Available', className: 'status-available' },
       claimed: { label: 'Claimed', className: 'status-claimed' },
@@ -220,6 +245,20 @@ const ImpactDashboard: React.FC = () => {
       delivered: { label: 'Delivered', className: 'status-delivered' },
       expired: { label: 'Expired', className: 'status-expired' },
     };
+
+    if (listing?.dispatch_status === 'finding_driver') {
+      return { label: '🔍 Finding driver...', className: 'status-transit finding-driver' };
+    }
+    if (listing?.dispatch_status === 'trying_next_driver') {
+      return { label: '🔄 Trying next driver...', className: 'status-transit finding-driver' };
+    }
+    if (listing?.dispatch_status === 'driver_assigned' || listing?.dispatch_driver_name) {
+      return { label: `🚛 Driver assigned: ${listing.dispatch_driver_name || 'Driver'}`, className: 'status-transit' };
+    }
+    if (listing?.dispatch_status === 'no_driver') {
+      return { label: '⚠️ No drivers available', className: 'status-expired' };
+    }
+
     return map[status || ''] || { label: status || 'Unknown', className: '' };
   };
 
@@ -419,8 +458,8 @@ const ImpactDashboard: React.FC = () => {
                           <span className={`fd-listing-expiry ${expiry.urgency}`}>⏳ {expiry.text}</span>
                         </div>
                       </div>
-                      <span className={`fd-status-pill ${getStatusConfig(listing.status).className}`}>
-                        {getStatusConfig(listing.status).label}
+                      <span className={`fd-status-pill ${getStatusConfig(listing.status, listing).className}`}>
+                        {getStatusConfig(listing.status, listing).label}
                       </span>
                       <div className="fd-listing-actions">
                         <button
@@ -457,7 +496,7 @@ const ImpactDashboard: React.FC = () => {
                 </div>
               ) : (
                 claimed.slice(0, 6).map((listing) => {
-                  const statusCfg = getStatusConfig(listing.status);
+                  const statusCfg = getStatusConfig(listing.status, listing);
                   return (
                     <div key={listing.id} className="fd-listing-row">
                       <div className="fd-listing-icon-wrap">
@@ -467,7 +506,9 @@ const ImpactDashboard: React.FC = () => {
                         <h4>{listing.crop_name || listing.produce_name || listing.title || 'Donation'}</h4>
                         <div className="fd-listing-meta">
                           <span className="fd-listing-qty">📦 {listing.quantity || 'N/A'}</span>
-                          <span className="fd-listing-expiry safe">🚚 {listing.status || 'in_transit'}</span>
+                          <span className="fd-listing-expiry safe">
+                             {listing.dispatch_status === 'no_driver' ? '❌ Failed' : '🚚 ' + (listing.status || 'in_transit')}
+                          </span>
                         </div>
                       </div>
                       <span className={`fd-status-pill ${statusCfg.className}`}>{statusCfg.label}</span>

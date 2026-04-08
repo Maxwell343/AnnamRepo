@@ -34,6 +34,7 @@ export const API_ENDPOINTS = {
   driverTasks: (id: string) => `${API_BASE_URL}/api/drivers/${id}/tasks`,
   driverEarnings: (id: string) => `${API_BASE_URL}/api/drivers/${id}/earnings`,
   driverStats: (id: string) => `${API_BASE_URL}/api/stats/driver/${id}`,
+  driverLocation: `${API_BASE_URL}/api/driver/update-location`,
   deliveryTaskStatus: (taskId: string) => `${API_BASE_URL}/api/delivery-tasks/${taskId}/status`,
   deliveryTaskLocation: (taskId: string) => `${API_BASE_URL}/api/delivery-tasks/${taskId}/location`,
   availablePickups: `${API_BASE_URL}/api/available-pickups`,
@@ -105,7 +106,7 @@ export const API_ENDPOINTS = {
   rescue: {
     action: (id: string) => `${API_BASE_URL}/api/rescue/${id}/action`,
     listings: `${API_BASE_URL}/api/rescue/listings`,
-    ngoPriority: `${API_BASE_URL}/api/rescue/ngo-priority`,
+    ngoPriority: (id?: string) => `${API_BASE_URL}/api/rescue/ngo-priority${id ? `?ngo_id=${id}` : ''}`,
     ngoCritical: `${API_BASE_URL}/api/rescue/ngo-critical`,
     claimDonation: (id: string) => `${API_BASE_URL}/api/rescue/${id}/claim-donation`,
   },
@@ -115,5 +116,13 @@ export const API_ENDPOINTS = {
   },
   impact: {
     stats: `${API_BASE_URL}/api/impact/stats`,
+  },
+
+  // Smart Dispatch (Ola-style driver cascade)
+  dispatch: {
+    incomingRequest: (driverId: string) => `${API_BASE_URL}/api/driver/${driverId}/incoming-request`,
+    acceptRequest: (requestId: string) => `${API_BASE_URL}/api/driver/requests/${requestId}/accept`,
+    declineRequest: (requestId: string) => `${API_BASE_URL}/api/driver/requests/${requestId}/decline`,
+    hotspots: (driverId: string) => `${API_BASE_URL}/api/driver/${driverId}/hotspots`,
   },
 };
