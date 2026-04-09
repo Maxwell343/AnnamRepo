@@ -14,12 +14,16 @@ interface RescueModalProps {
 const RescueModal: React.FC<RescueModalProps> = ({ listing, isOpen, onClose, onActionComplete }) => {
   const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittingAction, setSubmittingAction] = useState<'donate' | 'sell_discounted' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const isRescue = listing.rescueInfo?.urgencyStatus === 'rescue';
   const hoursRemaining = listing.rescueInfo?.hoursRemaining || 0;
-  const donateAvailableInHours = listing.donate_available_in_hours ?? Math.max(0, 24 - (listing.hours_since_listing || 0));
-  const donateAvailable = Boolean(listing.donate_available) || donateAvailableInHours <= 0;
+  const hRemaining = listing.hours_remaining ?? listing.rescueInfo?.hoursRemaining ?? 0;
+  const donateAvailableInHours = listing.donate_available_in_hours ?? Math.max(0, hRemaining - 24);
+  const isAvailable = listing.status === 'available' || listing.status === 'active';
+  const hasDonationMode = listing.donation_mode || listing.rescueInfo?.donationMode;
+  const donateAvailable = isAvailable && !hasDonationMode && (Boolean(listing.donate_available) || donateAvailableInHours <= 0);
 
   useEffect(() => {
     if (!listing.expires_at && !listing.expiryDate) return;
@@ -49,6 +53,7 @@ const RescueModal: React.FC<RescueModalProps> = ({ listing, isOpen, onClose, onA
 
   const handleAction = async (action: 'donate' | 'sell_discounted') => {
     setIsSubmitting(true);
+    setSubmittingAction(action);
     setError(null);
 
     try {
@@ -61,7 +66,14 @@ const RescueModal: React.FC<RescueModalProps> = ({ listing, isOpen, onClose, onA
         body: JSON.stringify({ action, farmer_id: listing.farmerId || listing.farmer_id || localStorage.getItem('userId') }),
       });
 
-      if (!response.ok) throw new Error('Failed to complete action');
+      if (!response.ok) {
+        let errorMsg = 'Failed to complete action';
+        try {
+          const errData = await response.json();
+          if (errData.detail) errorMsg = errData.detail;
+        } catch(e) {}
+        throw new Error(errorMsg);
+      }
 
       const data = await response.json();
       onActionComplete(data.listing);
@@ -70,6 +82,7 @@ const RescueModal: React.FC<RescueModalProps> = ({ listing, isOpen, onClose, onA
       setError(err.message || 'Something went wrong');
     } finally {
       setIsSubmitting(false);
+      setSubmittingAction(null);
     }
   };
 
@@ -122,9 +135,10 @@ const RescueModal: React.FC<RescueModalProps> = ({ listing, isOpen, onClose, onA
           >
             <div className="rm-card-icon"><Gift size={24} /></div>
             <div className="rm-card-text">
-              <h4>Donate to NGO</h4>
+              <h4>{submittingAction === 'donate' ? 'Searching for optimal NGO...' : 'Donate to NGO'}</h4>
               <p>
-                {donateAvailable
+                {submittingAction === 'donate' ? 'Finding the nearest eligible organization to route your donation.' :
+                 donateAvailable
                   ? 'Zero food waste. Earn impact points and tax benefits.'
                   : `Available in ${Math.ceil(donateAvailableInHours)}h after listing.`}
               </p>
