@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Home, ScrollText, Package, PlusCircle, ShoppingCart, BarChart3,
   Handshake, Truck, Settings, MapPin, Map, Wallet, CreditCard,
-  MapPinned, LogOut, Wheat, ChevronLeft, ChevronRight
+  MapPinned, LogOut, Wheat, ChevronLeft, ChevronRight, Activity
 } from 'lucide-react';
 import './HomePage.css';
 
@@ -57,7 +57,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     localStorage.removeItem('farmLocation');
     localStorage.removeItem('userLanguage');
     localStorage.removeItem('ngoName');
-    localStorage.removeItem('driverOnline');
+    const driverOnlineState = localStorage.getItem('driverOnline');
+    if (driverOnlineState === 'true') {
+      localStorage.setItem('driverOnlineExpiry', (Date.now() + 60 * 60 * 1000).toString());
+    } else {
+      localStorage.removeItem('driverOnline');
+    }
     navigate('/');
   };
 
@@ -89,6 +94,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         { id: 'tracking', icon: <Truck size={20} />, label: 'Order Tracking', action: () => navigate('/ngo-order-tracking') },
       ],
       driver: [
+        { id: 'driver-dashboard', icon: <Activity size={20} />, label: 'Command Center', action: () => navigate('/driver-dashboard') },
         { id: 'my-deliveries', icon: <MapPin size={20} />, label: 'My Deliveries', action: () => navigate('/my-deliveries') },
         { id: 'available-pickups', icon: <Truck size={20} />, label: 'Available Pickups', action: () => navigate('/available-pickups') },
         { id: 'route-map', icon: <Map size={20} />, label: 'Route Map', action: () => navigate('/route-map') },

@@ -68,8 +68,8 @@ const routeLineLayer = {
   id: 'routeLine',
   type: 'line',
   paint: {
-    'line-color': '#0f766e',
-    'line-width': 6,
+    'line-color': '#10B981',
+    'line-width': 5,
     'line-opacity': 0.8,
   },
   layout: {
@@ -78,20 +78,21 @@ const routeLineLayer = {
   },
 } as const;
 
-const geocodeAddress = async (address: string, token: string): Promise<LngLat | null> => {
-  if (!address.trim() || !token) return null;
-  try {
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?limit=1&access_token=${token}`;
-    const response = await fetch(url);
-    if (!response.ok) return null;
-    const data = await response.json();
-    const center = data?.features?.[0]?.center;
-    if (!Array.isArray(center) || center.length < 2) return null;
-    return { lng: Number(center[0]), lat: Number(center[1]) };
-  } catch {
-    return null;
-  }
+const computeDistance = (p1: LngLat, p2: LngLat) => {
+  const R = 6371e3; // metres
+  const phi1 = (p1.lat * Math.PI) / 180;
+  const phi2 = (p2.lat * Math.PI) / 180;
+  const deltaPhi = ((p2.lat - p1.lat) * Math.PI) / 180;
+  const deltaLambda = ((p2.lng - p1.lng) * Math.PI) / 180;
+
+  const a =
+    Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+    Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // in metres
 };
+
 
 const toNumber = (value: unknown): number | null => {
   const numeric = Number(value);
@@ -133,6 +134,8 @@ const RouteMap: React.FC = () => {
   const [routeDistanceKm, setRouteDistanceKm] = useState<number | null>(null);
   const [routeDurationMins, setRouteDurationMins] = useState<number | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [lastRoutedLocation, setLastRoutedLocation] = useState<LngLat | null>(null);
+  const [lastRoutedDestination, setLastRoutedDestination] = useState<LngLat | null>(null);
 
   useEffect(() => {
     document.body.classList.add('routemap-active');
@@ -277,19 +280,18 @@ const RouteMap: React.FC = () => {
   );
 
   const routeFeature = useMemo(() => {
-    if (!routeGeometry) return null;
     return {
       type: 'Feature' as const,
       properties: {},
-      geometry: routeGeometry,
+      geometry: routeGeometry || { type: 'LineString' as const, coordinates: [] },
     };
   }, [routeGeometry]);
 
-  const fetchRoute = useCallback(async () => {
-    if (!origin || !destination || !MAPBOX_TOKEN) return;
+  const fetchRoute = useCallback(async (currentOrigin: LngLat, currentDestination: LngLat) => {
+    if (!MAPBOX_TOKEN) return;
     try {
-      const from = `${origin.lng},${origin.lat}`;
-      const to = `${destination.lng},${destination.lat}`;
+      const from = `${currentOrigin.lng},${currentOrigin.lat}`;
+      const to = `${currentDestination.lng},${currentDestination.lat}`;
       const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${from};${to}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`;
       
       const response = await fetch(directionsUrl);
@@ -300,17 +302,34 @@ const RouteMap: React.FC = () => {
         setRouteGeometry(firstRoute.geometry);
         if (firstRoute.distance) setRouteDistanceKm(firstRoute.distance / 1000);
         if (firstRoute.duration) setRouteDurationMins(Math.ceil(firstRoute.duration / 60));
+        setLastRoutedLocation(currentOrigin);
+        setLastRoutedDestination(currentDestination);
       }
     } catch (e) {
       console.error(e);
     }
-  }, [destination, origin]);
+  }, []);
 
   useEffect(() => {
-    fetchRoute();
-    const interval = setInterval(fetchRoute, 15000); // Recalculate route periodically
-    return () => clearInterval(interval);
-  }, [fetchRoute]);
+    if (!origin || !destination) return;
+    
+    // Force re-route if destination changed (e.g. stage changed from Pickup to Delivery)
+    if (lastRoutedDestination && (lastRoutedDestination.lat !== destination.lat || lastRoutedDestination.lng !== destination.lng)) {
+      fetchRoute(origin, destination);
+      return;
+    }
+
+    // Force re-route if moved > 50 meters 
+    if (lastRoutedLocation) {
+       const dist = computeDistance(origin, lastRoutedLocation);
+       if (dist > 50) {
+         fetchRoute(origin, destination);
+       }
+    } else {
+       // Initial fetch
+       fetchRoute(origin, destination);
+    }
+  }, [origin, destination, lastRoutedLocation, lastRoutedDestination, fetchRoute]);
 
   const handleUpdateStatus = async () => {
     if (!activeTaskId || !activeTask) return;
@@ -392,11 +411,9 @@ const RouteMap: React.FC = () => {
             mapboxAccessToken={MAPBOX_TOKEN}
             reuseMaps
           >
-            {routeFeature && (
-              <Source id="route" type="geojson" data={routeFeature}>
-                <Layer {...routeLineLayer} />
-              </Source>
-            )}
+            <Source id="route" type="geojson" data={routeFeature as any}>
+              <Layer {...routeLineLayer} />
+            </Source>
 
             {origin && (
               <Marker longitude={origin.lng} latitude={origin.lat} anchor="center">

@@ -235,6 +235,15 @@ const ImpactDashboard: React.FC = () => {
     return type ? (map[type] || '🍱') : '🍱';
   };
 
+  const isProgressStatus = (value?: string) =>
+    ['assigned', 'picked_up', 'in_transit', 'delivered'].includes(value || '');
+
+  const isTransitOrDelivered = (value?: string) =>
+    ['picked_up', 'in_transit', 'delivered'].includes(value || '');
+
+  const shouldShowNoDriver = (listing?: DonationListing) =>
+    Boolean(listing?.dispatch_status === 'no_driver' && !isProgressStatus(listing.status));
+
   const getStatusConfig = (status?: string, listing?: DonationListing) => {
     const map: Record<string, { label: string; className: string }> = {
       available: { label: 'Available', className: 'status-available' },
@@ -246,20 +255,24 @@ const ImpactDashboard: React.FC = () => {
       expired: { label: 'Expired', className: 'status-expired' },
     };
 
-    if (listing?.dispatch_status === 'finding_driver') {
+    const statusValue = status || '';
+    const hasProgressed = isProgressStatus(statusValue);
+    const isTransitLike = isTransitOrDelivered(statusValue);
+
+    if (!hasProgressed && listing?.dispatch_status === 'finding_driver') {
       return { label: '🔍 Finding driver...', className: 'status-transit finding-driver' };
     }
-    if (listing?.dispatch_status === 'trying_next_driver') {
+    if (!hasProgressed && listing?.dispatch_status === 'trying_next_driver') {
       return { label: '🔄 Trying next driver...', className: 'status-transit finding-driver' };
     }
-    if (listing?.dispatch_status === 'driver_assigned' || listing?.dispatch_driver_name) {
+    if (!isTransitLike && (listing?.dispatch_status === 'driver_assigned' || listing?.dispatch_driver_name)) {
       return { label: `🚛 Driver assigned: ${listing.dispatch_driver_name || 'Driver'}`, className: 'status-transit' };
     }
-    if (listing?.dispatch_status === 'no_driver') {
+    if (shouldShowNoDriver(listing)) {
       return { label: '⚠️ No drivers available', className: 'status-expired' };
     }
 
-    return map[status || ''] || { label: status || 'Unknown', className: '' };
+    return map[statusValue] || { label: status || 'Unknown', className: '' };
   };
 
   const parseExpiry = (listing: DonationListing): { text: string; urgency: string } => {
@@ -507,7 +520,7 @@ const ImpactDashboard: React.FC = () => {
                         <div className="fd-listing-meta">
                           <span className="fd-listing-qty">📦 {listing.quantity || 'N/A'}</span>
                           <span className="fd-listing-expiry safe">
-                             {listing.dispatch_status === 'no_driver' ? '❌ Failed' : '🚚 ' + (listing.status || 'in_transit')}
+                              {shouldShowNoDriver(listing) ? '❌ Failed' : '🚚 ' + (listing.status || 'in_transit')}
                           </span>
                         </div>
                       </div>

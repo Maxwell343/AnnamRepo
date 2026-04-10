@@ -95,7 +95,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, onClose }) => {
     localStorage.removeItem('farmLocation');
     localStorage.removeItem('userLanguage');
     localStorage.removeItem('ngoName');
-    localStorage.removeItem('driverOnline');
+    const driverOnlineState = localStorage.getItem('driverOnline');
+    if (driverOnlineState === 'true') {
+      localStorage.setItem('driverOnlineExpiry', (Date.now() + 60 * 60 * 1000).toString());
+    } else {
+      localStorage.removeItem('driverOnline');
+    }
     navigate('/');
     onClose();
   };

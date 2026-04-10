@@ -152,33 +152,26 @@ def enrich_listing(listing: dict) -> dict:
     hours_remaining = None
     expires_at = listing.get("expires_at")
 
-    # ── Priority 1: Dynamic computation (preferred) ──
+    # ── Priority 1: Update harvested time & use ML countdown ──
     if listing.get("base_shelf_life_hours") and listing.get("harvest_datetime"):
         try:
-            from app.services.shelf_life_service import compute_remaining_shelf_life, _derive_status, compute_hours_since_harvest
-            dynamic_remaining = compute_remaining_shelf_life(listing)
-            if dynamic_remaining is not None:
-                hours_remaining = dynamic_remaining
-                # Override the stored static value with dynamic one
-                listing["remaining_shelf_life_hours"] = dynamic_remaining
-                listing["hours_since_harvest"] = round(
-                    compute_hours_since_harvest(listing["harvest_datetime"]), 1
-                )
-                listing["freshness_status"] = _derive_status(dynamic_remaining)
-                # Recompute expires_at from harvest + effective shelf life
-                from app.services.shelf_life_service import (
-                    parse_harvest_datetime, compute_weather_decay_factor,
-                    fetch_weather_sync, WEATHER_DEFAULTS
-                )
-                harvest_dt = parse_harvest_datetime(listing["harvest_datetime"])
-                if harvest_dt:
-                    lat = listing.get("latitude")
-                    lng = listing.get("longitude")
-                    weather = fetch_weather_sync(lat, lng) if lat and lng else WEATHER_DEFAULTS.copy()
-                    decay = compute_weather_decay_factor(weather["temperature_c"], weather["humidity_percent"])
-                    effective = float(listing["base_shelf_life_hours"]) * decay
-                    new_expires = harvest_dt + timedelta(hours=effective)
-                    expires_at = new_expires.isoformat()
+            from app.services.shelf_life_service import _derive_status, compute_hours_since_harvest
+            
+            hours_since = compute_hours_since_harvest(listing["harvest_datetime"])
+            listing["hours_since_harvest"] = round(hours_since, 1)
+
+            # Rely on the ML-backed expires_at for remaining time, NOT the algebraic fallback
+            if expires_at:
+                hours_remaining = compute_hours_remaining(expires_at)
+                listing["remaining_shelf_life_hours"] = hours_remaining
+                listing["freshness_status"] = _derive_status(hours_remaining)
+                
+                # Fetch real-time weather to update the UI
+                from app.services.shelf_life_service import fetch_weather_sync
+                lat = listing.get("latitude")
+                lng = listing.get("longitude")
+                if lat and lng:
+                    weather = fetch_weather_sync(lat, lng)
                     listing["prediction_weather"] = weather
         except Exception as e:
             print(f"[ENRICH] Dynamic computation failed: {e}")

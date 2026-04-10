@@ -150,7 +150,17 @@ const DriverSettings: React.FC = () => {
       fetchSettings();
 
       const savedOnlineStatus = localStorage.getItem('driverOnline');
-      if (savedOnlineStatus !== null) {
+      const expiry = localStorage.getItem('driverOnlineExpiry');
+      
+      if (expiry) {
+        if (Date.now() > parseInt(expiry, 10)) {
+          localStorage.setItem('driverOnline', 'false');
+          setIsOnline(false);
+        } else {
+          setIsOnline(savedOnlineStatus === 'true');
+        }
+        localStorage.removeItem('driverOnlineExpiry');
+      } else if (savedOnlineStatus !== null) {
         setIsOnline(JSON.parse(savedOnlineStatus));
       }
     } else {

@@ -268,9 +268,12 @@ def update_delivery_status(task_id: str, status_update: DeliveryStatusUpdate):
 # ============== AVAILABLE PICKUPS ==============
 
 @router.get("/available-pickups")
-def get_pickups_for_drivers():
-    """Get all claimed listings available for pickup (for drivers)"""
-    pickups = get_available_pickups()
+def get_pickups_for_drivers(
+    driver_lat: Optional[float] = Query(None, description="Driver latitude"),
+    driver_lng: Optional[float] = Query(None, description="Driver longitude")
+):
+    """Get all claimed listings available for pickup (for drivers), filtered by distance if location provided"""
+    pickups = get_available_pickups(driver_lat, driver_lng)
     
     return {
         "pickups": pickups,

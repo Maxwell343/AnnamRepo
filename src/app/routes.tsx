@@ -41,6 +41,7 @@ import {
 
 // Driver module
 import {
+  DriverDashboard,
   DriverSettings,
   AvailablePickups,
   MyDeliveries,
@@ -70,7 +71,8 @@ function RoleDashboard() {
     if (raw) {
       const user = JSON.parse(raw)
       if (user?.role === 'farmer') return <FarmerDashboard />
-      if (user?.role === 'ngo') return <ImpactDashboard />
+      if (user?.role === 'ngo')    return <ImpactDashboard />
+      if (user?.role === 'driver') return <DriverDashboard />
     }
   } catch { /* ignore */ }
   return <HomePage />
@@ -130,6 +132,7 @@ export default function AppRoutes() {
         <Route path="/customer-settings" element={<RoleGuard allowedRoles={['customer']}><CustomerSettings /></RoleGuard>} />
 
         {/* Driver */}
+        <Route path="/driver-dashboard" element={<RoleGuard allowedRoles={['driver']}><DriverDashboard /></RoleGuard>} />
         <Route path="/available-pickups" element={<RoleGuard allowedRoles={['driver']}><AvailablePickups /></RoleGuard>} />
         <Route path="/my-deliveries" element={<RoleGuard allowedRoles={['driver']}><MyDeliveries /></RoleGuard>} />
         <Route path="/driver-settings" element={<RoleGuard allowedRoles={['driver']}><DriverSettings /></RoleGuard>} />

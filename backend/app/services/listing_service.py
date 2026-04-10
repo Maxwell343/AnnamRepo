@@ -17,6 +17,7 @@ from app.services.expiry_engine import (
 )
 import asyncio
 import re
+import math
 
 
 DONATION_ELIGIBILITY_HOURS = 24
@@ -649,10 +650,42 @@ def update_driver_location(task_id: str, location: dict) -> Optional[dict]:
         return None
 
 
-def get_available_pickups() -> List[dict]:
-    """Get all listings that are claimed but not yet assigned to a driver"""
+def _haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Great-circle distance in km between two points."""
+    try:
+        R = 6371.0
+        p1, p2 = math.radians(float(lat1)), math.radians(float(lat2))
+        dp = math.radians(float(lat2) - float(lat1))
+        dl = math.radians(float(lon2) - float(lon1))
+        a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+        return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    except Exception:
+        return float("inf")
+
+def get_available_pickups(driver_lat: Optional[float] = None, driver_lng: Optional[float] = None) -> List[dict]:
+    """Get all listings that are claimed but not yet assigned to a driver. Filters geographically if location provided."""
     listings = get_all_listings({"status": "claimed"})
-    return listings
+    
+    if driver_lat is None or driver_lng is None:
+        return listings
+        
+    filtered_listings = []
+    MAX_RADIUS_KM = 30.0
+    
+    for doc in listings:
+        # Resolve coordinates from various nested structures
+        lat_val = doc.get("latitude") or (doc.get("coordinates") or {}).get("lat") or (doc.get("location") or {}).get("coordinates", {}).get("lat")
+        lng_val = doc.get("longitude") or (doc.get("coordinates") or {}).get("lng") or (doc.get("location") or {}).get("coordinates", {}).get("lng")
+        
+        if lat_val is not None and lng_val is not None:
+            dist = _haversine(float(driver_lat), float(driver_lng), float(lat_val), float(lng_val))
+            if dist <= MAX_RADIUS_KM:
+                filtered_listings.append(doc)
+        else:
+            # Drop invalid listings without coordinates
+            pass
+            
+    return filtered_listings
 
 
 # ============== EARNINGS ==============

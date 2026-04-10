@@ -293,7 +293,8 @@ const AvailablePickups: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await fetch(API_ENDPOINTS.availablePickups);
+      const locationQuery = driverLocation ? `?driver_lat=${driverLocation.lat}&driver_lng=${driverLocation.lng}` : '';
+      const response = await fetch(`${API_ENDPOINTS.availablePickups}${locationQuery}`);
       if (response.ok) {
         const data = await response.json();
         const rawPickups = Array.isArray(data) ? data : data.pickups || [];
@@ -474,7 +475,17 @@ const AvailablePickups: React.FC = () => {
     }
 
     const savedOnlineStatus = localStorage.getItem('driverOnline');
-    if (savedOnlineStatus !== null) {
+    const expiry = localStorage.getItem('driverOnlineExpiry');
+    
+    if (expiry) {
+      if (Date.now() > parseInt(expiry, 10)) {
+        localStorage.setItem('driverOnline', 'false');
+        setIsOnline(false);
+      } else {
+        setIsOnline(savedOnlineStatus === 'true');
+      }
+      localStorage.removeItem('driverOnlineExpiry');
+    } else if (savedOnlineStatus !== null) {
       setIsOnline(JSON.parse(savedOnlineStatus));
     }
   }, [navigate]);
