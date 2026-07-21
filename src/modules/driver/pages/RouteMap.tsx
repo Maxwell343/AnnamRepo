@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Navigation, Phone, CheckCircle, Package, Flag, AlertTriangle, Crosshair } from 'lucide-react';
 import Map, { Layer, Marker, Source } from 'react-map-gl/mapbox';
@@ -43,8 +43,8 @@ type DriverTask = {
   pickup_lng?: number;
   delivery_lat?: number;
   delivery_lng?: number;
-  pickup_location?: { lat?: number; lng?: number; address?: string };
-  delivery_location?: { lat?: number; lng?: number; address?: string };
+  pickup_location?: { lat?: number; lng?: number; address?: string } | string;
+  delivery_location?: { lat?: number; lng?: number; address?: string } | string;
   current_location?: { lat?: number; lng?: number };
 };
 
@@ -102,12 +102,67 @@ const toNumber = (value: unknown): number | null => {
 const resolveTaskPoint = (
   directLat?: unknown,
   directLng?: unknown,
-  nested?: { lat?: unknown; lng?: unknown }
+  nested?: { lat?: unknown; lng?: unknown; coordinates?: { lat?: unknown; lng?: unknown } } | string | null
 ): LngLat | null => {
-  const lat = toNumber(directLat) ?? toNumber(nested?.lat);
-  const lng = toNumber(directLng) ?? toNumber(nested?.lng);
+  const nestedObj = typeof nested === 'string' ? undefined : nested;
+  const lat =
+    toNumber(directLat) ??
+    toNumber(nestedObj?.lat) ??
+    toNumber(nestedObj?.coordinates?.lat);
+  const lng =
+    toNumber(directLng) ??
+    toNumber(nestedObj?.lng) ??
+    toNumber(nestedObj?.coordinates?.lng);
   if (lat === null || lng === null) return null;
   return { lat, lng };
+};
+
+const resolveLocationAddress = (
+  direct?: string,
+  nested?: { address?: string } | string | null
+): string => {
+  const directValue = (direct || '').trim();
+  if (directValue) return directValue;
+  if (typeof nested === 'string') return nested.trim();
+  return (nested?.address || '').trim();
+};
+
+const parseLatLngFromString = (value: string): LngLat | null => {
+  const match = value.match(/(-?\d+(?:\.\d+)?)[,\s]+(-?\d+(?:\.\d+)?)/);
+  if (!match) return null;
+  const first = Number(match[1]);
+  const second = Number(match[2]);
+  if (!Number.isFinite(first) || !Number.isFinite(second)) return null;
+
+  let lat = first;
+  let lng = second;
+  if (Math.abs(lat) > 90 && Math.abs(lng) <= 90) {
+    lat = second;
+    lng = first;
+  }
+
+  if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+  return { lat, lng };
+};
+
+const normalizeLatLng = (point: LngLat | null, reference?: LngLat | null): LngLat | null => {
+  if (!point) return null;
+  const ref = reference || DEFAULT_VIEW_CENTER;
+  const swapped = { lat: point.lng, lng: point.lat };
+  const refDistance = computeDistance(point, ref);
+  const swapDistance = (Math.abs(swapped.lat) <= 90 && Math.abs(swapped.lng) <= 180)
+    ? computeDistance(swapped, ref)
+    : Number.POSITIVE_INFINITY;
+
+  if (refDistance > 1_000_000 && swapDistance < 250_000) {
+    return swapped;
+  }
+
+  if (swapDistance < refDistance * 0.2) {
+    return swapped;
+  }
+
+  return point;
 };
 
 const RouteMap: React.FC = () => {
@@ -136,6 +191,7 @@ const RouteMap: React.FC = () => {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [lastRoutedLocation, setLastRoutedLocation] = useState<LngLat | null>(null);
   const [lastRoutedDestination, setLastRoutedDestination] = useState<LngLat | null>(null);
+  const geocodeCache = useRef<Record<string, LngLat>>({});
 
   useEffect(() => {
     document.body.classList.add('routemap-active');
@@ -184,6 +240,26 @@ const RouteMap: React.FC = () => {
     }
   }, [driverId]);
 
+  const geocodeAddress = useCallback(async (address: string): Promise<LngLat | null> => {
+    const key = address.trim();
+    if (!key || !MAPBOX_TOKEN) return null;
+    const cached = geocodeCache.current[key];
+    if (cached) return cached;
+    try {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(key)}.json?limit=1&access_token=${MAPBOX_TOKEN}`;
+      const response = await fetch(url);
+      if (!response.ok) return null;
+      const data = await response.json();
+      const center = data?.features?.[0]?.center;
+      if (!Array.isArray(center) || center.length < 2) return null;
+      const coords = { lng: Number(center[0]), lat: Number(center[1]) };
+      geocodeCache.current[key] = coords;
+      return coords;
+    } catch {
+      return null;
+    }
+  }, []);
+
   useEffect(() => {
     fetchActiveTask();
   }, [fetchActiveTask]);
@@ -193,28 +269,63 @@ const RouteMap: React.FC = () => {
     const resolveStops = async () => {
       const pickupFromTask = resolveTaskPoint(activeTask.pickup_lat, activeTask.pickup_lng, activeTask.pickup_location);
       const dropFromTask = resolveTaskPoint(activeTask.delivery_lat, activeTask.delivery_lng, activeTask.delivery_location);
-      
-      let fallbackPickup: LngLat | null = null;
-      let fallbackDrop: LngLat | null = null;
 
-      if ((!pickupFromTask || !dropFromTask) && activeTask.listing_id) {
+      let pickupAddress = resolveLocationAddress(activeTask.pickup_address, activeTask.pickup_location);
+      let dropAddress = resolveLocationAddress(activeTask.delivery_address, activeTask.delivery_location);
+
+      let resolvedPickup = pickupFromTask;
+      let resolvedDrop = dropFromTask;
+      
+      if ((!resolvedPickup || !resolvedDrop || !pickupAddress || !dropAddress) && activeTask.listing_id) {
         try {
           const trackingRes = await fetch(API_ENDPOINTS.listingTracking(String(activeTask.listing_id)));
           if (trackingRes.ok) {
             const trData = await trackingRes.json();
             const listing = trData?.listing || {};
             const claimedBy = listing?.claimed_by || {};
-            fallbackPickup = resolveTaskPoint(listing.pickup_lat, listing.pickup_lng, listing.location);
-            fallbackDrop = resolveTaskPoint(listing.delivery_lat, listing.delivery_lng, claimedBy.location);
+            if (!resolvedPickup) {
+              resolvedPickup = resolveTaskPoint(
+                listing.pickup_lat ?? listing.latitude ?? listing.coordinates?.lat,
+                listing.pickup_lng ?? listing.longitude ?? listing.coordinates?.lng,
+                listing.location ?? listing.coordinates
+              );
+            }
+            if (!resolvedDrop) {
+              resolvedDrop = resolveTaskPoint(
+                listing.delivery_lat ?? claimedBy.location?.lat ?? claimedBy.gps_lat,
+                listing.delivery_lng ?? claimedBy.location?.lng ?? claimedBy.gps_lng,
+                claimedBy.location ?? claimedBy.coordinates
+              );
+            }
+
+            if (!pickupAddress) {
+              pickupAddress = resolveLocationAddress(listing.pickup_address || listing.pickup_location, listing.location);
+            }
+            if (!dropAddress) {
+              dropAddress = resolveLocationAddress(listing.delivery_address || claimedBy.ngo_address, claimedBy.location);
+            }
           }
         } catch (e) {}
       }
 
-      setPickupLocation(pickupFromTask || fallbackPickup || null);
-      setDropLocation(dropFromTask || fallbackDrop || null);
+      if (!resolvedPickup && pickupAddress) {
+        resolvedPickup = parseLatLngFromString(pickupAddress) || await geocodeAddress(pickupAddress);
+      }
+      if (!resolvedDrop && dropAddress) {
+        resolvedDrop = parseLatLngFromString(dropAddress) || await geocodeAddress(dropAddress);
+      }
+
+      setPickupLocation(normalizeLatLng(resolvedPickup || null, driverLocation));
+      setDropLocation(normalizeLatLng(resolvedDrop || null, driverLocation));
     };
     resolveStops();
-  }, [activeTask]);
+  }, [activeTask, driverLocation, geocodeAddress]);
+
+  useEffect(() => {
+    if (!driverLocation) return;
+    setPickupLocation((prev) => normalizeLatLng(prev, driverLocation));
+    setDropLocation((prev) => normalizeLatLng(prev, driverLocation));
+  }, [driverLocation]);
 
   // LIVE GEOLOCATION TRACKING (ZOMATO STYLE)
   useEffect(() => {
@@ -229,6 +340,8 @@ const RouteMap: React.FC = () => {
           lng: position.coords.longitude,
           lat: position.coords.latitude,
         };
+        const heading = Number.isFinite(position.coords.heading) ? position.coords.heading : undefined;
+        const speedKmh = position.coords.speed != null ? position.coords.speed * 3.6 : undefined;
         setDriverLocation(currentLocation);
         setLocationError(null);
 
@@ -248,9 +361,25 @@ const RouteMap: React.FC = () => {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 driver_id: driverId,
+                latitude: currentLocation.lat,
+                longitude: currentLocation.lng,
+                heading,
+                speed_kmh: speedKmh,
+              })
+            });
+          } catch (e) {}
+        }
+
+        if (activeTaskId) {
+          try {
+            await fetch(API_ENDPOINTS.deliveryTaskLocation(activeTaskId), {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
                 lat: currentLocation.lat,
                 lng: currentLocation.lng,
-                timestamp: new Date().toISOString()
+                heading,
+                speed: speedKmh,
               })
             });
           } catch (e) {}
@@ -267,7 +396,7 @@ const RouteMap: React.FC = () => {
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [driverId]);
+  }, [driverId, activeTaskId]);
 
   const origin = useMemo<LngLat | null>(
     () => driverLocation ?? resolveTaskPoint(activeTask?.current_location?.lat, activeTask?.current_location?.lng),
@@ -304,8 +433,23 @@ const RouteMap: React.FC = () => {
         if (firstRoute.duration) setRouteDurationMins(Math.ceil(firstRoute.duration / 60));
         setLastRoutedLocation(currentOrigin);
         setLastRoutedDestination(currentDestination);
+        return;
       }
+      throw new Error('Route missing');
     } catch (e) {
+      const fallbackLine: RouteGeometry = {
+        type: 'LineString',
+        coordinates: [
+          [currentOrigin.lng, currentOrigin.lat],
+          [currentDestination.lng, currentDestination.lat],
+        ],
+      };
+      const meters = computeDistance(currentOrigin, currentDestination);
+      setRouteGeometry(fallbackLine);
+      setRouteDistanceKm(meters / 1000);
+      setRouteDurationMins(Math.max(1, Math.round((meters / 1000 / 30) * 60)));
+      setLastRoutedLocation(currentOrigin);
+      setLastRoutedDestination(currentDestination);
       console.error(e);
     }
   }, []);
@@ -468,7 +612,10 @@ const RouteMap: React.FC = () => {
                 </div>
                 <div className="address-info">
                   <h3>{stage === 'PICKUP' ? (activeTask.farmer_name || activeTask.farmer?.name || 'Farmer') : (activeTask.ngo_name || activeTask.ngo?.name || 'NGO')}</h3>
-                  <p>{stage === 'PICKUP' ? (activeTask.pickup_address || activeTask.pickup_location?.address || 'Pickup location') : (activeTask.delivery_address || activeTask.delivery_location?.address || 'Drop location')}</p>
+                  <p>{stage === 'PICKUP'
+                    ? (resolveLocationAddress(activeTask.pickup_address, activeTask.pickup_location) || 'Pickup location')
+                    : (resolveLocationAddress(activeTask.delivery_address, activeTask.delivery_location) || 'Drop location')}
+                  </p>
                 </div>
               </div>
 

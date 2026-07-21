@@ -7,10 +7,10 @@ try:
     client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
     # Test the connection
     client.admin.command('ping')
-    print(f"✅ Connected to MongoDB successfully!")
+    print(f"[SUCCESS] Connected to MongoDB successfully!")
     db = client[DB_NAME]
 except ConnectionFailure as e:
-    print(f"❌ Failed to connect to MongoDB: {e}")
+    print(f"[ERROR] Failed to connect to MongoDB: {e}")
     raise
 
 # Collections
@@ -96,10 +96,10 @@ def init_collections():
         driver_requests_collection.create_index([("expires_at", ASCENDING)])
         driver_requests_collection.create_index([("status", ASCENDING)])
         
-        print("✅ Database collections and indexes initialized successfully!")
+        print("[SUCCESS] Database collections and indexes initialized successfully!")
         return True
     except Exception as e:
-        print(f"⚠️  Warning: Could not create indexes: {e}")
+        print(f"[WARNING] Could not create indexes: {e}")
         return False
 
 # Initialize collections when module is imported

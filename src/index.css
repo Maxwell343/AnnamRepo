@@ -20,12 +20,36 @@
   --text-3: #94a3b8;
   --border-subtle: #e2e8f0;
 
+  /* Primary Brand Colors */
+  --primary-50: #f0fdf4;
+  --primary-100: #dcfce7;
+  --primary-500: #22c55e;
+  --primary-600: #16a34a;
+  --primary-700: #15803d;
+  --primary-800: #166534;
+  --primary-900: #14532d;
+  
+  /* Status Colors */
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --success: #22c55e;
+  --info: #3b82f6;
+
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
 
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
   --shadow-md: 0 8px 20px rgba(15, 23, 42, 0.1);
+  
+  /* Focus Rings */
+  --focus-ring: 0 0 0 2px var(--surface-0), 0 0 0 4px var(--primary-500);
+}
+
+/* Global focus styles */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 *,

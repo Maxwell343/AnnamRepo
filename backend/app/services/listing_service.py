@@ -114,6 +114,57 @@ def is_listing_expired(listing: dict) -> bool:
         return False
 
 
+def _safe_float(value: Any) -> Optional[float]:
+    try:
+        return float(value)
+    except Exception:
+        return None
+
+
+def _extract_lat_lng_from_location(location: Any) -> tuple[Optional[float], Optional[float]]:
+    if not isinstance(location, dict):
+        return None, None
+
+    coords = location.get("coordinates") or {}
+    lat = (
+        location.get("lat")
+        or location.get("latitude")
+        or coords.get("lat")
+        or coords.get("latitude")
+    )
+    lng = (
+        location.get("lng")
+        or location.get("longitude")
+        or coords.get("lng")
+        or coords.get("longitude")
+    )
+    return _safe_float(lat), _safe_float(lng)
+
+
+def _extract_lat_lng_from_text(text: Any) -> tuple[Optional[float], Optional[float]]:
+    if not text:
+        return None, None
+
+    match = re.search(r"(-?\d+(?:\.\d+)?)[,\s]+(-?\d+(?:\.\d+)?)", str(text))
+    if not match:
+        return None, None
+
+    first = _safe_float(match.group(1))
+    second = _safe_float(match.group(2))
+    if first is None or second is None:
+        return None, None
+
+    lat = first
+    lng = second
+    if abs(lat) > 90 and abs(lng) <= 90:
+        lat, lng = lng, lat
+
+    if abs(lat) > 90 or abs(lng) > 180:
+        return None, None
+
+    return lat, lng
+
+
 def mark_expired_listings() -> int:
     """Mark all expired listings — delegates to expiry engine."""
     return engine_mark_expired()
@@ -231,6 +282,33 @@ def create_listing(listing_data: dict) -> dict:
     listing_data["updated_at"] = datetime.utcnow().isoformat()
     listing_data["claimed_by"] = None
     listing_data["assigned_driver"] = None
+
+    # Normalize pickup address/coordinates from location payloads
+    location = listing_data.get("location")
+    if not listing_data.get("pickup_address") and isinstance(location, dict):
+        address = location.get("address")
+        if address:
+            listing_data["pickup_address"] = address
+
+    if not listing_data.get("pickup_location") and listing_data.get("pickup_address"):
+        listing_data["pickup_location"] = listing_data.get("pickup_address")
+
+    lat = listing_data.get("latitude")
+    lng = listing_data.get("longitude")
+    if lat is None or lng is None:
+        loc_lat, loc_lng = _extract_lat_lng_from_location(location)
+        lat = loc_lat if lat is None else lat
+        lng = loc_lng if lng is None else lng
+
+    if lat is None or lng is None:
+        text_lat, text_lng = _extract_lat_lng_from_text(listing_data.get("pickup_address"))
+        lat = text_lat if lat is None else lat
+        lng = text_lng if lng is None else lng
+
+    if lat is not None:
+        listing_data["latitude"] = lat
+    if lng is not None:
+        listing_data["longitude"] = lng
 
     # Run ML shelf-life prediction only if not already done (async route does it first)
     if "remaining_shelf_life_hours" not in listing_data:
@@ -511,8 +589,63 @@ def accept_pickup(listing_id: str, driver_data: dict) -> Optional[dict]:
 def create_delivery_task(listing: dict, driver_data: dict) -> dict:
     """Create a delivery task for a driver"""
     listing_location = listing.get("location") or {}
+    if not isinstance(listing_location, dict):
+        listing_location = {}
+    listing_coords = listing.get("coordinates") or {}
+    if not isinstance(listing_coords, dict):
+        listing_coords = {}
+    location_coords = listing_location.get("coordinates") or {}
+    if not isinstance(location_coords, dict):
+        location_coords = {}
+
     claimed_by = listing.get("claimed_by") or {}
     claimed_location = claimed_by.get("location") if isinstance(claimed_by, dict) else {}
+    if not isinstance(claimed_location, dict):
+        claimed_location = {}
+    claimed_coords = claimed_location.get("coordinates") or {}
+    if not isinstance(claimed_coords, dict):
+        claimed_coords = {}
+
+    pickup_lat = (
+        listing.get("pickup_lat")
+        or listing.get("latitude")
+        or listing_coords.get("lat")
+        or listing_location.get("lat")
+        or listing_location.get("latitude")
+        or location_coords.get("lat")
+        or location_coords.get("latitude")
+    )
+    pickup_lng = (
+        listing.get("pickup_lng")
+        or listing.get("longitude")
+        or listing_coords.get("lng")
+        or listing_location.get("lng")
+        or listing_location.get("longitude")
+        or location_coords.get("lng")
+        or location_coords.get("longitude")
+    )
+
+    delivery_lat = (
+        listing.get("delivery_lat")
+        or claimed_location.get("lat")
+        or claimed_location.get("latitude")
+        or claimed_coords.get("lat")
+        or claimed_coords.get("latitude")
+        or (claimed_by.get("gps_lat") if isinstance(claimed_by, dict) else None)
+    )
+    delivery_lng = (
+        listing.get("delivery_lng")
+        or claimed_location.get("lng")
+        or claimed_location.get("longitude")
+        or claimed_coords.get("lng")
+        or claimed_coords.get("longitude")
+        or (claimed_by.get("gps_lng") if isinstance(claimed_by, dict) else None)
+    )
+
+    pickup_lat = _safe_float(pickup_lat)
+    pickup_lng = _safe_float(pickup_lng)
+    delivery_lat = _safe_float(delivery_lat)
+    delivery_lng = _safe_float(delivery_lng)
 
     task = {
         "listing_id": listing["id"],
@@ -530,8 +663,8 @@ def create_delivery_task(listing: dict, driver_data: dict) -> dict:
         "farmer_phone": listing.get("farmer_phone"),
         "pickup_address": listing.get("pickup_address"),
         "pickup_location": listing.get("pickup_location") or listing.get("pickup_address"),
-        "pickup_lat": listing.get("pickup_lat") or listing_location.get("lat"),
-        "pickup_lng": listing.get("pickup_lng") or listing_location.get("lng"),
+        "pickup_lat": pickup_lat,
+        "pickup_lng": pickup_lng,
         "pickup_time": listing.get("pickup_time"),
         
         "ngo_id": claimed_by.get("ngo_id") if isinstance(claimed_by, dict) else str(claimed_by) if claimed_by else None,
@@ -539,8 +672,8 @@ def create_delivery_task(listing: dict, driver_data: dict) -> dict:
         "ngo_phone": claimed_by.get("ngo_phone") if isinstance(claimed_by, dict) else None,
         "delivery_address": claimed_by.get("ngo_address") if isinstance(claimed_by, dict) else None,
         "delivery_location": claimed_by.get("ngo_address") if isinstance(claimed_by, dict) else None,
-        "delivery_lat": listing.get("delivery_lat") or (claimed_location or {}).get("lat"),
-        "delivery_lng": listing.get("delivery_lng") or (claimed_location or {}).get("lng"),
+        "delivery_lat": delivery_lat,
+        "delivery_lng": delivery_lng,
         
         "status": "pending",
         "created_at": datetime.utcnow().isoformat(),

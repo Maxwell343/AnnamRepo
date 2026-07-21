@@ -1273,32 +1273,25 @@ const Marketplace: React.FC = () => {
     const loadListings = async () => {
       setIsLoading(true);
       try {
-        console.log('[MARKETPLACE] Fetching listings from API...');
         let fetchUrl = API_ENDPOINTS.listings;
         if (user?.role === 'ngo') {
           fetchUrl = API_ENDPOINTS.rescue.ngoPriority;
         }
         
         const response = await fetch(fetchUrl);
-        console.log('[MARKETPLACE] API Response Status:', response.status);
-        
         if (response.ok) {
           const data = await response.json();
-          console.log('[MARKETPLACE] API Response Data:', data);
           
           if (data.listings && Array.isArray(data.listings) && data.listings.length > 0) {
             // Filter stale expired records defensively, then map for UI.
             const validListings = data.listings.filter((apiListing: any) => !isApiListingExpired(apiListing));
             const mappedListings = validListings.map((apiListing: any) => {
-              console.log('[MARKETPLACE] Mapping listing:', apiListing);
               return mapApiListingToMarketplace(apiListing);
             });
             setListings(mappedListings);
-            console.log(`[MARKETPLACE] Loaded ${mappedListings.length} listings from backend`);
           } else {
             // No listings from API - show empty state
             setListings([]);
-            console.log('[MARKETPLACE] No listings available from backend. Response:', data);
           }
         } else {
           // API error - show empty state

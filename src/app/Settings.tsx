@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Settings.css';
 import { useToast } from '../components/ui/ToastProvider';
+import { User, Tractor, Settings } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -96,7 +97,6 @@ const SettingsPage: React.FC = () => {
       localStorage.setItem('user', JSON.stringify(user));
     }
 
-    console.log("Settings saved successfully:", formData);
     showToast('Settings saved successfully!', {
       title: 'Saved',
       variant: 'success',
@@ -119,7 +119,10 @@ const SettingsPage: React.FC = () => {
         <div className="settings-body">
           
           {/* Section 1: Personal Info */}
-          <div className="section-title">👤 Personal Details</div>
+          <div className="section-title">
+            <User size={18} />
+            Personal Details
+          </div>
           
           <div className="input-row">
             <div className="input-group">
@@ -156,7 +159,10 @@ const SettingsPage: React.FC = () => {
           </div>
 
           {/* Section 2: Farm Details (Crucial for Annam) */}
-          <div className="section-title">🚜 Farm Profile</div>
+          <div className="section-title">
+            <Tractor size={18} />
+            Farm Profile
+          </div>
           
           <div className="input-row">
             <div className="input-group">
@@ -182,7 +188,10 @@ const SettingsPage: React.FC = () => {
           </div>
 
           {/* Section 3: App Preferences */}
-          <div className="section-title">⚙️ Preferences</div>
+          <div className="section-title">
+            <Settings size={18} />
+            Preferences
+          </div>
 
           <div className="input-group" style={{marginBottom: '1.5rem'}}>
             <label>App Language</label>

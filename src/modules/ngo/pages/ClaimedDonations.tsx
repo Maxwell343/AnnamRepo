@@ -57,8 +57,6 @@ const ClaimedDonations: React.FC = () => {
       const response = await fetch(API_ENDPOINTS.claimedListings(String(user.id)));
       const data = await response.json();
       
-      console.log('Claimed donations response:', data);
-      
       if (response.ok) {
         // Map the backend data to our interface
         const mappedDonations = (data.listings || []).map((listing: any) => ({

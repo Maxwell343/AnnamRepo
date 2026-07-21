@@ -1,22 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Home, ScrollText, Package, PlusCircle, ShoppingCart, BarChart3,
   Handshake, Truck, Settings, MapPin, Map, Wallet, CreditCard,
   MapPinned, LogOut, Wheat, ChevronLeft, ChevronRight, Activity
 } from 'lucide-react';
-import './HomePage.css';
-
-interface User {
-  id: number;
-  name: string;
-  role: 'farmer' | 'ngo' | 'driver' | 'customer';
-  email?: string;
-  phone?: string;
-  address?: string;
-  organization?: string;
-  vehicle_number?: string;
-}
+import { useUser } from '../hooks/useUser';
+import './DashboardLayout.css';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -24,57 +14,22 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
+  const { user, clearUser } = useUser();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser);
-        if (parsedUser && parsedUser.id && parsedUser.name && 
-            ['farmer', 'ngo', 'driver', 'customer'].includes(parsedUser.role)) {
-          setUser(parsedUser);
-        } else {
-          navigate('/auth');
-        }
-      } catch (e) {
-        navigate('/auth');
-      }
-    } else {
-      navigate('/auth');
-    }
-  }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('farmerSettings');
-    localStorage.removeItem('ngoSettings');
-    localStorage.removeItem('userSettings');
-    localStorage.removeItem('driverSettings');
-    localStorage.removeItem('userPhone');
-    localStorage.removeItem('farmName');
-    localStorage.removeItem('farmLocation');
-    localStorage.removeItem('userLanguage');
-    localStorage.removeItem('ngoName');
-    const driverOnlineState = localStorage.getItem('driverOnline');
-    if (driverOnlineState === 'true') {
-      localStorage.setItem('driverOnlineExpiry', (Date.now() + 60 * 60 * 1000).toString());
-    } else {
-      localStorage.removeItem('driverOnline');
-    }
-    navigate('/');
-  };
-
+  // Note: ProtectedRoute already guarantees 'user' is present and valid
+  // before rendering this layout, so we don't strictly need the redirect logic here.
   if (!user) {
     return null;
   }
 
+  const handleLogout = () => {
+    clearUser();
+    navigate('/');
+  };
 
   const renderSidebarNav = () => {
-    const getDashboardRoute = () => {
-      return '/home';
-    };
+    const getDashboardRoute = () => '/home';
 
     const commonItems = [
       { id: 'dashboard', icon: <Home size={20} />, label: 'Dashboard', action: () => navigate(getDashboardRoute()) },
@@ -127,17 +82,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     }
 
     return (
-      <nav className="sidebar-nav">
+      <nav className="sidebar-nav" aria-label="Main Navigation">
         {items.map((item) => (
-          <div
+          <button
             key={item.id}
             className="nav-item"
             onClick={item.action}
             title={sidebarCollapsed ? item.label : ''}
+            aria-label={item.label}
           >
-            <span className="nav-icon">{item.icon}</span>
+            <span className="nav-icon" aria-hidden="true">{item.icon}</span>
             {!sidebarCollapsed && <span className="nav-label">{item.label}</span>}
-          </div>
+          </button>
         ))}
       </nav>
     );
@@ -146,16 +102,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   return (
     <div className={`app-container ${user.role}-theme`}>
       {/* --- Sidebar Navigation --- */}
-      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`} aria-label="Sidebar">
         <div className="sidebar-header">
           <div className="brand">
-            <span className="brand-icon"><Wheat size={28} /></span>
+            <span className="brand-icon" aria-hidden="true"><Wheat size={28} /></span>
             {!sidebarCollapsed && <span className="brand-text">Annam</span>}
           </div>
           <button 
             className="collapse-btn"
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-expanded={!sidebarCollapsed}
           >
             {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
@@ -164,15 +122,20 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         {renderSidebarNav()}
 
         <div className="sidebar-footer">
-          <div className="nav-item logout-item" onClick={handleLogout}>
-            <span className="nav-icon"><LogOut size={20} /></span>
+          <button 
+            className="nav-item logout-item" 
+            onClick={handleLogout}
+            title={sidebarCollapsed ? 'Logout' : ''}
+            aria-label="Logout"
+          >
+            <span className="nav-icon" aria-hidden="true"><LogOut size={20} /></span>
             {!sidebarCollapsed && <span className="nav-label">Logout</span>}
-          </div>
+          </button>
         </div>
       </aside>
 
       {/* --- Main Content Area --- */}
-      <main className="main-content">
+      <main className="main-content" id="main-content">
         {children}
       </main>
     </div>

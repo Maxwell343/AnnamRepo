@@ -416,6 +416,8 @@ const DriverDashboard: React.FC = () => {
     const watchId = navigator.geolocation.watchPosition(
       async (pos) => {
         const coords = { lng: pos.coords.longitude, lat: pos.coords.latitude };
+        const heading = Number.isFinite(pos.coords.heading) ? pos.coords.heading : undefined;
+        const speedKmh = pos.coords.speed != null ? pos.coords.speed * 3.6 : undefined;
         setDriverLocation(coords);
 
         // Reverse geocode area name
@@ -427,7 +429,13 @@ const DriverDashboard: React.FC = () => {
           await fetch(API_ENDPOINTS.driverLocation, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ driver_id: user.id, lat: coords.lat, lng: coords.lng, timestamp: new Date().toISOString() }),
+            body: JSON.stringify({
+              driver_id: user.id,
+              latitude: coords.lat,
+              longitude: coords.lng,
+              heading,
+              speed_kmh: speedKmh,
+            }),
           });
         } catch { /* silent */ }
       },

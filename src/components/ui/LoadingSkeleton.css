@@ -1,0 +1,103 @@
+/* ─── Page Skeleton ─── */
+.skeleton-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--surface-0);
+}
+
+.skeleton-page-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.skeleton-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border-subtle);
+  border-top-color: #166534;
+  border-radius: 50%;
+  animation: skeleton-spin 0.7s linear infinite;
+}
+
+.skeleton-text {
+  font-family: var(--font-primary);
+  font-size: 0.875rem;
+  color: var(--text-3);
+  margin: 0;
+}
+
+@keyframes skeleton-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Shared shimmer animation ─── */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-bar {
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--surface-2) 25%, #e2e8f0 37%, var(--surface-2) 63%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  width: 100%;
+}
+
+.skeleton-bar-short {
+  width: 40%;
+}
+
+.skeleton-bar-medium {
+  width: 70%;
+}
+
+/* ─── Card Skeleton ─── */
+.skeleton-card {
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  max-width: 320px;
+}
+
+.skeleton-card-image {
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(90deg, var(--surface-2) 25%, #e2e8f0 37%, var(--surface-2) 63%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-card-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+/* ─── Inline Skeleton ─── */
+.skeleton-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+/* ─── Screen reader only ─── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

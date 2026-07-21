@@ -31,10 +31,16 @@ interface Listing {
   image?: string;
   created_at?: string;
   status: 'available' | 'claimed' | 'in_transit' | 'delivered' | 'expired' | 'pending_donation' | 'discounted';
-  claimed_by?: {
-    id: number;
-    name: string;
+  claimed_by?: string | {
+    id?: number | string;
+    name?: string;
     organization?: string;
+    ngo_id?: string;
+    ngo_name?: string;
+    ngo_phone?: string;
+    ngo_address?: string;
+    claim_quantity?: string;
+    location?: string;
   };
   claimed_quantity?: string;
   claimed_at?: string;
@@ -58,6 +64,28 @@ function getUrgencyLevel(status: string | undefined): 'critical' | 'warning' | '
   if (status === 'rescue' || status === 'expired') return 'critical';
   if (status === 'urgent') return 'warning';
   return 'safe';
+}
+
+function getClaimedByName(listing: Listing): string {
+  const claimed = listing.claimed_by;
+  if (!claimed) return '';
+  if (typeof claimed === 'string') return claimed;
+  return claimed.ngo_name || claimed.name || claimed.organization || claimed.ngo_id || '';
+}
+
+function getClaimedByLocation(listing: Listing): string {
+  const claimed = listing.claimed_by;
+  if (!claimed || typeof claimed === 'string') return '';
+  return claimed.ngo_address || claimed.location || '';
+}
+
+function getClaimedQuantity(listing: Listing): string {
+  if (listing.claimed_quantity) return listing.claimed_quantity;
+  const claimed = listing.claimed_by;
+  if (claimed && typeof claimed !== 'string' && claimed.claim_quantity) {
+    return claimed.claim_quantity;
+  }
+  return '';
 }
 
 const TYPE_CONFIG: Record<string, { icon: string; color: string; bg: string }> = {
@@ -389,6 +417,7 @@ const MyListings: React.FC = () => {
             const donateAvailableInHours = listing.donate_available_in_hours ?? Math.max(0, (listing.hours_remaining ?? 999) - 24);
             const donateAvailable = Boolean(listing.donate_available) || donateAvailableInHours <= 0;
             const donateWaitHours = Math.max(0, Math.ceil(donateAvailableInHours));
+            const claimedByName = getClaimedByName(listing);
 
             return (
               <div key={listing.id} className={`ml-card ${viewMode} ${listing.status}`}>
@@ -454,10 +483,10 @@ const MyListings: React.FC = () => {
                   {listing.description && <p className="ml-card-desc">{listing.description}</p>}
 
                   {/* Claimed banner */}
-                  {listing.claimed_by && (
+                  {listing.claimed_by && claimedByName && (
                     <div className="ml-claimed-banner">
                       <TrendingUp size={14} />
-                      <span>Claimed by <strong>{listing.claimed_by.name}</strong></span>
+                      <span>Claimed by <strong>{claimedByName}</strong></span>
                     </div>
                   )}
 
@@ -623,19 +652,19 @@ const MyListings: React.FC = () => {
                   <h4>🤝 Claim Information</h4>
                   <div className="ml-detail-grid">
                     <div className="ml-detail-item">
-                      <span className="ml-detail-label">Claimed By</span>
-                      <span className="ml-detail-value">{selectedListing.claimed_by.name}</span>
+                      <span className="ml-detail-label">NGO Name</span>
+                      <span className="ml-detail-value">{getClaimedByName(selectedListing) || 'N/A'}</span>
                     </div>
-                    {selectedListing.claimed_by.organization && (
+                    {getClaimedByLocation(selectedListing) && (
                       <div className="ml-detail-item">
-                        <span className="ml-detail-label">Organization</span>
-                        <span className="ml-detail-value">{selectedListing.claimed_by.organization}</span>
+                        <span className="ml-detail-label">NGO Location</span>
+                        <span className="ml-detail-value">{getClaimedByLocation(selectedListing)}</span>
                       </div>
                     )}
-                    {selectedListing.claimed_quantity && (
+                    {getClaimedQuantity(selectedListing) && (
                       <div className="ml-detail-item">
                         <span className="ml-detail-label">Qty Claimed</span>
-                        <span className="ml-detail-value">{selectedListing.claimed_quantity}</span>
+                        <span className="ml-detail-value">{getClaimedQuantity(selectedListing)}</span>
                       </div>
                     )}
                     {selectedListing.claimed_at && (

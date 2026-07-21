@@ -57,9 +57,9 @@ app.include_router(notification_router)
 app.include_router(marketplace_router)
 app.include_router(admin_router)
 app.include_router(rescue_router)
-app.include_router(driver_router)
-app.include_router(mobility_router)
-app.include_router(dispatch_router)
+app.include_router(driver_router, prefix="/api")
+app.include_router(mobility_router, prefix="/api")
+app.include_router(dispatch_router, prefix="/api")
 
 @app.get("/")
 def root():

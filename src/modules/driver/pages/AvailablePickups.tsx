@@ -392,6 +392,8 @@ const AvailablePickups: React.FC = () => {
           lng: position.coords.longitude,
           lat: position.coords.latitude,
         };
+        const heading = Number.isFinite(position.coords.heading) ? position.coords.heading : undefined;
+        const speedKmh = position.coords.speed != null ? position.coords.speed * 3.6 : undefined;
         setDriverLocation(coords);
 
         try {
@@ -400,9 +402,10 @@ const AvailablePickups: React.FC = () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               driver_id: user.id,
-              lat: coords.lat,
-              lng: coords.lng,
-              timestamp: new Date().toISOString()
+              latitude: coords.lat,
+              longitude: coords.lng,
+              heading,
+              speed_kmh: speedKmh,
             })
           });
         } catch (e) {

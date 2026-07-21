@@ -1,0 +1,142 @@
+.not-found-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--surface-0);
+  position: relative;
+  overflow: hidden;
+}
+
+.not-found-content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+}
+
+.not-found-code {
+  font-family: var(--font-primary);
+  font-size: clamp(6rem, 15vw, 10rem);
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(135deg, #166534 0%, #22c55e 50%, #86efac 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.04em;
+}
+
+.not-found-title {
+  font-family: var(--font-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0 0 0.75rem;
+}
+
+.not-found-description {
+  font-family: var(--font-secondary);
+  font-size: 1rem;
+  color: var(--text-2);
+  line-height: 1.6;
+  margin: 0 0 2rem;
+}
+
+.not-found-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.not-found-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.not-found-btn-primary {
+  background: #166534;
+  color: #fff;
+}
+
+.not-found-btn-primary:hover {
+  background: #15803d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 101, 52, 0.3);
+}
+
+.not-found-btn-secondary {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+
+.not-found-btn-secondary:hover {
+  background: var(--border-subtle);
+  transform: translateY(-1px);
+}
+
+.not-found-btn:focus-visible {
+  outline: 2px solid #22c55e;
+  outline-offset: 2px;
+}
+
+/* Decorative background */
+.not-found-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.not-found-circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.06;
+}
+
+.not-found-circle-1 {
+  width: 400px;
+  height: 400px;
+  background: #22c55e;
+  top: -100px;
+  right: -100px;
+}
+
+.not-found-circle-2 {
+  width: 300px;
+  height: 300px;
+  background: #166534;
+  bottom: -80px;
+  left: -80px;
+}
+
+.not-found-circle-3 {
+  width: 200px;
+  height: 200px;
+  background: #86efac;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 480px) {
+  .not-found-actions {
+    flex-direction: column;
+  }
+
+  .not-found-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
