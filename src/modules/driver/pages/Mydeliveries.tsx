@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, Truck, CheckCircle, XCircle, Circle, Wallet, ClipboardList, Bell, Search, X, RefreshCw, MailOpen, Flame, Zap, Leaf, Apple, Wheat, Ruler, MapPin, Phone, Map, Flag, Calendar, FileText, Eye, Camera, Sprout, Building2, BarChart3, Hourglass, Clock } from 'lucide-react';
-import './MyDeliveries.css';
+import './Mydeliveries.css';
 import { API_ENDPOINTS } from '../../../config/api';
 import { useToast } from '../../../components/ui/ToastProvider';
 
