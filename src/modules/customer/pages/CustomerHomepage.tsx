@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './CustomerHomePage.css';
+import './CustomerHomepage.css';
 import { API_ENDPOINTS } from '../../../config/api';
 import { useToast } from '../../../components/ui/ToastProvider';
 import { ShoppingCart, Leaf, Apple, Wheat, Milk, Sprout, Home, Package, Heart, Tag, MapPin, CreditCard, Settings, Star, LogOut, Search, Truck, Bell, X, Trash2, PartyPopper, Carrot, Cherry, Check, Clock, Bike, Phone, ArrowRight, User, Wallet, Frown, CheckCircle, Hourglass, Flame } from 'lucide-react';
