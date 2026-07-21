@@ -1275,7 +1275,7 @@ const Marketplace: React.FC = () => {
       try {
         let fetchUrl = API_ENDPOINTS.listings;
         if (user?.role === 'ngo') {
-          fetchUrl = API_ENDPOINTS.rescue.ngoPriority;
+          fetchUrl = API_ENDPOINTS.rescue.ngoPriority();
         }
         
         const response = await fetch(fetchUrl);
