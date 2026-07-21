@@ -1,101 +1,194 @@
-# Annam — Food Rescue Platform 🌾
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Maxwell343/AnnamRepo/main/public/vite.svg" alt="Annam Logo" width="120" />
 
-[![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)](https://reactjs.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+  # Annam — Intelligent Food Rescue Ecosystem 🌾
+  
+  **Bridging the gap between agricultural surplus and zero hunger.**
 
-Annam is a comprehensive food rescue ecosystem designed to bridge the gap between food surplus and food scarcity. By connecting farmers, NGOs, drivers, and consumers, Annam enables intelligent, real-time logistics for preventing food spoilage and feeding those in need.
+  [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+  [![React 19](https://img.shields.io/badge/React_19-20232a?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+  [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
+  [![MongoDB](https://img.shields.io/badge/MongoDB-4ea94b?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+  [![CatBoost](https://img.shields.io/badge/CatBoost-F3E218?style=for-the-badge&logo=yandex&logoColor=black)](https://catboost.ai/)
+</div>
 
-## Features by Role
+<br />
 
-### 🚜 Farmer Dashboard
-- **Spoilage Prediction:** Machine learning models predict crop shelf life based on regional weather and produce type.
-- **Dynamic Pricing:** Smart pricing algorithms automatically reduce prices as produce approaches expiry to maximize sales.
-- **Rescue Listing:** One-click donation of unsellable surplus directly to NGOs.
-
-### 🤝 NGO Dashboard
-- **Priority Claims:** NGOs get early access to surplus food donations.
-- **Impact Tracking:** Measurable analytics on meals rescued, people fed, and carbon emissions saved.
-- **Real-Time Tracking:** Live GPS tracking of incoming food deliveries.
-
-### 🚚 Driver (Logistics) Network
-- **Smart Dispatch:** Ola/Uber-style dispatch system cascades requests to the nearest available drivers.
-- **Earnings & Rewards:** Incentive-based platform for independent logistics partners to earn by rescuing food.
-- **Optimized Routing:** Turn-by-turn navigation for efficient multi-stop pickups.
-
-### 🛒 Customer Marketplace
-- **Eco-Conscious Shopping:** Access discounted, near-expiry produce to combat food waste.
-- **Secure Payments:** Integrated wallet and payment systems.
-- **Order Tracking:** Full transparency on delivery status.
+Annam is an end-to-end, real-time logistics and marketplace platform designed to eradicate food waste. By integrating machine learning with a four-sided marketplace (Farmers, NGOs, Logistics Drivers, and Everyday Consumers), Annam intelligently predicts food spoilage and orchestrates rapid distribution of surplus produce before it goes to waste.
 
 ---
 
-## 🏗 System Architecture
+## 🌟 Core Features & Modules
+
+Annam operates through four interconnected, role-based dashboards powered by a centralized backend.
+
+### 🚜 Farmer Ecosystem
+- **ML Spoilage Prediction:** Utilizes a CatBoost machine learning model to predict the shelf-life of produce based on historical weather patterns, humidity, and crop type.
+- **Dynamic Pricing Engine:** Automatically triggers price reductions as produce approaches its predicted expiry window to maximize liquidation.
+- **One-Click Rescue:** Seamlessly transition unsold, near-expiry stock into NGO donations with zero friction.
+- **Yield Analytics:** Comprehensive reporting via Recharts on sales velocity and waste reduction.
+
+### 🤝 NGO Dashboard
+- **Priority Claim System:** Dedicated NGO routing guarantees non-profits get first right of refusal on high-value donations.
+- **Impact Tracking:** Quantifiable analytics dashboard tracking total meals rescued, individuals fed, and CO₂ emissions mitigated.
+- **Automated Verification:** Twilio-powered OTP verification for secure handoffs between drivers and NGOs.
+
+### 🚚 Driver Command Center
+- **Algorithmic Dispatching:** Uber-style dispatch system that cascades pickup requests to the nearest available drivers using Leaflet-based geospatial indexing.
+- **Optimized Multi-Stop Routing:** Turn-by-turn navigation mapping for efficient, multi-node pickup and delivery sequences.
+- **Incentivized Logistics:** Earnings and rewards tracking for independent logistics partners participating in the rescue network.
+
+### 🛒 Consumer Marketplace
+- **Eco-Conscious Retail:** Direct-to-consumer access to heavily discounted, perfectly safe, near-expiry produce.
+- **Real-Time Order Tracking:** Full transparency on delivery status and driver geolocation.
+
+---
+
+## 🏗 Technical Architecture
+
+Annam follows a decoupled, service-oriented architecture with a heavy emphasis on real-time data flow and machine learning integrations.
 
 ```mermaid
 graph TD;
-    Client[React + Vite Frontend] -->|REST API| API[FastAPI Backend];
-    API -->|PyMongo| DB[(MongoDB)];
-    API -->|Twilio API| SMS[SMS & WhatsApp];
-    API -->|CatBoost| ML[Spoilage Prediction];
+    subgraph Frontend [Vite + React 19]
+        F[Farmer SPA]
+        N[NGO SPA]
+        D[Driver SPA]
+        C[Consumer SPA]
+    end
+
+    subgraph Backend [FastAPI]
+        API[REST API Gateway]
+        ML[CatBoost Predictor]
+        CRON[APScheduler Tasks]
+        AUTH[JWT Authentication]
+    end
+
+    subgraph External Services
+        TW[Twilio SMS/WhatsApp]
+        MAP[Mapbox / Leaflet]
+    end
+
+    F & N & D & C <-->|Axios / REST| API
+    API <-->|PyMongo| DB[(MongoDB Atlas)]
+    API <--> ML
+    API <--> TW
+    D <--> MAP
 ```
+
+### 💻 Tech Stack Deep Dive
+
+**Frontend:**
+- **Core:** React 19, Vite, TypeScript
+- **Routing:** React Router DOM v7 (with lazy loading & Suspense boundaries)
+- **State & Data:** Custom React hooks, LocalStorage synchronization
+- **Mapping & Data Viz:** React Leaflet, Recharts, Framer Motion
+
+**Backend:**
+- **Framework:** FastAPI (Python 3.10+) with Uvicorn
+- **Database:** MongoDB (via PyMongo)
+- **Machine Learning:** CatBoost, Scikit-learn, Pandas, Joblib
+- **Background Jobs:** APScheduler for expiry status polling
+- **Authentication:** Passlib (Bcrypt) & JWT
+- **Communications:** Twilio SDK
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js (v18+)
 - Python (v3.10+)
-- MongoDB (v6.0+) running locally or via Atlas
+- MongoDB (v6.0+) running locally or via MongoDB Atlas
 
-### Environment Setup
+### 1. Backend Setup
 
-#### Frontend (`/`)
-No `.env` required for local development. Vite's proxy automatically routes `/api` requests to `http://localhost:8000`.
+Navigate to the `backend` directory and set up the Python environment:
 
-#### Backend (`/backend`)
-Create a `.env` file in the `backend/` directory using the provided template:
-```bash
-cp backend/.env.example backend/.env
-```
-
-| Variable | Description |
-|----------|-------------|
-| `MONGODB_URI` | Connection string for your MongoDB instance |
-| `DATABASE_NAME` | Name of the Mongo database (default: `annam`) |
-| `JWT_SECRET` | Secret key for JWT signing |
-| `TWILIO_*` | Credentials for SMS & WhatsApp notifications |
-
-### Running the Application
-
-**1. Start the Backend (FastAPI)**
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate  # Or .venv\Scripts\activate on Windows
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python -m uvicorn app.main:app --reload
 ```
 
-**2. Start the Frontend (Vite/React)**
+**Environment Variables:**
+Create a `.env` file in the `backend` directory. Do **not** commit this file.
+
+```bash
+cp .env.example .env
+```
+Ensure you populate `MONGODB_URI`, `JWT_SECRET`, and your `TWILIO_*` credentials.
+
+**Start the API Server:**
+```bash
+python -m uvicorn main:app --reload --port 8000
+```
+*API Documentation will be available at `http://localhost:8000/docs`.*
+
+### 2. Frontend Setup
+
+Navigate to the root directory and install Node dependencies:
+
 ```bash
 npm install
-npm run dev
 ```
 
-The frontend will be available at `http://localhost:5173`.
-The backend API docs will be available at `http://localhost:8000/docs`.
+**Start the Development Server:**
+```bash
+npm run dev
+```
+*The application will be available at `http://localhost:5173`. Vite's proxy will automatically route `/api` requests to your local FastAPI backend.*
 
 ---
 
-## 🔒 Security Note
-**API Keys & Secrets:** Do not commit `.env` files. Ensure you have rotated any API keys or JWT secrets if you are deploying to production.
+## 📂 Project Structure
+
+```text
+AnnamRepo/
+├── backend/                  # FastAPI Application
+│   ├── app/                  # Core API routes, models, and services
+│   ├── ml/                   # CatBoost models and training scripts
+│   ├── tests/                # Pytest integration & unit tests
+│   ├── requirements.txt      # Python dependencies
+│   └── main.py               # Uvicorn entrypoint
+├── src/                      # React Frontend
+│   ├── app/                  # Layouts, routing, and core App shell
+│   ├── components/           # Reusable UI components & Error Boundaries
+│   ├── hooks/                # Custom React hooks (useUser, useInView)
+│   ├── modules/              # Role-based feature modules
+│   │   ├── admin/
+│   │   ├── auth/
+│   │   ├── customer/
+│   │   ├── driver/
+│   │   ├── farmer/
+│   │   └── ngo/
+│   ├── types/                # TypeScript interface definitions
+│   └── index.css             # Global design tokens and accessibility styles
+├── docs/                     # Technical documentation & expiry algorithms
+├── public/                   # Static assets
+└── package.json              # Node dependencies & Vite config
+```
+
+---
+
+## 🔒 Security & Best Practices
+
+- **API Keys:** Never commit your `.env` file. If a key is accidentally committed, rotate it immediately in the respective provider's dashboard.
+- **Code Splitting:** The frontend heavily utilizes `React.lazy()` to ensure role-based code splitting, reducing initial load times for users on cellular networks.
+- **Error Handling:** Global `ErrorBoundary` components catch React rendering errors gracefully, while FastAPI provides structured HTTP exception responses.
 
 ## 🤝 Contributing
-Contributions are welcome! Please open an issue first to discuss what you would like to change before submitting a Pull Request.
+
+We welcome contributions to help expand the Annam ecosystem! 
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+---
+<p align="center">
+  <i>Building a sustainable future, one harvest at a time.</i>
+</p>
